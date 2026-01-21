@@ -1,0 +1,1 @@
+establecer conexion con la base de datos, actualmente SQLite pero con esto puede desacloparse y acloparse otras bds

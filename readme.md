@@ -18,3 +18,12 @@ npm install express better-sqlite3
 npm install electron
 npm install --save-dev concurrently wait-on
 
+
+# Instalaciones Extras
+## Backend
+    cd backend
+    npm install cors
+## Frontend
+    cd frontend
+    npm install axios
+    npm install @mantine/core @mantine/hooks @mantine/form @mantine/notifications
