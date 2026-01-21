@@ -1,35 +1,31 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// frontend/src/App.jsx
+import { MantineProvider, createTheme, Container, Center } from '@mantine/core';
+import LoginModule from './modules/Login/LoginModule';
+
+// Definimos la paleta dorada personalizada
+const elDoradoTheme = createTheme({
+  colors: {
+    dorado: [
+      '#fdf9e2', '#f9f1c5', '#f2e28d', '#eabd51', '#e49f22', 
+      '#d4af37', '#b38f2a', '#917120', '#71561a', '#523e14',
+    ],
+  },
+  primaryColor: 'dorado',
+  primaryShade: 5, // El color #d4af37
+});
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
+    <MantineProvider theme={elDoradoTheme}>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <Center style={{ height: '100vh' }}>
+          <Container size="xs" w={400}>
+            <LoginModule />
+          </Container>
+        </Center>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </MantineProvider>
+  );
 }
 
-export default App
+export default App;
