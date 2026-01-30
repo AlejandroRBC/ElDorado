@@ -1,0 +1,141 @@
+PEGASITO
+.pegasito
+En línea
+
+Este es el inicio del canal #proyecto-dorado. 
+Hut — 07/01/2026 19:33
+https://drive.google.com/drive/folders/1K4w3fheTBDgWf5oWRhWq3VZnUIBalndU?usp=drive_link
+Google Drive
+PEGASITO — 12/01/2026 12:12
+========================================================================================================================
+PEGASITO — 12/01/2026 12:22
+1era reunion con la junta de comerciantes
+PEGASITO — 12/01/2026 19:24
+https://drive.google.com/file/d/18jzuUa7peoTdn_-ef_fQkFL0HPiGXmx2/view?usp=sharing
+Google Docs
+Diagramas.drawio
+PEGASITO — 21/01/2026 1:24
+====================================
+documentos actualizados en el drive
+MER y Previa a ER
+Imagen
+afiliado
+- id_afiliado PK int
+- ci varchar()
+- extension varchar(3)
+- nombre varchar()
+- paterno varchar()
+
+borrador-MER ElDorado.txt
+3 KB
+PEGASITO — ayer a las 21:37
+https://github.com/AlejandroRBC/ElDorado.git
+GitHub
+GitHub - AlejandroRBC/ElDorado: Sistema de administracion de comerc...
+Sistema de administracion de comerciantes de la Asociacion de Comerciantes El Dorado - AlejandroRBC/ElDorado
+Sistema de administracion de comerciantes de la Asociacion de Comerciantes El Dorado - AlejandroRBC/ElDorado
+﻿
+afiliado
+- id_afiliado PK int
+- ci varchar()
+- extension varchar(3)
+- nombre varchar()
+- paterno varchar()
+- materno varchar()
+- sexo varchar(1)
+- fecNac date
+- telefono int
+- ocupacion varchar()
+- direccion varchar()
+- fecha_afiliacion date
+- estado boolean
+
+usuario
+- id_usuario PK int
+- id_afiliado FK
+- nombre varchar()
+- rol varchar()
+- fecha_creacion date
+- estado boolean
+
+patente
+- id_patente PK int
+- id_puesto FK UNIQUE
+- codigo_alcaldia int
+- estado
+
+puesto
+- id_puesto PK int
+- fila varchar(1)
+- cuadra varchar()
+- nroPuesto int
+- ancho int
+- largo int
+
+tenencia_puesto
+- id_tenencia PK int
+- id_afiliado fk
+- id_puesto fk
+- fecha_ini date
+- fecha_fin date // mientras este pertenezca a un afiliado este valor queda como NULL, cuando se traspasa se graba el dia del traspaso
+// para sacar el historial comparamos las fechas de inicio y fin y el trazo se guiara segun el id_puesto o el id_afiliado
+
+
+
+actividad
+- id_actividad PK int
+- titulo varchar()
+- fecha_creacion date
+- fecha_fin date // cuando se cumple la fecha, entonces se generan deudas segun el boolean de asistencia.asistio 
+- tipo varchar() // marcha, reunion, couta, etc
+- monto int// ya sea la multa o la couta a pagar por un evento
+- estado varchar() // programada, realizada o cerrada, (no hacer triggers para que no se cobren 2 deuda)cuando se cierra una actividad se generan deudas segun el boolean de asistencia.asistio
+- es_obligatoria boolean 
+ 
+asistencia
+- id_asiste PK int
+- id_actividad FK
+- id_afiliado FK
+- asistio boolean // se generan todos los registros con todos los afiliados teniendo valor NULL como actividad no evaluada, cuando se marque asistencia se pone true o false
+
+Deuda
+- id_deuda PK int
+- id_afiliado FK
+- id_actividad FK
+- monto int
+- estado varchar()// pendiente, pagado, parcial
+- fecha_generada date
+
+Pago
+- id_pago PK int
+- fecha_pago int
+- total_pago int
+- metodo_pago varchar()// no estoy seguro de esto
+
+detalle_pago
+- id_detalle PK int
+- id_pago FK
+- id_deuda FK
+- monto_pagado int
+
+
+rubro
+- id_rubro PK int
+- nombre rubro
+
+pertenece
+- id_rubro FK
+- id_afiliado FK
+
+historial de afiliados
+- id_Historial_afi PK int
+- id_afiliado FK
+- fecha date
+- accion varchar() // puede ser una desafilicion, afiliacion, suspension
+
+
+historial de usuarios
+- id_Historial_usu PK int
+- id_usuario FK
+- fecha date
+- accion varchar() // asignacion o desasignacion como un admin del sistema
