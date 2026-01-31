@@ -5,6 +5,10 @@ import { elDoradoTheme } from './theme';
 import LoginModule from './modules/Login/LoginModule';
 import { Button, Stack, Title, Text, Paper } from '@mantine/core';
 
+
+import AfiliadosModule from './modules/Afiliados/AfiliadosModule';
+
+
 // Importación obligatoria de estilos de Mantine
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -17,15 +21,19 @@ function RootContent() {
   }
 
   return (
-    <Paper p="xl" radius="md" withBorder shadow="md">
-      <Stack align="center">
-        <Title order={1} c="dorado.5">Bienvenido a ElDorado</Title>
-        <Text size="lg">Hola, <b>{user.nombre}</b>.</Text>
-        <Button variant="outline" color="dorado.5" onClick={logout}>
+    <div>
+        <div >
+          <h3>ElDorado</h3>
+          <p>{user.nombre}</p>
+          <p>{user.rol}</p>
+        </div>
+        <button onClick={logout}>
           Cerrar Sesión
-        </Button> 
-      </Stack>
-    </Paper>
+        </button>
+      <div>
+        <AfiliadosModule />
+      </div>
+    </div>
   );
 }
 
@@ -33,9 +41,7 @@ function App() {
   return (
     <MantineProvider theme={elDoradoTheme} defaultColorScheme="light">
       <AuthProvider>
-        {/* Las notificaciones deben estar FUERA del div de layout para flotar bien */}
         <Notifications position="top-right" zIndex={9999} />
-        
         <main className="root-container">
           <RootContent />
         </main>
