@@ -1,20 +1,20 @@
-  
+/* LISTA DE HOOKS  */
 import { useAfiliadosList } from './hooks/useAfiliadosList';
-import { useAfiliadosSelection } from './hooks/useAfiliadoSelection';
-
-
-
+import { useAfiliadoSelection } from './hooks/useAfiliadoSelection';
+/* LISTA DE COMPONENTES  */
 import { ListaAfiliados } from './components/ListaAfiliados';
-import { DetalleAfiliado } from './components/DetalleAfiliado';
-
+import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
+/* ESTILOS  DEL COMPONENTES TEMPORALES*/
 import './estilos.css';
+
 export default function AfiliadosModule() {
+  
   const {
     afiliadoSeleccionado,
     mostrarDetalle,
     verDetalle,
     cerrarDetalle
-  } = useAfiliadosSelection();
+  } = useAfiliadoSelection();
 
   const{
     afiliados,
@@ -45,7 +45,7 @@ export default function AfiliadosModule() {
       />
 
       {mostrarDetalle && (
-        <DetalleAfiliado 
+        <ModalDetalleAfiliado 
           afiliado={afiliadoSeleccionado}
           onClose={cerrarDetalle}
         />

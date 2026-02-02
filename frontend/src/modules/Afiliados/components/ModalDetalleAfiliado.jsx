@@ -1,4 +1,4 @@
-export function DetalleAfiliado({ afiliado, onClose }) {
+export function ModalDetalleAfiliado({ afiliado, onClose }) {
     if (!afiliado) return null;
   
     const formatDate = (dateString) => {

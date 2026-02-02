@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { afiliadosService } from '../services/afiliadosService';
 
-export function useAfiliadosSelection() {
+export function useAfiliadoSelection() {
     const [afiliadoSeleccionado, setAfiliadoSeleccionado] = useState(null);
     const [mostrarDetalle, setMostrarDetalle] = useState(false);
         
