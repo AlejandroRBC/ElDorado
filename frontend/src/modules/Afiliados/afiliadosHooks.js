@@ -1,16 +1,18 @@
+
 import { useState, useEffect } from 'react';
-import { afiliadosService } from '../services/afiliadosService';
+import { afiliadosService } from './afiliadosService';
 
 export function useAfiliados() {
   const [afiliados, setAfiliados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
   const [afiliadoSeleccionado, setAfiliadoSeleccionado] = useState(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   // Cargar afiliados al montar
-  useEffect(() => {cargarAfiliados();},[]);
+  useEffect(() => {
+    cargarAfiliados();
+  }, []);
 
   const cargarAfiliados = async () => {
     try {

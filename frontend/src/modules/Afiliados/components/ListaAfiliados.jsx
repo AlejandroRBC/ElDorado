@@ -1,13 +1,28 @@
+import { useAuth } from '../../../context/AuthContext';
 
-export function ListaAfiliados({ afiliados, loading, error, onVerDetalle }) {
-    if (loading) {return (<p>Cargando ...</p>);}
+export function ListaAfiliados({ afiliados, loading, error, onVerDetalle, onDesafiliar }) {
+    const { user } = useAuth();
+    
+    // Filtrar solo afiliados activos (estado = true)
+    const afiliadosActivos = afiliados.filter(afiliado => afiliado.estado === true);
+    
+    const esAdministrador = user?.rol === 'superadmin' || user?.rol === 'administrador';
+    
+    if (loading) {
+        return (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+                <p>Cargando afiliados...</p>
+            </div>
+        );
+    }
   
     if (error) {
       return (
-        <div >
+        <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>
           <p>Error: {error}</p>
           <button
             onClick={() => window.location.reload()}
+            className="refresh-btn"
           >
             Reintentar
           </button>
@@ -15,17 +30,17 @@ export function ListaAfiliados({ afiliados, loading, error, onVerDetalle }) {
       );
     }
   
-    if (afiliados.length === 0) {
+    if (afiliadosActivos.length === 0) {
       return (
-        <div>
-          <p>No hay afiliados registrados</p>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <p>No hay afiliados activos registrados</p>
         </div>
       );
     }
   
     return (
-      <div >
-        <table >
+      <div className="table-container">
+        <table className="afiliados-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -37,8 +52,8 @@ export function ListaAfiliados({ afiliados, loading, error, onVerDetalle }) {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody className={'afiliados-table'}>
-            {afiliados.map(afiliado => (
+          <tbody>
+            {afiliadosActivos.map(afiliado => (
               <tr key={afiliado.id_afiliado}>
                 <td>{afiliado.id_afiliado}</td>
                 <td>{`${afiliado.nombre} ${afiliado.paterno} ${afiliado.materno}`}</td>
@@ -51,12 +66,32 @@ export function ListaAfiliados({ afiliados, loading, error, onVerDetalle }) {
                   </span>
                 </td>
                 <td>
-                  <button 
-                    className="detalle-btn"
-                    onClick={() => onVerDetalle(afiliado.id_afiliado)}
-                  >
-                    Ver Detalles
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      className="detalle-btn"
+                      onClick={() => onVerDetalle(afiliado.id_afiliado)}
+                    >
+                      Ver Detalles
+                    </button>
+                    
+                    {esAdministrador && (
+                      <button 
+                        className="desafiliar-btn"
+                        onClick={() => onDesafiliar(afiliado.id_afiliado)}
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '13px'
+                        }}
+                      >
+                        Desafiliar
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

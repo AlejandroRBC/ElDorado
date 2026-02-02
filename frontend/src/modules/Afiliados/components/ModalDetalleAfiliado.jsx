@@ -10,7 +10,7 @@ export function ModalDetalleAfiliado({ afiliado, onClose }) {
         <div className="modal-container">
           <div className="modal-header">
             <h2>Detalles del Afiliado</h2>
-            <button className="close-btn" onClick={onClose}>×</button>
+            <button className="close-btn" onClick={onClose}>x</button>
           </div>
           
           <div className="modal-body">
