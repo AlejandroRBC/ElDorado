@@ -15,7 +15,8 @@ export const afiliadosMock = [
       estado: true,
       patentes: ["ABC-123"],
       puesto: "Fila A - Puesto 5",
-      rubro: "Verduras"
+      rubro: "Verduras",
+      url_perfil: "/img/user.jpg"
     },
     {
       id_afiliado: 2,
@@ -33,7 +34,8 @@ export const afiliadosMock = [
       estado: true,
       patentes: ["DEF-456"],
       puesto: "Fila B - Puesto 12",
-      rubro: "Artesanías"
+      rubro: "Artesanías",
+      url_perfil: "/img/user.jpg"
     },
     {
       id_afiliado: 3,
@@ -51,7 +53,8 @@ export const afiliadosMock = [
       estado: false,
       patentes: [],
       puesto: "Sin puesto asignado",
-      rubro: "Carnes"
+      rubro: "Carnes",
+      url_perfil: "/img/user.jpg"
     },
     {
       id_afiliado: 4,
@@ -69,7 +72,8 @@ export const afiliadosMock = [
       estado: true,
       patentes: ["GHI-789", "JKL-012"],
       puesto: "Fila C - Puesto 3",
-      rubro: "Flores"
+      rubro: "Flores",
+      url_perfil: "/img/user.jpg"
     },
     {
       id_afiliado: 5,
@@ -87,6 +91,7 @@ export const afiliadosMock = [
       estado: true,
       patentes: ["MNO-345"],
       puesto: "Fila D - Puesto 7",
-      rubro: "Electrodomésticos"
+      rubro: "Electrodomésticos",
+      url_perfil: "/img/user.jpg"
     }
   ];

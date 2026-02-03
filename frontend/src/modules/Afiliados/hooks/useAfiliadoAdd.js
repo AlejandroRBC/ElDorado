@@ -21,7 +21,8 @@ export function useAfiliadoAdd() {
             direccion: '',
             estado: true,
             puesto: '',
-            rubro: ''
+            rubro: '',
+            url_perfil: '/img/user.jpg'  // Campo agregado
         };
     }
 

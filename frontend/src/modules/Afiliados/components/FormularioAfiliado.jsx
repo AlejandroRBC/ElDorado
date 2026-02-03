@@ -3,11 +3,18 @@ export function FormularioAfiliado({
     onChange, 
     onSubmit, 
     loading, 
-    error 
+    error,
+    onCancel 
 }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (onSubmit) onSubmit(e);
+    };
+
+    const handleCancel = () => {
+        if (onCancel) {
+            onCancel();
+        }
     };
 
     return (
@@ -85,6 +92,17 @@ export function FormularioAfiliado({
                                 value={formData.materno}
                                 onChange={onChange}
                                 placeholder="Ej: Gómez"
+                            />
+                        </div>
+
+                        <div className="info-item">
+                            <label className="label">URL de Foto de Perfil</label>
+                            <input
+                                type="text"
+                                name="url_perfil"
+                                value={formData.url_perfil || ''}
+                                onChange={onChange}
+                                placeholder="Ej: /img/user.jpg"
                             />
                         </div>
 
@@ -194,11 +212,7 @@ export function FormularioAfiliado({
                 <button 
                     type="button" 
                     className="secondary-btn" 
-                    onClick={() => {
-                        if (window.confirm('¿Cancelar y perder los cambios?')) {
-                            // Esto será manejado por el componente padre
-                        }
-                    }}
+                    onClick={handleCancel}
                     disabled={loading}
                 >
                     Cancelar

@@ -17,16 +17,12 @@ export function AgregarAfiliado({ onClose, onAfiliadoAdded }) {
         const nuevoAfiliado = await handleSubmit(e);
         if (nuevoAfiliado && onAfiliadoAdded) {
             onAfiliadoAdded(nuevoAfiliado);
-            // Podríamos cerrar automáticamente después de un éxito
-            // setTimeout(() => onClose(), 2000);
         }
     };
 
     const handleCancel = () => {
-        if (!loading && window.confirm('¿Cancelar y perder los cambios?')) {
-            resetForm();
-            onClose();
-        }
+        resetForm();
+        onClose();
     };
 
     return (
@@ -50,6 +46,7 @@ export function AgregarAfiliado({ onClose, onAfiliadoAdded }) {
                     onSubmit={handleFormSubmit}
                     loading={loading}
                     error={error}
+                    onCancel={handleCancel}  
                 />
             </div>
         </div>

@@ -1,117 +1,82 @@
-// frontend/src/modules/Afiliados/afiliadosService.js
+import { afiliadosMock } from '../datosMock';
+  
+export const afiliadosService = {
+  getAfiliados: async () => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return {
+      success: true,
+      data: afiliadosMock
+    };
+  },
 
-// Datos mock basados en el modelo ER
-const afiliadosMock = [
-    {
-      id_afiliado: 1,
-      ci: "1234567",
-      extension: "LP",
-      nombre: "Juan",
-      paterno: "Pérez",
-      materno: "Gómez",
-      sexo: "M",
-      fecNac: "1980-05-15",
-      telefono: 70123456,
-      ocupacion: "Comerciante",
-      direccion: "Calle Principal #123",
-      fecha_afiliacion: "2023-01-10",
-      estado: true,
-      patentes: ["ABC-123"],
-      puesto: "Fila A - Puesto 5",
-      rubro: "Verduras"
-    },
-    {
-      id_afiliado: 2,
-      ci: "7654321",
-      extension: "SC",
-      nombre: "María",
-      paterno: "López",
-      materno: "Rodríguez",
-      sexo: "F",
-      fecNac: "1975-08-22",
-      telefono: 70765432,
-      ocupacion: "Artesana",
-      direccion: "Av. Comercio #456",
-      fecha_afiliacion: "2023-03-15",
-      estado: true,
-      patentes: ["DEF-456"],
-      puesto: "Fila B - Puesto 12",
-      rubro: "Artesanías"
-    },
-    {
-      id_afiliado: 3,
-      ci: "9876543",
-      extension: "CB",
-      nombre: "Carlos",
-      paterno: "Méndez",
-      materno: "Vargas",
-      sexo: "M",
-      fecNac: "1990-11-30",
-      telefono: 70897654,
-      ocupacion: "Carnicero",
-      direccion: "Mercado Central Local 8",
-      fecha_afiliacion: "2024-02-20",
-      estado: false,
-      patentes: [],
-      puesto: "Sin puesto asignado",
-      rubro: "Carnes"
-    },
-    {
-      id_afiliado: 4,
-      ci: "4567890",
-      extension: "LP",
-      nombre: "Ana",
-      paterno: "Castro",
-      materno: "Torrez",
-      sexo: "F",
-      fecNac: "1988-04-18",
-      telefono: 70456789,
-      ocupacion: "Florista",
-      direccion: "Plaza Flores #89",
-      fecha_afiliacion: "2022-11-05",
-      estado: true,
-      patentes: ["GHI-789", "JKL-012"],
-      puesto: "Fila C - Puesto 3",
-      rubro: "Flores"
-    },
-    {
-      id_afiliado: 5,
-      ci: "2345678",
-      extension: "SC",
-      nombre: "Roberto",
-      paterno: "Sánchez",
-      materno: "Fernández",
-      sexo: "M",
-      fecNac: "1972-12-10",
-      telefono: 70234567,
-      ocupacion: "Electrodomésticos",
-      direccion: "Av. Industrial #567",
-      fecha_afiliacion: "2021-07-22",
-      estado: true,
-      patentes: ["MNO-345"],
-      puesto: "Fila D - Puesto 7",
-      rubro: "Electrodomésticos"
-    }
-  ];
-  
-  export const afiliadosService = {
-    // Obtener lista de afiliados (simulado)
-    getAfiliados: async () => {
-      // Simulamos delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
+  getAfiliadoById: async (id) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const afiliado = afiliadosMock.find(a => a.id_afiliado === id);
+    return {
+      success: !!afiliado,
+      data: afiliado || null
+    };
+  },
+
+  createAfiliado: async (afiliadoData) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const newId = Math.max(...afiliadosMock.map(a => a.id_afiliado)) + 1;
+    
+    const nuevoAfiliado = {
+      id_afiliado: newId,
+      ci: afiliadoData.ci,
+      extension: afiliadoData.extension || "LP",
+      nombre: afiliadoData.nombre,
+      paterno: afiliadoData.paterno,
+      materno: afiliadoData.materno || "",
+      sexo: afiliadoData.sexo || "M",
+      fecNac: afiliadoData.fecNac || new Date().toISOString().split('T')[0],
+      telefono: afiliadoData.telefono || 0,
+      ocupacion: afiliadoData.ocupacion || "",
+      direccion: afiliadoData.direccion || "",
+      fecha_afiliacion: new Date().toISOString().split('T')[0],
+      estado: afiliadoData.estado !== undefined ? afiliadoData.estado : true,
+      patentes: afiliadoData.patentes || [],
+      puesto: afiliadoData.puesto || "Sin puesto asignado",
+      rubro: afiliadoData.rubro || "",
+      url_perfil: afiliadoData.url_perfil || "/img/user.jpg"  // Campo agregado
+    };
+    
+    afiliadosMock.push(nuevoAfiliado);
+    
+    return {
+      success: true,
+      data: nuevoAfiliado,
+      message: "Afiliado creado exitosamente"
+    };
+  },
+
+  // Cambiar estado a false = desafiliar
+  cambiarEstadoAfiliado: async (idAfiliado, nuevoEstado) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const afiliadoIndex = afiliadosMock.findIndex(a => a.id_afiliado === idAfiliado);
+    
+    if (afiliadoIndex === -1) {
       return {
-        success: true,
-        data: afiliadosMock
-      };
-    },
-  
-    // Obtener un afiliado por ID (simulado)
-    getAfiliadoById: async (id) => {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const afiliado = afiliadosMock.find(a => a.id_afiliado === id);
-      return {
-        success: !!afiliado,
-        data: afiliado || null
+        success: false,
+        message: "Afiliado no encontrado"
       };
     }
-  };
+    
+    // Actualizar solo el estado
+    afiliadosMock[afiliadoIndex] = {
+      ...afiliadosMock[afiliadoIndex],
+      estado: nuevoEstado
+    };
+    
+    const accion = nuevoEstado ? "afiliado" : "desafiliado";
+    
+    return {
+      success: true,
+      data: afiliadosMock[afiliadoIndex],
+      message: `Afiliado ${accion} exitosamente`
+    };
+  }
+};
