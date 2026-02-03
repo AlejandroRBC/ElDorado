@@ -3,7 +3,7 @@ import { Notifications } from '@mantine/notifications';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { elDoradoTheme } from './theme';
 import LoginModule from './modules/Login/LoginModule';
-import LayoutPrincipal from './components/LayoutPrincipal';
+import LayoutPrincipal from './modules/Navegacion/components/LayoutPrincipal';
 
 // Importación obligatoria de estilos de Mantine
 import '@mantine/core/styles.css';

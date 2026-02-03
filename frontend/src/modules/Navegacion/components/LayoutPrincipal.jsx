@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../../../context/AuthContext";
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
-import AfiliadosModule from '../modules/Afiliados/AfiliadosModule';
+import AfiliadosModule from '../../Afiliados/AfiliadosModule';
 import '../styles/layout.css';
 
 export default function LayoutPrincipal() {
