@@ -7,6 +7,7 @@ export default function Sidebar({
     setColapsada 
 }) {
     const menuItems = [
+        { id: 'home',icon : '🧊', label: 'home' },
         { id: 'afiliados',icon : '🧊', label: 'Afiliados' },
         { id: 'puestos', icon : '🧊',label: 'Puestos' },
         { id: 'patentes', icon : '🧊',label: 'Patentes' },
@@ -71,7 +72,7 @@ export default function Sidebar({
                 <div className="sidebar-footer">
                     <div className="version-info">
                         <span>Sistema v1.0.0</span>
-                        <span className="status-indicator active">● En línea</span>
+                        <span className="status-indicator active">En línea</span>
                     </div>
                 </div>
             )}

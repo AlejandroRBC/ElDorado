@@ -3,15 +3,22 @@ import { useAuth } from "../../../context/AuthContext";
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import AfiliadosModule from '../../Afiliados/AfiliadosModule';
+import HomeModule from '../../Home/HomeModule';
 import '../styles/layout.css';
 
 export default function LayoutPrincipal() {
     const { user, logout } = useAuth();
-    const [moduloActivo, setModuloActivo] = useState('afiliados');
+    const [moduloActivo, setModuloActivo] = useState('home');
     const [sidebarColapsada, setSidebarColapsada] = useState(false);
+
+    const handleNavigate = (moduloId) => {
+        setModuloActivo(moduloId);
+    };
 
     const renderModulo = () => {
         switch (moduloActivo) {
+            case 'home':
+                return <HomeModule onNavigate={handleNavigate} />;
             case 'afiliados':
                 return <AfiliadosModule />;
             case 'puestos':
