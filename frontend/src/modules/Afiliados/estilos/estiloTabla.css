@@ -1,0 +1,127 @@
+.refresh-btn {
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  background-color: #e9ecef;
+}
+
+.total-count {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Tabla de afiliados */
+.table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .afiliados-table {
+    width: 100%;
+    border-style: dotted;
+    
+  }
+  
+  .afiliados-table th {
+    background-color: #f8f9fa;
+    
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+  }
+  
+  .afiliados-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    color: #333;
+  }
+  
+  .afiliados-table tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Badge de estado */
+  .estado-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .estado-badge.activo {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .estado-badge.inactivo {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  /* Botón de detalles */
+  .detalle-btn {
+    padding: 6px 12px;
+    background-color: #d4af37;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+  }
+  
+  .detalle-btn:hover {
+    background-color: #b8941f;
+  }
+
+  /* no se por que no me agarra esto, en la lista de afiliados */
+  .desafiliar-btn{
+    padding: '6px 12px';
+    background-color: '#dc3545';
+    color: 'white';
+    border: 'none';
+    border-Radius: '4px';
+    cursor: 'pointer';
+    font-size: '13px';
+  }
+  
+
+  
+/* Estilos para el botón de cambiar vista */
+.toggle-vista-btn {
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-vista-btn:hover {
+  background-color: #5a6268;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}

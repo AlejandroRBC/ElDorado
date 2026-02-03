@@ -2,11 +2,18 @@ import { useState } from 'react';
 import { useAfiliadosList } from './hooks/useAfiliadosList';
 import { useAfiliadoSelection } from './hooks/useAfiliadoSelection';
 import { useCambiarEstadoAfiliado } from './hooks/useCambiarEstadoAfiliado';
+import { useFiltroAfiliados } from './hooks/useFiltroAfiliados';
 import { ListaAfiliados } from './components/ListaAfiliados';
 import { ListaCardsAfiliados } from './components/ListaCardsAfiliados';
+import { BarraBusqueda } from './components/BarraBusqueda';
 import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
 import { AgregarAfiliado } from './components/AgregarAfiliado';
 import './estilos.css';
+import './estilos/estiloTabla.css';
+import './estilos/estiloModalDetalle.css';
+import './estilos/estiloFormularioAgregar.css';
+import './estilos/estiloCardsAfiliado.css';
+import './estilos/estiloBarraBusqueda.css';
 
 export default function AfiliadosModule() {
   
@@ -28,6 +35,17 @@ export default function AfiliadosModule() {
     desafiliar,
     loading: loadingDesafiliar
   } = useCambiarEstadoAfiliado();
+
+  const {
+    terminoBusqueda,
+    setTerminoBusqueda,
+    campoFiltro,
+    setCampoFiltro,
+    afiliadosFiltrados,
+    limpiarBusqueda,
+    totalResultados,
+    totalAfiliados
+  } = useFiltroAfiliados(afiliados);
 
   const [mostrarAgregar, setMostrarAgregar] = useState(false);
   const [vistaActual, setVistaActual] = useState('tabla'); // 'tabla' o 'cards'
@@ -96,14 +114,28 @@ export default function AfiliadosModule() {
           </button>
           
           <span className="total-count">
-            Total activos: {afiliados.filter(a => a.estado).length} afiliados
+            {terminoBusqueda ? 
+              `${totalResultados} resultado${totalResultados !== 1 ? 's' : ''}` : 
+              `Total: ${afiliados.filter(a => a.estado).length} activos`
+            }
           </span>
         </div>
       </div>
 
+      {/* Barra de búsqueda */}
+      <BarraBusqueda
+        terminoBusqueda={terminoBusqueda}
+        setTerminoBusqueda={setTerminoBusqueda}
+        campoFiltro={campoFiltro}
+        setCampoFiltro={setCampoFiltro}
+        totalResultados={totalResultados}
+        totalAfiliados={totalAfiliados}
+        limpiarBusqueda={limpiarBusqueda}
+      />
+
       {vistaActual === 'tabla' ? (
         <ListaAfiliados 
-          afiliados={afiliados}
+          afiliados={afiliadosFiltrados}  
           loading={loading}
           error={error}
           onVerDetalle={verDetalle}
@@ -111,7 +143,7 @@ export default function AfiliadosModule() {
         />
       ) : (
         <ListaCardsAfiliados 
-          afiliados={afiliados}
+          afiliados={afiliadosFiltrados}  
           loading={loading}
           error={error}
           onVerDetalle={verDetalle}

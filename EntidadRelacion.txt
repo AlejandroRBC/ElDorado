@@ -1,40 +1,4 @@
-PEGASITO
-.pegasito
-En línea
 
-Este es el inicio del canal #proyecto-dorado. 
-Hut — 07/01/2026 19:33
-https://drive.google.com/drive/folders/1K4w3fheTBDgWf5oWRhWq3VZnUIBalndU?usp=drive_link
-Google Drive
-PEGASITO — 12/01/2026 12:12
-========================================================================================================================
-PEGASITO — 12/01/2026 12:22
-1era reunion con la junta de comerciantes
-PEGASITO — 12/01/2026 19:24
-https://drive.google.com/file/d/18jzuUa7peoTdn_-ef_fQkFL0HPiGXmx2/view?usp=sharing
-Google Docs
-Diagramas.drawio
-PEGASITO — 21/01/2026 1:24
-====================================
-documentos actualizados en el drive
-MER y Previa a ER
-Imagen
-afiliado
-- id_afiliado PK int
-- ci varchar()
-- extension varchar(3)
-- nombre varchar()
-- paterno varchar()
-
-borrador-MER ElDorado.txt
-3 KB
-PEGASITO — ayer a las 21:37
-https://github.com/AlejandroRBC/ElDorado.git
-GitHub
-GitHub - AlejandroRBC/ElDorado: Sistema de administracion de comerc...
-Sistema de administracion de comerciantes de la Asociacion de Comerciantes El Dorado - AlejandroRBC/ElDorado
-Sistema de administracion de comerciantes de la Asociacion de Comerciantes El Dorado - AlejandroRBC/ElDorado
-﻿
 afiliado
 - id_afiliado PK int
 - ci varchar()
@@ -49,6 +13,7 @@ afiliado
 - direccion varchar()
 - fecha_afiliacion date
 - estado boolean
+- urs_perfil varchar()
 
 usuario
 - id_usuario PK int

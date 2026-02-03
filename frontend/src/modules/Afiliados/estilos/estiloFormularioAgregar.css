@@ -1,0 +1,37 @@
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #f5c6cb;
+  }
+  
+  .info-item input,
+  .info-item select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .info-item input:focus,
+  .info-item select:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  }
+  
+  .info-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* Estilos para botón nuevo afiliado */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
