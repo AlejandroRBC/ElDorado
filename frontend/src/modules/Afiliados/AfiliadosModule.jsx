@@ -6,14 +6,17 @@ import { useFiltroAfiliados } from './hooks/useFiltroAfiliados';
 import { ListaAfiliados } from './components/ListaAfiliados';
 import { ListaCardsAfiliados } from './components/ListaCardsAfiliados';
 import { BarraBusqueda } from './components/BarraBusqueda';
-import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
 import { AgregarAfiliado } from './components/AgregarAfiliado';
+//import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
+import { DetalleAfiliadoExclusivo } from './components/DetalleAfiliadoExclusivo';
+
 import './estilos.css';
 import './estilos/estiloTabla.css';
 import './estilos/estiloModalDetalle.css';
 import './estilos/estiloFormularioAgregar.css';
 import './estilos/estiloCardsAfiliado.css';
 import './estilos/estiloBarraBusqueda.css';
+import './estilos/estiloDetalleExclusivo.css';
 
 export default function AfiliadosModule() {
   
@@ -152,7 +155,7 @@ export default function AfiliadosModule() {
       )}
 
       {mostrarDetalle && (
-        <ModalDetalleAfiliado 
+        <DetalleAfiliadoExclusivo  
           afiliado={afiliadoSeleccionado}
           onClose={cerrarDetalle}
         />

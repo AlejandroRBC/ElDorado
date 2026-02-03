@@ -1,0 +1,209 @@
+.topbar {
+    height: 70px;
+    background-color: var(--color-blanco);
+    border-bottom: 1px solid var(--color-borde);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    max-width: 600px;
+}
+
+.menu-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-blanco);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--color-texto);
+    transition: var(--transicion-rapida);
+}
+
+.menu-toggle-btn:hover {
+    background-color: var(--color-hover);
+    border-color: var(--color-dorado);
+    color: var(--color-dorado);
+}
+
+.search-container {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 40px 10px 16px;
+    border: 2px solid var(--color-borde);
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    transition: var(--transicion-rapida);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-dorado);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.search-input:disabled {
+    background-color: var(--color-fondo);
+    color: var(--color-texto-secundario);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-texto-secundario);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* Lado derecho de la topbar */
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: var(--transicion-rapida);
+}
+
+.user-info:hover {
+    background-color: var(--color-hover);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--color-dorado) 0%, var(--color-dorado-oscuro) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-texto);
+}
+
+.user-role {
+    font-size: 12px;
+    color: var(--color-texto-secundario);
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-blanco);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-texto);
+    transition: var(--transicion-rapida);
+}
+
+.logout-btn:hover {
+    background-color: var(--color-peligro);
+    color: white;
+    border-color: var(--color-peligro);
+}
+
+.logout-icon {
+    font-size: 16px;
+}
+
+.logout-text {
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .topbar {
+        height: 60px;
+        padding: 0 16px;
+    }
+    
+    .topbar-left {
+        gap: 12px;
+    }
+    
+    .menu-toggle-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .search-container {
+        max-width: 250px;
+    }
+    
+    .search-input {
+        font-size: 13px;
+        padding: 8px 36px 8px 12px;
+    }
+    
+    .user-details {
+        display: none;
+    }
+    
+    .logout-text {
+        display: none;
+    }
+    
+    .logout-btn {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-container {
+        max-width: 180px;
+    }
+    
+    .search-input::placeholder {
+        font-size: 12px;
+    }
+}

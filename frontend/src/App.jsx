@@ -3,11 +3,7 @@ import { Notifications } from '@mantine/notifications';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { elDoradoTheme } from './theme';
 import LoginModule from './modules/Login/LoginModule';
-import { Button, Stack, Title, Text, Paper } from '@mantine/core';
-
-
-import AfiliadosModule from './modules/Afiliados/AfiliadosModule';
-
+import LayoutPrincipal from './components/LayoutPrincipal';
 
 // Importación obligatoria de estilos de Mantine
 import '@mantine/core/styles.css';
@@ -20,21 +16,7 @@ function RootContent() {
     return <LoginModule />;
   }
 
-  return (
-    <div>
-        <div >
-          <h3>ElDorado</h3>
-          <p>{user.nombre}</p>
-          <p>{user.rol}</p>
-        </div>
-        <button onClick={logout}>
-          Cerrar Sesión
-        </button>
-      <div>
-        <AfiliadosModule />
-      </div>
-    </div>
-  );
+  return <LayoutPrincipal />;
 }
 
 function App() {
