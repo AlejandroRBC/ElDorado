@@ -32,10 +32,15 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
         return sexo === 'M' ? 'Masculino' : 'Femenino';
     };
 
+    const contarPatentesActivas = () => {
+        if (!afiliado.puestos_activos) return 0;
+        return afiliado.puestos_activos.filter(p => p.estado_patente === 'Activa').length;
+    };
+
     return (
         <div className="detalle-exclusivo-overlay">
             <div className="detalle-exclusivo-container">
-                {/* Header de la ventana */}
+                {/* Header */}
                 <div className="detalle-header">
                     <div className="detalle-header-left">
                         <h1>Detalles del Afiliado</h1>
@@ -53,7 +58,7 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
 
                 {/* Contenido principal */}
                 <div className="detalle-content">
-                    {/* Columna izquierda - Foto grande */}
+                    {/* Columna izquierda - Foto */}
                     <div className="detalle-left-column">
                         <div className="foto-perfil-container">
                             {afiliado.url_perfil && afiliado.url_perfil !== '/img/user.jpg' ? (
@@ -82,9 +87,24 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                                 <span className="ci-valor">{`${afiliado.ci} ${afiliado.extension}`}</span>
                             </div>
                         </div>
+
+                        {/* Resumen de puestos */}
+                        <div className="resumen-puestos">
+                            <h3>Resumen de Puestos</h3>
+                            <div className="resumen-stats">
+                                <div className="resumen-stat">
+                                    <div className="stat-number">{afiliado.puestos_activos?.length || 0}</div>
+                                    <div className="stat-label">Puestos Activos</div>
+                                </div>
+                                <div className="resumen-stat">
+                                    <div className="stat-number">{contarPatentesActivas()}</div>
+                                    <div className="stat-label">Patentes Activas</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Columna derecha - Información detallada */}
+                    {/* Columna derecha - Información */}
                     <div className="detalle-right-column">
                         <div className="seccion-datos">
                             <h3>Información Personal</h3>
@@ -101,9 +121,9 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                                     <span className="dato-valor">{getSexoTexto(afiliado.sexo)}</span>
                                 </div>
                                 
-                                <div className="dato-item">
-                                    <span className="dato-label">Edad:</span>
-                                    <span className="dato-valor">{calcularEdad(afiliado.fecNac)} años</span>
+                                <div className="dato-item full-width">
+                                    <span className="dato-label">Dirección:</span>
+                                    <span className="dato-valor">{afiliado.direccion || 'No registrada'}</span>
                                 </div>
                             </div>
                         </div>
@@ -121,54 +141,66 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                                     <span className="dato-valor">{afiliado.ocupacion || 'No registrada'}</span>
                                 </div>
                                 
-                                <div className="dato-item full-width">
-                                    <span className="dato-label">Dirección:</span>
-                                    <span className="dato-valor">{afiliado.direccion || 'No registrada'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="seccion-datos">
-                            <h3>Información de Afiliación</h3>
-                            <div className="datos-grid">
                                 <div className="dato-item">
                                     <span className="dato-label">Fecha de Afiliación:</span>
-                                    <span className="dato-valor">{formatDate(afiliado.fecha_afiliacion)}</span>
-                                </div>
-                                
-                                <div className="dato-item">
-                                    <span className="dato-label">Antigüedad:</span>
-                                    <span className="dato-valor">
-                                        {(() => {
-                                            const hoy = new Date();
-                                            const afiliacion = new Date(afiliado.fecha_afiliacion);
-                                            const años = hoy.getFullYear() - afiliacion.getFullYear();
-                                            return `${años} año${años !== 1 ? 's' : ''}`;
-                                        })()}
-                                    </span>
-                                </div>
-                                
-                                <div className="dato-item">
-                                    <span className="dato-label">Puesto:</span>
-                                    <span className="dato-valor destacado">{afiliado.puesto}</span>
-                                </div>
-                                
-                                <div className="dato-item">
-                                    <span className="dato-label">Rubro:</span>
-                                    <span className="dato-valor destacado">{afiliado.rubro}</span>
+                                    <span className="dato-valor destacado">{formatDate(afiliado.fecha_afiliacion)}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {afiliado.patentes && afiliado.patentes.length > 0 && (
+                        {/* Puestos activos */}
+                        {afiliado.puestos_activos && afiliado.puestos_activos.length > 0 && (
                             <div className="seccion-datos">
-                                <h3>Patentes Registradas</h3>
-                                <div className="patentes-container">
-                                    {afiliado.patentes.map((patente, index) => (
-                                        <span key={index} className="patente-badge-detalle">
-                                            {patente}
-                                        </span>
+                                <h3>Puestos Activos</h3>
+                                <div className="puestos-activos-grid">
+                                    {afiliado.puestos_activos.map((puesto, index) => (
+                                        <div key={index} className="puesto-activo-card">
+                                            <div className="puesto-header">
+                                                <span className="puesto-codigo">
+                                                    {`Puesto ${puesto.fila}-${puesto.cuadra}-${puesto.nroPuesto}`}
+                                                </span>
+                                                <span className="puesto-estado activo">● Activo</span>
+                                            </div>
+                                            
+                                            <div className="puesto-details">
+                                                <div className="puesto-dimension">
+                                                    <span className="dimension-label">Dimensiones:</span>
+                                                    <span className="dimension-value">{puesto.ancho}m × {puesto.largo}m</span>
+                                                </div>
+                                                
+                                                {puesto.patente ? (
+                                                    <div className="puesto-patente">
+                                                        <span className="patente-label">Patente:</span>
+                                                        <span className={`patente-value ${puesto.estado_patente === 'Activa' ? 'activa' : 'vencida'}`}>
+                                                            {puesto.patente}
+                                                            <span className="patente-estado"> ({puesto.estado_patente})</span>
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="puesto-patente">
+                                                        <span className="patente-label">Patente:</span>
+                                                        <span className="sin-patente">Sin patente asignada</span>
+                                                    </div>
+                                                )}
+                                                
+                                                <div className="puesto-asignacion">
+                                                    <span className="asignacion-label">Asignado desde:</span>
+                                                    <span className="asignacion-value">{formatDate(puesto.fecha_asignacion)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Sin puestos */}
+                        {(!afiliado.puestos_activos || afiliado.puestos_activos.length === 0) && (
+                            <div className="seccion-datos">
+                                <h3>Puestos</h3>
+                                <div className="sin-puestos-mensaje">
+                                    <div className="sin-puestos-icon">🏪</div>
+                                    <p>Este afiliado no tiene puestos activos asignados.</p>
                                 </div>
                             </div>
                         )}
@@ -183,25 +215,36 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                     >
                         Cerrar
                     </button>
-                    <button 
-                        className="btn-primario"
-                        onClick={() => {
-                            // Aquí se puede agregar funcionalidad de editar
-                            alert('Funcionalidad de editar en desarrollo');
-                        }}
-                    >
-                        ✏️ Editar Afiliado
-                    </button>
+                    <div className="acciones-derecha">
+                        <button 
+                            className="btn-secundario"
+                            onClick={() => {
+                                // Aquí se puede agregar funcionalidad de gestionar puestos
+                                alert('Funcionalidad de gestión de puestos en desarrollo');
+                            }}
+                        >
+                            🏪 Gestionar Puestos
+                        </button>
+                        <button 
+                            className="btn-primario"
+                            onClick={() => {
+                                // Aquí se puede agregar funcionalidad de editar
+                                alert('Funcionalidad de editar en desarrollo');
+                            }}
+                        >
+                            ✏️ Editar Afiliado
+                        </button>
+                    </div>
                 </div>
 
-                {/* Espacio reservado para historial */}
+                {/* Espacio reservado para historial completo */}
                 <div className="historial-placeholder">
-                    <h3>📋 Historial de Puestos</h3>
-                    <p>Esta sección mostrará el historial de puestos asignados al afiliado.</p>
+                    <h3>📋 Historial Completo de Puestos</h3>
+                    <p>Esta sección mostrará el historial completo de puestos asignados al afiliado, incluyendo los históricos.</p>
                     <div className="placeholder-content">
                         <div className="placeholder-item">
-                            <span>Puesto actual: {afiliado.puesto}</span>
-                            <span className="placeholder-date">Desde: {formatDate(afiliado.fecha_afiliacion)}</span>
+                            <span>Registros históricos: {afiliado.historial_puestos?.length || 0}</span>
+                            <span className="placeholder-date">Cargando historial...</span>
                         </div>
                         <div className="placeholder-note">
                             <em>El historial completo se cargará próximamente...</em>

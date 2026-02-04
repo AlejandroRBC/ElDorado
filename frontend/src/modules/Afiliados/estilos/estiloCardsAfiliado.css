@@ -1,6 +1,6 @@
 
 .cards-container-horizontal {
-    padding: 20px;
+    padding: 0px;
   }
   
   .cards-grid-horizontal {
@@ -11,13 +11,11 @@
   }
   
   .card-wrapper-horizontal {
-    background: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 15px;
     transition: transform 0.2s, box-shadow 0.2s;
     border: 1px solid #e9ecef;
-    height: 220px; /* Altura fija para mantener uniformidad */
+    height: 230px; 
     display: flex;
     flex-direction: column;
   }

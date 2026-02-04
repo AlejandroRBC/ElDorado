@@ -7,6 +7,11 @@ export function CardAfiliado({ afiliado }) {
         return `${inicialNombre}${inicialPaterno}`;
     };
 
+    const contarPatentes = () => {
+        if (!afiliado.puestos_activos || afiliado.puestos_activos.length === 0) return 0;
+        return afiliado.puestos_activos.filter(puesto => puesto.patente !== null).length;
+    };
+
     return (
         <div className="card-afiliado-horizontal">
             <div className="card-left">
@@ -39,15 +44,15 @@ export function CardAfiliado({ afiliado }) {
                         <strong>Tel:</strong> {afiliado.telefono}
                     </div>
                     <div className="info-line-vertical">
-                        <strong>Puesto:</strong> {afiliado.puesto}
+                        <strong>Puestos:</strong> {afiliado.puestos_activos?.length || 0}
                     </div>
                     <div className="info-line-vertical">
-                        <strong>Rubro:</strong> {afiliado.rubro}
+                        <strong>Patentes:</strong> {contarPatentes()}
                     </div>
                     
                     <div className="card-status">
-                        <span className={`estado-badge ${afiliado.estado ? 'activo' : 'inactivo'}`}>
-                            {afiliado.estado ? 'Activo' : 'Inactivo'}
+                        <span className="afiliado-desde">
+                            Desde: {new Date(afiliado.fecha_afiliacion).toLocaleDateString('es-ES')}
                         </span>
                     </div>
                 </div>

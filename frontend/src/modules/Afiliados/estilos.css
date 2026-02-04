@@ -9,3 +9,276 @@
   display: flex;
   height: 100vh;
 }
+/* Estilos existentes... */
+
+/* Nuevos estilos para la nueva estructura */
+
+/* Lista de puestos en tabla */
+.puestos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.puesto-info {
+  font-size: 12px;
+}
+
+.puesto-codigo {
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.sin-puesto {
+  color: #999;
+  font-style: italic;
+}
+
+/* Lista de patentes en tabla */
+.patentes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patente-item {
+  display: flex;
+  gap: 4px;
+}
+
+.patente-badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.patente-badge.activa {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.patente-badge.vencida {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.sin-patente {
+  color: #999;
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* Para las cards */
+.puestos-info-card {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.puestos-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.puestos-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.puesto-tag {
+  background-color: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.more-puestos {
+  color: #666;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.sin-puestos-message {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 8px;
+}
+
+/* En el detalle exclusivo */
+.resumen-puestos {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.resumen-puestos h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #495057;
+}
+
+.resumen-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.resumen-stat {
+  text-align: center;
+}
+
+.resumen-stat .stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.resumen-stat .stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.puestos-activos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.puesto-activo-card {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s;
+}
+
+.puesto-activo-card:hover {
+  border-color: #d4af37;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.1);
+}
+
+.puesto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.puesto-codigo {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.puesto-estado {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.puesto-estado.activo {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.puesto-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.puesto-dimension,
+.puesto-patente,
+.puesto-asignacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dimension-label,
+.patente-label,
+.asignacion-label {
+  font-size: 11px;
+  color: #666;
+  min-width: 80px;
+}
+
+.dimension-value,
+.patente-value,
+.asignacion-value {
+  font-size: 13px;
+  color: #333;
+}
+
+.patente-value.activa {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.patente-value.vencida {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.sin-patente {
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.patente-estado {
+  font-size: 11px;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+.sin-puestos-mensaje {
+  text-align: center;
+  padding: 30px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #dee2e6;
+}
+
+.sin-puestos-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.sin-puestos-mensaje p {
+  color: #666;
+  margin: 0;
+}
+
+.acciones-derecha {
+  display: flex;
+  gap: 10px;
+}
+
+/* Para card afiliado */
+.afiliado-desde {
+  font-size: 11px;
+  color: #666;
+  margin-left: 10px;
+}

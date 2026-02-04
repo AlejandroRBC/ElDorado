@@ -4,9 +4,7 @@ import { CardAfiliado } from './CardAfiliado';
 export function ListaCardsAfiliados({ afiliados, loading, error, onVerDetalle, onDesafiliar }) {
     const { user } = useAuth();
     
-    // Filtrar solo afiliados activos
     const afiliadosActivos = afiliados.filter(afiliado => afiliado.estado === true);
-    
     const esAdministrador = user?.rol === 'superadmin' || user?.rol === 'administrador';
     
     if (loading) {
@@ -52,6 +50,7 @@ export function ListaCardsAfiliados({ afiliados, loading, error, onVerDetalle, o
                             <CardAfiliado afiliado={afiliado} />
                         </div>
                         
+                       
                         <div className="card-actions-horizontal">
                             <button 
                                 className="detalle-btn"
