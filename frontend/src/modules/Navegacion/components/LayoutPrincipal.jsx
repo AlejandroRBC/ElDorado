@@ -5,6 +5,7 @@ import TopBar from './TopBar';
 import AfiliadosModule from '../../Afiliados/AfiliadosModule';
 import HomeModule from '../../Home/HomeModule';
 import '../styles/layout.css';
+import GestionPatentesPuestosModule from '../../GestionPatentesPuestos/GEstionPatentesPuestosModule';
 
 export default function LayoutPrincipal() {
     const { user, logout } = useAuth();
@@ -21,10 +22,8 @@ export default function LayoutPrincipal() {
                 return <HomeModule onNavigate={handleNavigate} />;
             case 'afiliados':
                 return <AfiliadosModule />;
-            case 'puestos':
-                return <ModuloPlaceholder titulo="Puestos" />;
-            case 'patentes':
-                return <ModuloPlaceholder titulo="Patentes" />;
+            case 'puestosypatentes':
+                return <GestionPatentesPuestosModule/>;
             case 'actividades':
                 return <ModuloPlaceholder titulo="Actividades" />;
             case 'deudas':

@@ -9,8 +9,7 @@ export default function Sidebar({
     const menuItems = [
         { id: 'home',icon : '🧊', label: 'home' },
         { id: 'afiliados',icon : '🧊', label: 'Afiliados' },
-        { id: 'puestos', icon : '🧊',label: 'Puestos' },
-        { id: 'patentes', icon : '🧊',label: 'Patentes' },
+        { id: 'puestosypatentes', icon : '🧊',label: 'Puestos y Patentes' },
         { id: 'actividades', icon : '🧊',label: 'Actividades' },
         { id: 'deudas', icon : '🧊',label: 'Deudas' },
         { id: 'reportes', icon : '🧊',label: 'Reportes' },
