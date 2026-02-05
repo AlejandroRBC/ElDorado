@@ -9,6 +9,7 @@ import { BarraBusqueda } from './components/BarraBusqueda';
 import { AgregarAfiliado } from './components/AgregarAfiliado';
 //import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
 import { DetalleAfiliadoExclusivo } from './components/DetalleAfiliadoExclusivo';
+import ModuleHeader from '../Navegacion/components/ModuleHeader';
 
 import './estilos.css';
 import './estilos/estiloTabla.css';
@@ -80,9 +81,14 @@ export default function AfiliadosModule() {
   };
 
   return (
+
+
+    
     <div className="afiliados-module">
+
+      <ModuleHeader title="Gestion de Afiliados" />
+      
       <div className="module-header">
-        <h1>Gestión de Afiliados</h1>
         <div className="header-actions">
           <button 
             className="detalle-btn" 

@@ -1,12 +1,14 @@
 import { MantineProvider } from '@mantine/core';
+import { BrowserRouter } from 'react-router-dom';
 import { Notifications } from '@mantine/notifications';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { elDoradoTheme } from './theme';
-import LoginModule from './modules/Login/LoginModule';
-import LayoutPrincipal from './modules/Navegacion/components/LayoutPrincipal';
+import NavegacionModule from './modules/Navegacion/NavegacionModule';
+import { theme } from './theme';
+import './App.css';
 
 // Importación obligatoria de estilos de Mantine
-import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
+
 import '@mantine/notifications/styles.css';
 
 function RootContent() {
@@ -21,13 +23,13 @@ function RootContent() {
 
 function App() {
   return (
-    <MantineProvider theme={elDoradoTheme} defaultColorScheme="light">
-      <AuthProvider>
-        <Notifications position="top-right" zIndex={9999} />
-        <main className="root-container">
-          <RootContent />
-        </main>
-      </AuthProvider>
+    <MantineProvider theme={theme}>
+      <Notifications />
+      <BrowserRouter>
+        <AuthProvider>
+          <NavegacionModule />
+        </AuthProvider>
+      </BrowserRouter>
     </MantineProvider>
   );
 }
