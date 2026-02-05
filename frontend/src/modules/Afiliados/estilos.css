@@ -282,3 +282,250 @@
   color: #666;
   margin-left: 10px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos existentes... */
+
+/* Estilos para foto de perfil en formulario */
+.perfil-foto-container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.foto-preview {
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  background-color: #f8f9fa;
+}
+
+.foto-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-foto-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(220, 53, 69, 0.9);
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.remove-foto-btn:hover {
+  background-color: rgba(220, 53, 69, 1);
+  transform: scale(1.1);
+}
+
+.foto-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.placeholder-text {
+  font-size: 12px;
+  text-align: center;
+}
+
+.foto-upload {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--color-dorado) 0%, var(--color-dorado-oscuro) 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, var(--color-dorado-oscuro) 0%, #9c7c16 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-info {
+  margin-top: 10px;
+}
+
+.upload-note {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 5px 0;
+}
+
+.current-photo {
+  font-size: 12px;
+  color: #495057;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Estilos para mostrar imágenes de perfil en diferentes componentes */
+.profile-image-large,
+.foto-perfil-grande,
+.profile-image {
+  object-fit: cover;
+  background-color: #f8f9fa;
+}
+
+/* Manejo de errores en imágenes */
+img[src*="perfil"] {
+  background-color: #f8f9fa;
+  background-image: url('/assets/perfiles/sinPerfil.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Responsive para foto de perfil */
+@media (max-width: 768px) {
+  .perfil-foto-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+  }
+  
+  .foto-preview {
+      width: 120px;
+      height: 120px;
+  }
+  
+  .foto-upload {
+      width: 100%;
+      text-align: center;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos existentes... */
+
+/* Mejorar placeholder de foto */
+.foto-placeholder .placeholder-default {
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Asegurar que las imágenes se muestren correctamente en todos los componentes */
+.profile-image-large,
+.foto-perfil-grande,
+.profile-image,
+.foto-preview-img {
+  object-fit: cover;
+  background-color: #f8f9fa;
+  background-image: url('/assets/perfiles/sinPerfil.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Estilos específicos para cada componente */
+/* Para el formulario */
+.foto-preview-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* Para las cards */
+.profile-image-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+}
+
+/* Para el detalle exclusivo */
+.foto-perfil-grande {
+  width: 250px;
+  height: 250px;
+  border-radius: 12px;
+}
+
+/* Para las tablas (si decides agregar miniaturas) */
+.thumbnail-perfil {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Manejo de fallback de imágenes */
+img[onerror] + .profile-iniciales-large,
+img[onerror] + .iniciales-grandes {
+  display: flex !important;
+}

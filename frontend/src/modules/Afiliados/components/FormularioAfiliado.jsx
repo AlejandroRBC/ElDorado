@@ -1,30 +1,84 @@
 export function FormularioAfiliado({ 
     formData, 
     onChange, 
+    onImageChange,
+    onRemoveImage,
     onSubmit, 
     loading, 
     error,
-    onCancel 
+    onCancel
 }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (onSubmit) onSubmit(e);
     };
+    
+    // Determinar si mostrar preview personalizado o placeholder
+    const mostrarPreviewPersonalizado = formData.url_perfil && 
+        formData.url_perfil.startsWith('data:image') && 
+        !formData.url_perfil.includes('sinPerfil.png');
 
-    const handleCancel = () => {
-        if (onCancel) {
-            onCancel();
-        }
-    };
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-                {error && (
-                    <div className="error-message" style={{ color: 'red', marginBottom: '15px' }}>
-                        {error}
+        <div className="modal-body">
+            {error && (
+                <div className="error-message" style={{ color: 'red', marginBottom: '15px' }}>
+                    {error}
+                </div>
+            )}
+
+            {/* Sección de foto de perfil */}
+            <div className="info-section">
+                <h3>Foto de Perfil</h3>
+                <div className="perfil-foto-container">
+                    <div className="foto-preview">
+                        {mostrarPreviewPersonalizado ? (
+                            <>
+                                <img 
+                                    src={formData.url_perfil} 
+                                    alt="Vista previa" 
+                                    className="foto-preview-img"
+                                />
+                                <button 
+                                    type="button"
+                                    className="remove-foto-btn"
+                                    onClick={onRemoveImage}
+                                >
+                                    ✕
+                                </button>
+                            </>
+                        ) : (
+                            <div className="foto-placeholder">
+                                <div className="placeholder-icon">👤</div>
+                                <span className="placeholder-text">Sin foto seleccionada</span>
+                                <span className="placeholder-default">(Usará sinPerfil.png)</span>
+                            </div>
+                        )}
                     </div>
-                )}
+                    
+                    <div className="foto-upload">
+                        <label className="upload-btn">
+                            <span>📷 Seleccionar Foto</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={onImageChange}
+                                className="file-input"
+                                disabled={loading}
+                            />
+                        </label>
+                        <div className="upload-info">
+                            <p className="upload-note">
+                                Formatos: JPG, PNG, GIF (max. 5MB)
+                            </p>
+                            <p className="upload-note">
+                                Si no seleccionas foto, se usará la imagen por defecto
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
                 <div className="info-section">
                     <h3>Datos Personales</h3>
@@ -96,17 +150,6 @@ export function FormularioAfiliado({
                         </div>
 
                         <div className="info-item">
-                            <label className="label">URL de Foto de Perfil</label>
-                            <input
-                                type="text"
-                                name="url_perfil"
-                                value={formData.url_perfil || ''}
-                                onChange={onChange}
-                                placeholder="Ej: /img/user.jpg"
-                            />
-                        </div>
-
-                        <div className="info-item">
                             <label className="label">Sexo</label>
                             <select
                                 name="sexo"
@@ -172,28 +215,6 @@ export function FormularioAfiliado({
                     <h3>Información de Afiliación</h3>
                     <div className="info-grid">
                         <div className="info-item">
-                            <label className="label">Puesto Asignado</label>
-                            <input
-                                type="text"
-                                name="puesto"
-                                value={formData.puesto}
-                                onChange={onChange}
-                                placeholder="Ej: Fila A - Puesto 5"
-                            />
-                        </div>
-
-                        <div className="info-item">
-                            <label className="label">Rubro</label>
-                            <input
-                                type="text"
-                                name="rubro"
-                                value={formData.rubro}
-                                onChange={onChange}
-                                placeholder="Ej: Verduras"
-                            />
-                        </div>
-
-                        <div className="info-item">
                             <label className="label">
                                 <input
                                     type="checkbox"
@@ -212,7 +233,7 @@ export function FormularioAfiliado({
                 <button 
                     type="button" 
                     className="secondary-btn" 
-                    onClick={handleCancel}
+                    onClick={onCancel}
                     disabled={loading}
                 >
                     Cancelar

@@ -1,12 +1,6 @@
 export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
     if (!afiliado) return null;
-
-    const getIniciales = () => {
-        const inicialNombre = afiliado.nombre ? afiliado.nombre.charAt(0).toUpperCase() : '';
-        const inicialPaterno = afiliado.paterno ? afiliado.paterno.charAt(0).toUpperCase() : '';
-        return `${inicialNombre}${inicialPaterno}`;
-    };
-
+    
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
@@ -52,7 +46,7 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                         </div>
                     </div>
                     <button className="close-btn-exclusivo" onClick={onClose}>
-                        ×
+                        x
                     </button>
                 </div>
 
@@ -61,21 +55,15 @@ export function DetalleAfiliadoExclusivo({ afiliado, onClose }) {
                     {/* Columna izquierda - Foto */}
                     <div className="detalle-left-column">
                         <div className="foto-perfil-container">
-                            {afiliado.url_perfil && afiliado.url_perfil !== '/img/user.jpg' ? (
-                                <img 
-                                    src={afiliado.url_perfil} 
-                                    alt={`${afiliado.nombre} ${afiliado.paterno}`}
-                                    className="foto-perfil-grande"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.parentElement.querySelector('.iniciales-grandes').style.display = 'flex';
-                                    }}
-                                />
-                            ) : null}
-                            
-                            <div className="iniciales-grandes">
-                                {getIniciales()}
-                            </div>
+                        <img 
+                            src={afiliado.url_perfil} 
+                            alt={`${afiliado.nombre} ${afiliado.paterno}`}
+                            className="foto-perfil-grande"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.querySelector('.iniciales-grandes').style.display = 'flex';
+                            }}
+                        />
                         </div>
                         
                         <div className="info-basica">

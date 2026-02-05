@@ -12,8 +12,17 @@ afiliado
 - ocupacion varchar()
 - direccion varchar()
 - fecha_afiliacion date
-- estado boolean
+- estado boolean 
 - urs_perfil varchar()
+
+rubro
+- id_rubro PK int
+- nombre rubro
+
+pertenece
+- id_pertenece PK
+- id_rubro FK
+- id_puesto FK
 
 usuario
 - id_usuario PK int
@@ -23,11 +32,8 @@ usuario
 - fecha_creacion date
 - estado boolean
 
-patente
-- id_patente PK int
-- id_puesto FK UNIQUE
-- codigo_alcaldia int
-- estado
+
+
 
 puesto
 - id_puesto PK int
@@ -36,14 +42,18 @@ puesto
 - nroPuesto int
 - ancho int
 - largo int
+- tiene_patente boolean
 
 tenencia_puesto
 - id_tenencia PK int
 - id_afiliado fk
 - id_puesto fk
+- id_rubro FK
 - fecha_ini date
 - fecha_fin date // mientras este pertenezca a un afiliado este valor queda como NULL, cuando se traspasa se graba el dia del traspaso
 // para sacar el historial comparamos las fechas de inicio y fin y el trazo se guiara segun el id_puesto o el id_afiliado
+- RAZON varchar() // la razon muestra si es por un TRASPASO de puestos entre afiliados, despojo es cuando la asociaon le QUITA el puesto a un afiliado, LIBERADO es cuando un afiliado le cede el puesto a la asociacion, y NUEVITO es cuando un afiliado vuelve AFILIARSE, o cuando un afiliado compra un puesto LIBERADO o DESPOJADO
+- swtich boolean es para no mostrar los registros que ya no son necesarios, pues un 
 
 
 
@@ -84,13 +94,7 @@ detalle_pago
 - monto_pagado int
 
 
-rubro
-- id_rubro PK int
-- nombre rubro
 
-pertenece
-- id_rubro FK
-- id_afiliado FK
 
 historial de afiliados
 - id_Historial_afi PK int

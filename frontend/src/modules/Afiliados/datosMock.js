@@ -81,7 +81,7 @@ export const afiliadosMock = [
         direccion: "Calle Principal #123",
         fecha_afiliacion: "2023-01-10",
         estado: true,
-        url_perfil: "/img/user.jpg",
+        url_perfil: "/assets/perfiles/sinPerfil.png",
         puestos_activos: obtenerPuestosActivosAfiliado(1),
         historial_puestos: obtenerHistorialPuestosAfiliado(1)
     },
@@ -99,7 +99,7 @@ export const afiliadosMock = [
         direccion: "Av. Comercio #456",
         fecha_afiliacion: "2023-03-15",
         estado: true,
-        url_perfil: "/img/user.jpg",
+        url_perfil: "/assets/perfiles/9251135Bernas.jpg",
         puestos_activos: obtenerPuestosActivosAfiliado(2),
         historial_puestos: obtenerHistorialPuestosAfiliado(2)
     },
@@ -117,7 +117,7 @@ export const afiliadosMock = [
         direccion: "Mercado Central Local 8",
         fecha_afiliacion: "2024-02-20",
         estado: false,
-        url_perfil: "/img/user.jpg",
+        url_perfil: "/assets/perfiles/sinPerfil.png",
         puestos_activos: obtenerPuestosActivosAfiliado(3),
         historial_puestos: obtenerHistorialPuestosAfiliado(3)
     },
@@ -135,7 +135,7 @@ export const afiliadosMock = [
         direccion: "Plaza Flores #89",
         fecha_afiliacion: "2022-11-05",
         estado: true,
-        url_perfil: "/img/user.jpg",
+        url_perfil: "/assets/perfiles/9251135Castro.jpg",
         puestos_activos: obtenerPuestosActivosAfiliado(4),
         historial_puestos: obtenerHistorialPuestosAfiliado(4)
     },
@@ -153,7 +153,7 @@ export const afiliadosMock = [
         direccion: "Av. Industrial #567",
         fecha_afiliacion: "2021-07-22",
         estado: true,
-        url_perfil: "/img/user.jpg",
+        url_perfil: "/assets/perfiles/sinPerfil.png",
         puestos_activos: obtenerPuestosActivosAfiliado(5),
         historial_puestos: obtenerHistorialPuestosAfiliado(5)
     }

@@ -1,14 +1,14 @@
 import { useAfiliadoAdd } from '../hooks/useAfiliadoAdd';
 import { FormularioAfiliado } from './FormularioAfiliado';
 
-
 export function AgregarAfiliado({ onClose, onAfiliadoAdded }) {
     const { 
         formData, 
         loading, 
         error, 
-        
         handleChange, 
+        handleImageChange,
+        handleRemoveImage,
         handleSubmit,
         resetForm 
     } = useAfiliadoAdd();
@@ -39,14 +39,15 @@ export function AgregarAfiliado({ onClose, onAfiliadoAdded }) {
                     </button>
                 </div>
                 
-                
                 <FormularioAfiliado 
                     formData={formData}
                     onChange={handleChange}
+                    onImageChange={handleImageChange}
+                    onRemoveImage={handleRemoveImage}
                     onSubmit={handleFormSubmit}
                     loading={loading}
                     error={error}
-                    onCancel={handleCancel}  
+                    onCancel={handleCancel}
                 />
             </div>
         </div>

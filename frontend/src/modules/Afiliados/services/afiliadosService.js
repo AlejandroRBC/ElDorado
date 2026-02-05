@@ -77,5 +77,30 @@ export const afiliadosService = {
       data: afiliadosMock[afiliadoIndex],
       message: `Afiliado ${accion} exitosamente`
     };
+  },
+ 
+updateAfiliado: async (id, afiliadoData) => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const afiliadoIndex = afiliadosMock.findIndex(a => a.id_afiliado === id);
+  
+  if (afiliadoIndex === -1) {
+      return {
+          success: false,
+          message: "Afiliado no encontrado"
+      };
   }
+  
+  // Actualizar afiliado
+  afiliadosMock[afiliadoIndex] = {
+      ...afiliadosMock[afiliadoIndex],
+      ...afiliadoData
+  };
+  
+  return {
+      success: true,
+      data: afiliadosMock[afiliadoIndex],
+      message: "Afiliado actualizado exitosamente"
+  };
+}
 };
