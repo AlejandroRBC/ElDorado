@@ -1,80 +1,117 @@
-import '../styles/sidebar.css';
+import { NavLink } from 'react-router-dom';
+import { Stack, Text, Group } from '@mantine/core';
+import { 
+  IconHome,
+  IconUsers,
+  IconLicense,
+} from '@tabler/icons-react';
 
-export default function Sidebar({ 
-    moduloActivo, 
-    setModuloActivo, 
-    colapsada, 
-    setColapsada 
-}) {
-    const menuItems = [
-        { id: 'home',icon : '🧊', label: 'home' },
-        { id: 'afiliados',icon : '🧊', label: 'Afiliados' },
-        { id: 'puestosypatentes', icon : '🧊',label: 'Puestos y Patentes' },
-        { id: 'actividades', icon : '🧊',label: 'Actividades' },
-        { id: 'deudas', icon : '🧊',label: 'Deudas' },
-        { id: 'reportes', icon : '🧊',label: 'Reportes' },
-        { id: 'configuracion', icon : '🧊',label: 'Configuración' },
-    ];
+// Configuración de módulos
+const modules = [
+  {
+    name: 'Inicio',
+    path: '/inicio',
+    icon: IconHome,
+    component: 'InicioModule',
+  },
+  {
+    name: 'Afiliados',
+    path: '/afiliados',
+    icon: IconUsers,
+    component: 'AfiliacionModule',
+  },
+  {
+    name: 'Patentes',
+    path: '/patentes',
+    icon: IconLicense,
+    component: 'PatentesModule',
+  },
+];
 
-    const handleItemClick = (moduloId) => {
-        setModuloActivo(moduloId);
-        if (window.innerWidth < 768) {
-            setColapsada(true);
-        }
-    };
+const SidebarItem = ({ module, isActive, onMouseEnter, onMouseLeave }) => {
+  const backgroundColor = isActive ? '#edbe3c' : 'transparent';
+  const iconColor = isActive ? '#0f0f0f' : '#edbe3c';
+  const textColor = isActive ? '#0f0f0f' : '#edbe3c';
 
-    return (
-        <aside className={`sidebar ${colapsada ? 'colapsada' : ''}`}>
-            <div className="sidebar-header">
-                <div className="logo-container">
-                    <div className="logo-icon">
-                        {/* aqui va uan img del logo XD  */}
-                    </div>
-                    {!colapsada && (
-                        <div className="logo-text">
-                            <h2>El Dorado</h2>
-                        </div>
-                    )}
-                </div>
-                
-                <button 
-                    className="toggle-sidebar-btn"
-                    onClick={() => setColapsada(!colapsada)}
-                    title={colapsada ? "Expandir sidebar" : "Colapsar sidebar"}
-                >
-                    {colapsada ? '→' : '←'}
-                </button>
-            </div>
+  return (
+    <div
+      style={{
+        backgroundColor,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <Group p="md">
+        <module.icon
+          size={24}
+          style={{
+            color: iconColor,
+            transition: 'color 0.2s ease',
+          }}
+        />
+        <Text
+          style={{
+            color: textColor,
+            fontWeight: isActive ? 600 : 500,
+            transition: 'color 0.2s ease',
+          }}
+        >
+          {module.name}
+        </Text>
+      </Group>
+    </div>
+  );
+};
 
-            <nav className="sidebar-nav">
-                <ul className="nav-menu">
-                    {menuItems.map((item) => (
-                        <li key={item.id}>
-                            <button
-                                className={`nav-item ${moduloActivo === item.id ? 'active' : ''}`}
-                                onClick={() => handleItemClick(item.id)}
-                                title={colapsada ? item.label : ''}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                {!colapsada && (
-                                    <>
-                                        <span className="nav-label">{item.label}</span>
-                                    </>
-                                )}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
-
-            {!colapsada && (
-                <div className="sidebar-footer">
-                    <div className="version-info">
-                        <span>Sistema v1.0.0</span>
-                        <span className="status-indicator active">En línea</span>
-                    </div>
-                </div>
+const Sidebar = () => {
+  return (
+    <Stack
+      gap={0}
+      style={{
+        backgroundColor: '#0f0f0f',
+        width: '200px',
+        position: 'fixed',
+        left: 0,
+        top: '20%',
+        
+        overflowY: 'auto',
+      }}
+    >
+      {modules.map((module) => (
+        <div key={module.path}>
+          <NavLink
+            to={module.path}
+            style={{ textDecoration: 'none' }}
+          >
+            {({ isActive }) => (
+              <SidebarItem 
+                module={module} 
+                isActive={isActive}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#edbe3c';
+                  const icon = e.currentTarget.querySelector('svg');
+                  const text = e.currentTarget.querySelector('p');
+                  if (icon) icon.style.color = '#0f0f0f';
+                  if (text) text.style.color = '#0f0f0f';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    const icon = e.currentTarget.querySelector('svg');
+                    const text = e.currentTarget.querySelector('p');
+                    if (icon) icon.style.color = '#edbe3c';
+                    if (text) text.style.color = '#edbe3c';
+                  }
+                }}
+              />
             )}
-        </aside>
-    );
-}
+          </NavLink>
+        </div>
+      ))}
+    </Stack>
+  );
+};
+
+export default Sidebar;

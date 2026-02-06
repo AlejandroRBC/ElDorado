@@ -1,172 +1,226 @@
+import { Text, Paper, Container, TextInput, Button, Group, Stack, Title, Switch } from '@mantine/core';
+import ModuleHeader from '../Navegacion/components/ModuleHeader';
+import { IconSearch, IconPlus, IconFileExport, IconLayoutGrid, IconTable } from '@tabler/icons-react';
 import { useState } from 'react';
-import { useAfiliadosList } from './hooks/useAfiliadosList';
-import { useAfiliadoSelection } from './hooks/useAfiliadoSelection';
-import { useCambiarEstadoAfiliado } from './hooks/useCambiarEstadoAfiliado';
-import { useFiltroAfiliados } from './hooks/useFiltroAfiliados';
-import { ListaAfiliados } from './components/ListaAfiliados';
-import { ListaCardsAfiliados } from './components/ListaCardsAfiliados';
-import { BarraBusqueda } from './components/BarraBusqueda';
-import { AgregarAfiliado } from './components/AgregarAfiliado';
-//import { ModalDetalleAfiliado } from './components/ModalDetalleAfiliado';
-import { DetalleAfiliadoExclusivo } from './components/DetalleAfiliadoExclusivo';
+import ListaCards from './components/ListaCards';
+import TablaAfiliados from './components/TablaAfiliados';
 
-import './estilos.css';
-import './estilos/estiloTabla.css';
-import './estilos/estiloModalDetalle.css';
-import './estilos/estiloFormularioAgregar.css';
-import './estilos/estiloCardsAfiliado.css';
-import './estilos/estiloBarraBusqueda.css';
-import './estilos/estiloDetalleExclusivo.css';
-
-export default function AfiliadosModule() {
-  
-  const {
-    afiliadoSeleccionado,
-    mostrarDetalle,
-    verDetalle,
-    cerrarDetalle
-  } = useAfiliadoSelection();
-
-  const {
-    afiliados,
-    loading,
-    error,
-    recargar
-  } = useAfiliadosList();
-
-  const {
-    desafiliar,
-    loading: loadingDesafiliar
-  } = useCambiarEstadoAfiliado();
-
-  const {
-    terminoBusqueda,
-    setTerminoBusqueda,
-    campoFiltro,
-    setCampoFiltro,
-    afiliadosFiltrados,
-    limpiarBusqueda,
-    totalResultados,
-    totalAfiliados
-  } = useFiltroAfiliados(afiliados);
-
-  const [mostrarAgregar, setMostrarAgregar] = useState(false);
-  const [vistaActual, setVistaActual] = useState('tabla'); // 'tabla' o 'cards'
-
-  const handleAfiliadoAdded = (nuevoAfiliado) => {
-    console.log('Afiliado agregado:', nuevoAfiliado);
-    recargar();
-  };
-
-  const handleDesafiliar = async (idAfiliado) => {
-    const confirmar = window.confirm(
-      '¿Está seguro de desafiliar a este afiliado? El afiliado pasará a estado inactivo.'
-    );
-    
-    if (!confirmar) return;
-    
-    const resultado = await desafiliar(idAfiliado);
-    
-    if (resultado.success) {
-      alert(resultado.message);
-      recargar();
-    } else {
-      alert(`Error: ${resultado.error}`);
-    }
-  };
-
-  const toggleVista = () => {
-    setVistaActual(vistaActual === 'tabla' ? 'cards' : 'tabla');
-  };
+const AfiliadosModule = () => {
+  const [vistaTabla, setVistaTabla] = useState(false); // false = cards, true = tabla
 
   return (
-    <div className="afiliados-module">
-      <div className="module-header">
-        <h1>Gestión de Afiliados</h1>
-        <div className="header-actions">
-          <button 
-            className="detalle-btn" 
-            onClick={() => setMostrarAgregar(true)}
-            style={{ marginRight: '10px' }}
-          >
-            + Nuevo Afiliado
-          </button>
-          
-          <button 
-            className="toggle-vista-btn" 
-            onClick={toggleVista}
-            style={{ 
-              marginRight: '10px',
-              padding: '8px 16px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {vistaActual === 'tabla' ? 'Ver como Tarjetas' : 'Ver como Tabla'}
-          </button>
-          
-          <button 
-            className="refresh-btn" 
-            onClick={recargar}
-            disabled={loading || loadingDesafiliar}
-          >
-            ↻ Actualizar
-          </button>
-          
-          <span className="total-count">
-            {terminoBusqueda ? 
-              `${totalResultados} resultado${totalResultados !== 1 ? 's' : ''}` : 
-              `Total: ${afiliados.filter(a => a.estado).length} activos`
-            }
-          </span>
-        </div>
-      </div>
+    <Container fluid p="md">
+      {/* Encabezado del módulo */}
+      <ModuleHeader title="Afiliados" />
+      
+      <Paper 
+        p="xl" 
+        radius="lg" 
+        style={{ 
+          backgroundColor: 'white',
+          minHeight: '70vh',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        {/* Primera fila - Buscador y filtros */}
+        <Stack gap="xl" mb="xl">
+          {/* Fila 1: Buscador y filtros */}
+          <Group gap="md" wrap="nowrap">
+            <TextInput
+              placeholder="Busca por nombre/ci/rubro/patente"
+              leftSection={<IconSearch size={18} />}
+              size="md"
+              style={{ flex: 1 }}
+              styles={{
+                input: {
+                  backgroundColor: '#f6f8fe',
+                  border: '1px solid #f6f8fe',
+                  borderRadius: '0',
+                  height: '45px',
+                  fontSize: '15px',
+                  '&:focus': {
+                    borderColor: '#0f0f0f',
+                  },
+                },
+              }}
+            />
+            
+            <Group gap="xs" style={{ flexShrink: 0 }}>
+              <Button
+                size="md"
+                variant="outline"
+                style={{
+                  backgroundColor: '#f6f8fe',
+                  border: '1px solid #f6f8fe',
+                  color: '#0f0f0f',
+                  borderRadius: '0',
+                  height: '45px',
+                  fontWeight: 400,
+                  minWidth: '120px',
+                }}
+              >
+                Mostrar Todos
+              </Button>
+              
+              <Button
+                size="md"
+                variant="outline"
+                style={{
+                  backgroundColor: '#f6f8fe',
+                  border: '1px solid #f6f8fe',
+                  color: '#0f0f0f',
+                  borderRadius: '0',
+                  height: '45px',
+                  fontWeight: 400,
+                  minWidth: '120px',
+                }}
+              >
+                Orden Alfabético
+              </Button>
+              
+              <Button
+                size="md"
+                variant="outline"
+                style={{
+                  backgroundColor: '#f6f8fe',
+                  border: '1px solid #f6f8fe',
+                  color: '#0f0f0f',
+                  borderRadius: '0',
+                  height: '45px',
+                  fontWeight: 400,
+                  minWidth: '120px',
+                }}
+              >
+                +3 Patentes
+              </Button>
+              
+              <Button
+                size="md"
+                variant="outline"
+                style={{
+                  backgroundColor: '#f6f8fe',
+                  border: '1px solid #f6f8fe',
+                  color: '#0f0f0f',
+                  borderRadius: '0',
+                  height: '45px',
+                  fontWeight: 400,
+                  minWidth: '120px',
+                }}
+              >
+                Todos Los rubros
+              </Button>
+            </Group>
+          </Group>
 
-      {/* Barra de búsqueda */}
-      <BarraBusqueda
-        terminoBusqueda={terminoBusqueda}
-        setTerminoBusqueda={setTerminoBusqueda}
-        campoFiltro={campoFiltro}
-        setCampoFiltro={setCampoFiltro}
-        totalResultados={totalResultados}
-        totalAfiliados={totalAfiliados}
-        limpiarBusqueda={limpiarBusqueda}
-      />
+          {/* Fila 2: Botones de acción y toggle switch de vista */}
+          <Group justify="space-between">
 
-      {vistaActual === 'tabla' ? (
-        <ListaAfiliados 
-          afiliados={afiliadosFiltrados}  
-          loading={loading}
-          error={error}
-          onVerDetalle={verDetalle}
-          onDesafiliar={handleDesafiliar}
-        />
-      ) : (
-        <ListaCardsAfiliados 
-          afiliados={afiliadosFiltrados}  
-          loading={loading}
-          error={error}
-          onVerDetalle={verDetalle}
-          onDesafiliar={handleDesafiliar}
-        />
-      )}
+            {/* Botones de acción */}
+            <Group gap="md">
+              <Button
+                leftSection={<IconPlus size={18} />}
+                size="md"
+                style={{
+                  backgroundColor: '#0f0f0f',
+                  color: 'white',
+                  borderRadius: '100px',
+                  height: '40px',
+                  fontWeight: 300,
+                  padding: '0 25px',
+                }}
+              >
+                Añadir Afiliado
+              </Button>
+              
+              <Button
+                leftSection={<IconFileExport size={18} />}
+                size="md"
+                style={{
+                  backgroundColor: '#0f0f0f',
+                  color: 'white',
+                  borderRadius: '100px',
+                  height: '40px',
+                  fontWeight: 300,
+                  padding: '0 25px',
+                }}
+              >
+                Exportar lista actual
+              </Button>
+            </Group>
 
-      {mostrarDetalle && (
-        <DetalleAfiliadoExclusivo  
-          afiliado={afiliadoSeleccionado}
-          onClose={cerrarDetalle}
-        />
-      )}
+            {/* Toggle Switch para cambiar vista */}
+            <Group gap="md" align="center">
+              <Text size="sm" style={{ color: '#666', fontWeight: 500 }}>
+                Vista:
+              </Text>
+              
+              <Group gap="xs" align="center">
+                <IconLayoutGrid 
+                  size={18} 
+                  style={{ 
+                    color: !vistaTabla ? '#0f0f0f' : '#999',
+                  }} 
+                />
+                
+                <Switch
+                  checked={vistaTabla}
+                  onChange={(event) => setVistaTabla(event.currentTarget.checked)}
+                  size="lg"
+                  styles={{
+                    track: {
+                      backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+                      borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+                      width: '50px',
+                      height: '26px',
+                    },
+                    thumb: {
+                      backgroundColor: 'white',
+                      borderColor: '#0f0f0f',
+                      width: '22px',
+                      height: '22px',
+                    },
+                  }}
+                />
+                
+                <IconTable 
+                  size={18} 
+                  style={{ 
+                    color: vistaTabla ? '#0f0f0f' : '#999',
+                  }} 
+                />
+              </Group>
+              
+              {/* Labels de texto */}
+              <Group gap="xs">
+                <Text 
+                  size="sm" 
+                  style={{ 
+                    color: !vistaTabla ? '#0f0f0f' : '#999',
+                    fontWeight: !vistaTabla ? 600 : 400,
+                  }}
+                >
+                  Cards
+                </Text>
+                <Text size="sm" style={{ color: '#999' }}>/</Text>
+                <Text 
+                  size="sm" 
+                  style={{ 
+                    color: vistaTabla ? '#0f0f0f' : '#999',
+                    fontWeight: vistaTabla ? 600 : 400,
+                  }}
+                >
+                  Tabla
+                </Text>
+              </Group>
+            </Group>
+          </Group>
+        </Stack>
 
-      {mostrarAgregar && (
-        <AgregarAfiliado 
-          onClose={() => setMostrarAgregar(false)}
-          onAfiliadoAdded={handleAfiliadoAdded}
-        />
-      )}
-    </div>
+        {/* Renderizar la vista seleccionada */}
+        {!vistaTabla ? <ListaCards /> : <TablaAfiliados />}
+      </Paper>
+    </Container>
   );
-}
+};
+
+export default AfiliadosModule;

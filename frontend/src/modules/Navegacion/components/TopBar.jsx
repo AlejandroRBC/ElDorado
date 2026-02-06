@@ -1,54 +1,83 @@
-import '../styles/topbar.css';
+import { Group, TextInput, Button, Paper,Text } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
+import { useState } from 'react';
 
-export default function TopBar({ 
-    usuario, 
-    onLogout, 
-    onToggleSidebar,
-    sidebarColapsada 
-}) {
-    return (
-        <header className="topbar">
-            <div className="topbar-left">
-                <button 
-                    className="menu-toggle-btn"
-                    onClick={onToggleSidebar}
-                    title={sidebarColapsada ? "Expandir menú" : "Colapsar menú"}
-                >
-                    ☰
-                </button>
-                
-                <div className="search-container">
-                    <input
-                        type="text"
-                        placeholder="Buscar en el sistema..."
-                        className="search-input"
-                        disabled
-                        title="Funcionalidad de búsqueda global en desarrollo"
-                    />
-                    <span className="search-icon">🔍</span>
-                </div>
-            </div>
-            
-            <div className="topbar-right">
-                <div className="user-info">
-                    <div className="user-avatar">
-                        {usuario?.nombre?.charAt(0) || 'U'}
-                    </div>
-                    <div className="user-details">
-                        <span className="user-name">{usuario?.nombre || 'Usuario'}</span>
-                        <span className="user-role">{usuario?.rol || 'Administrador'}</span>
-                    </div>
-                </div>
-                
-                <button 
-                    className="logout-btn"
-                    onClick={onLogout}
-                    title="Cerrar sesión"
-                >
-                    <span className="logout-icon">🚪</span>
-                    <span className="logout-text">Salir</span>
-                </button>
-            </div>
-        </header>
-    );
-}
+const Topbar = () => {
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleSearch = () => {
+    console.log('Buscando:', searchValue);
+    // Aquí iría la lógica de búsqueda
+  };
+
+  return (
+    <Paper
+      p="md"
+      style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e0e0e0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        width: '100%',
+      }}
+    >
+      <Group justify="space-between">
+        <Group gap="lg">
+          {/* Logo */}
+          <Text
+            fw={700}
+            size="xl"
+            style={{
+              color: '#0f0f0f',
+              letterSpacing: '2px',
+              fontFamily: 'sans-serif',
+            }}
+          >
+            EL  DORADO
+          </Text>
+
+          {/* Botón de búsqueda */}
+          <Button
+            onClick={handleSearch}
+            variant="filled"
+            color="#0f0f0f"
+            style={{
+              backgroundColor: '#0f0f0f',
+              color: 'white',
+              borderRadius: '4px',
+              width: '40px',
+              height: '40px',
+              padding: 0,
+            }}
+          >
+            <IconSearch size={20} />
+          </Button>
+
+          {/* Input de búsqueda */}
+          <TextInput
+            placeholder="Buscar..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            style={{
+              width: '300px',
+            }}
+            styles={{
+              input: {
+                backgroundColor: '#0f0f0f',
+                color: 'white',
+                border: 'none',
+                '&::placeholder': {
+                  color: '#999',
+                },
+              },
+            }}
+          />
+        </Group>
+      </Group>
+    </Paper>
+  );
+};
+
+export default Topbar;
