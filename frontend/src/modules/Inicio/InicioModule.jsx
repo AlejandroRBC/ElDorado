@@ -92,7 +92,7 @@ const InicioModule = () => {
                   backgroundColor: isHovered ? '#0f0f0f' : '#edbe3c',
                   color: isHovered ? 'white' : '#0f0f0f',
                   justifyContent: 'space-between',
-                  borderRadius: '10px',
+                  borderRadius: '100px',
                   height: '65px',
                   minWidth: '200px',
                   transition: 'all 0.3s ease',
