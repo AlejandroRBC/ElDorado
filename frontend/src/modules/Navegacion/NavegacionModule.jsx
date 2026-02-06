@@ -9,6 +9,8 @@ const HomeModule = lazy(() => import('../Inicio/InicioModule'));
 const AfiliadosModule = lazy(() => import('../Afiliados/AfiliadosModule'));
 //const PatentesModule = lazy(() => import('../../Patentes/PatentesModule'));
 
+// esta importacion es para parte de afiliados
+const DetallesAfiliado = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
 const NavegacionModule = () => {
   return (
     <AppShell
@@ -24,19 +26,17 @@ const NavegacionModule = () => {
         <Sidebar />
       </AppShell.Navbar>
 
-      <AppShell.Main
-        style={{
-          marginLeft: 30, // Ancho del sidebar
-          paddingTop: 73, // Altura del topbar
-          minHeight: '100vh'
-        }}
-      >
+      <AppShell.Main>
         <Suspense fallback={<div>Cargando módulo...</div>}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
             <Route path="/inicio" element={<HomeModule />} />
             <Route path="/afiliados" element={<AfiliadosModule />} />
             {/* <Route path="/patentes" element={<PatentesModule />} /> */}
+
+            {/* ruta para pode rentrar al detalle de un afiliado */}
+            <Route path="/afiliados/:id" element={<DetallesAfiliado />} />
+
             {/* Agrega más rutas aquí */}
           </Routes>
         </Suspense>
