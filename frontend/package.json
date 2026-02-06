@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^8.3.13",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mantine/core": "^8.3.14",
     "@mantine/form": "^8.3.13",
-    "@mantine/hooks": "^8.3.13",
-    "@mantine/notifications": "^8.3.13",
+    "@mantine/hooks": "^8.3.14",
+    "@mantine/notifications": "^8.3.14",
     "axios": "^1.13.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
