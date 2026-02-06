@@ -18,10 +18,16 @@
   font-size: 0.75rem;
   font-weight: bold;
 }
-
+.search-input-group{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
 .search-input {
-  flex: 1;
-  padding: 10px;
+  /* width: 280px; */
+  padding: 6px 8px;
+  font-size: 14px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+

@@ -36,9 +36,10 @@ export const mockPuestos = [
     id_puesto: 101,
     fila: "A",
     cuadra: "1",
-    nroPuesto: 10,
+    nroPuesto: 101,
     ancho: 2,
-    largo: 3
+    largo: 3,
+    rubros: "Juguetes"
   },
   {
     id_puesto: 102,
@@ -46,13 +47,14 @@ export const mockPuestos = [
     cuadra: "1",
     nroPuesto: 15,
     ancho: 2,
-    largo: 2
+    largo: 2,
+    rubros: "Abarrote, Plastico, Comida"
   }
 ];
 
 export const mockPatentes = [
   {
-    id_patente: 501,
+    id_patente: 101,
     id_puesto: 101, 
     codigo_alcaldia: 2024001,
     estado: "Vigente"
@@ -64,7 +66,10 @@ export const mockTenenciaPuesto = [
   {
     id_tenencia: 1,
     id_afiliado: 1, 
-    id_puesto: 101,  
+    id_puesto: 101, 
+    id_rubro: 1, 
+    razon: "Nuevito",
+    switch: true,
     fecha_ini: "2020-01-10",
     fecha_fin: null  
   },
@@ -72,49 +77,13 @@ export const mockTenenciaPuesto = [
     id_tenencia: 2,
     id_afiliado: 2, 
     id_puesto: 102,
+    id_rubro: 2, 
+    razon: "Nuevito",
+    switch: true,
     fecha_ini: "2021-03-15",
     fecha_fin: null
   }
 
 ];
-export const mockRubros = [
-    { 
-        id_rubro: 1, 
-        nombre: "Abarrotes" 
-    },
-    { 
-        id_rubro: 2, 
-        nombre: "Plásticos" 
-    },
-    { 
-        id_rubro: 3, 
-        nombre: "Comida Rápida" 
-    },
-    { 
-        id_rubro: 4, 
-        nombre: "Ropa" 
-    },
-    { 
-        id_rubro: 5, 
-        nombre: "Electrónica" 
-    }
-];
 
 
-export const mockpertenece = [
-    { 
-        id_puesto_rubro: 1, 
-        id_puesto: 101, 
-        id_rubro: 1 
-    }, 
-    { 
-        id_puesto_rubro: 2, 
-        id_puesto: 101, 
-        id_rubro: 2 
-    }, 
-    { 
-        id_puesto_rubro: 3, 
-        id_puesto: 102, 
-        id_rubro: 4 
-    } 
-];
