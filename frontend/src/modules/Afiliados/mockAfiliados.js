@@ -1,7 +1,7 @@
 export const mockAfiliados = [
     {
       id: 1,
-      nombre: 'Juan Pérez',
+      nombre: 'DATOS MOCK',
       ci: '1234567 LP',
       rubro: 'Industria',
       patentes: ['ABC-123', 'XYZ-789'],

@@ -14,10 +14,8 @@ const Card = ({ afiliado }) => {
       p="md"
       style={{
         backgroundColor: 'rgba(108, 154, 255, 0.06)',
-    
         height: '100%',
         position: 'relative',
-        
         transition: 'all 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
@@ -59,8 +57,8 @@ const Card = ({ afiliado }) => {
         {/* Foto de perfil grande */}
         <Box
           style={{
-            width: '130px',
-            height: '170px',
+            width: '120px',
+            height: '120px',
             borderRadius: '10px',
             overflow: 'hidden',
             backgroundColor: 'white',
@@ -131,10 +129,10 @@ const Card = ({ afiliado }) => {
           
           <Box style={{ marginTop: 'auto' }}>
             <Text fw={600} size="sm" style={{ color: '#0f0f0f', marginBottom: '2px' }}>
-              Rubro:
+              Ocupacion:
             </Text>
             <Text size="sm" style={{ color: '#666' }}>
-              {afiliado.rubro}
+              {afiliado.ocupacion}
             </Text>
           </Box>
         </Stack>
