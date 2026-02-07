@@ -21,10 +21,10 @@ const modules = [
     component: 'AfiliacionModule',
   },
   {
-    name: 'Patentes',
-    path: '/patentes',
+    name: 'Gestion Puestos',
+    path: '/gestionPuestos',
     icon: IconLicense,
-    component: 'PatentesModule',
+    component: 'GestionPatentesPuestosModule',
   },
 ];
 

@@ -1,162 +1,228 @@
-import { useState, useMemo, useEffect } from "react";
-import {Table, Button, Group, Title, Badge, Select, Loader, 
-        Text, Paper,Container, ActionIcon, Menu} from "@mantine/core";
-import { notifications } from '@mantine/notifications';
-import axios from 'axios';
-import FormularioPuestoPatente from './components/FormularioPuestoPatente';
-import FiltroPuesto from "./components/FiltroPuesto"; 
-import { filtrarPuestos, obtenerInfo } from "./servicios/PuestosService";
-import DetalleModal from "./components/DetalleModal";
-import ModalHistorialPuesto from "./components/ModalHistorialPuesto";
-import FormularioTraspaso from "./components/FormularioTraspaso";
+import { useState, useEffect, useMemo } from "react";
+import { 
+  TextInput, Select, Button, Table, 
+  Group, Stack, Title, Badge, ActionIcon, 
+  Menu,Paper } from '@mantine/core';
+import { 
+    IconSearch, IconPlus, IconFileExport, IconDotsVertical, 
+    IconEye, IconHistory, IconArrowsExchange } from '@tabler/icons-react';
 
-const GestionPatentesPuestos = () => {
-    const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
-    const [showModalDetalles, setShowModalDetalles] = useState(false);
-    const [showModalHistorial, setShowModalHistorial] = useState(false);
-    const [showModalTraspaso, setShowModalTraspaso] = useState(false);
-    const [isModalOpen, setModalOpen] = useState(false);
-    
-    const [tenencias, setTenencias] = useState([]);
-    const [afiliados, setAfiliados] = useState([]);
-    const [puestos, setPuestos] = useState([]);
-    const [patentes, setPatentes] = useState([]);
-    
-    const [criterios, setCriterios] = useState({ texto: "", patente: "todos" });
-    const [loading, setLoading] = useState(true);
+import { ModalCrearPuesto } from "./components/ModalCrearPuesto";
+import { useDisclosure } from "@mantine/hooks";
+import { puestosService } from "./service/puestosService";
 
-    // Fetch de datos
-    useEffect(() => {
-        const fetchDatos = async () => {
-            try {
-                const [resPuestos, resAfiliados, resTenencias] = await Promise.all([
-                    axios.get('http://localhost:3000/api/puestos/listar'),
-                    axios.get('http://localhost:3000/api/afiliados/listar'),
-                    axios.get('http://localhost:3000/api/tenencias/listar')
-                ]);
-                setPuestos(resPuestos.data);
-                setAfiliados(resAfiliados.data);
-                setTenencias(resTenencias.data);
-            } catch (error) {
-                notifications.show({ title: 'Error', message: 'No se pudieron cargar los datos', color: 'red' });
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDatos();
-    }, []);
 
-    const puestosFiltrados = useMemo(() => 
-        filtrarPuestos(puestos, patentes, tenencias, afiliados, criterios), 
-        [puestos, patentes, tenencias, afiliados, criterios]
-    );
+function GestionPatentesPuestosModule() {
+  const [puestos, setPuestos] = useState([]);
+  const [search, setSearch] = useState('');
+  const [filtroPatente, setFiltroPatente] = useState(null);
+  const [opened, {open, close}] = useDisclosure(false);
+  const [filtroFila, setFiltroFila] = useState(null);
+  const [filtroCuadra, setFiltroCuadra] = useState(null);
 
-    // Manejador de acciones
-    const ejecutarAccion = (valor, puesto) => {
-        setPuestoSeleccionado(puesto);
-        if (valor === "detalles") setShowModalDetalles(true);
-        if (valor === "historial") setShowModalHistorial(true);
-        if (valor === "traspaso") setShowModalTraspaso(true);
-    };
+  // Función de filtrado
+  const puestosFiltrados = useMemo(() => {
+    return puestos.filter((puesto) => {
 
-    // Filas de la tabla procesadas
-    const rows = puestosFiltrados.map((puesto) => {
-        const data = obtenerInfo(puesto, tenencias, afiliados, patentes);
-        const esVacante = data.nombreCompleto === "PUESTO VACANTE";
+      const coincideBusqueda =
+        search === '' ||
+        String(puesto.nroPuesto || '').includes(search) ||
+        (puesto.apoderado || '').toLowerCase().includes(search.toLowerCase()) ||
+        (puesto.ci || '').includes(search);
 
-        return (
-            <Table.Tr key={puesto.id_puesto} style={{ backgroundColor: esVacante ? '#fff5f5' : 'transparent' }}>
-                <Table.Td fw={700}>{puesto.id_puesto}</Table.Td>
-                <Table.Td>{puesto.fila} - {puesto.cuadra}</Table.Td>
-                <Table.Td>
-                    <Text size="sm" fw={esVacante ? 700 : 400} c={esVacante ? 'red' : 'dark'}>
-                        {data.nombreCompleto}
-                    </Text>
-                </Table.Td>
-                <Table.Td>{data.ci || '---'}</Table.Td>
-                <Table.Td>{data.fechaAdquisicion || '---'}</Table.Td>
-                <Table.Td>
-                    <Group gap={4}>
-                        {puesto.rubro?.split(',').map((r, i) => (
-                            <Badge key={i} variant="light" size="xs" color="blue">{r.trim()}</Badge>
-                        ))}
-                    </Group>
-                </Table.Td>
-                <Table.Td>
-                    <Badge color={data.tienePatente ? "green" : "orange"} variant="dot">
-                        {data.tienePatente ? "Patentado" : "Pendiente"}
-                    </Badge>
-                </Table.Td>
-                <Table.Td>
-                    <Select
-                        placeholder="Acciones"
-                        size="xs"
-                        data={[
-                            { value: 'detalles', label: '🔍 Ver Detalles' },
-                            { value: 'historial', label: '📜 Ver Historial' },
-                            { value: 'traspaso', label: '🔄 Realizar Traspaso' },
-                        ]}
-                        onChange={(val) => ejecutarAccion(val, puesto)}
-                    />
-                </Table.Td>
-            </Table.Tr>
-        );
+      let coincidePatente = true;
+      if (filtroPatente && filtroPatente !== 'Todo') {
+        if (filtroPatente === 'si') {
+          coincidePatente = Boolean(puesto.tiene_patente);
+        } else {
+          coincidePatente = !Boolean(puesto.tiene_patente);
+        }
+      }
+
+      const coincideFila =
+         !filtroFila || filtroFila === 'Todo' || 
+         String(puesto.fila || '') === filtroFila;
+
+      const coincideCuadra =
+        !filtroCuadra || filtroCuadra === 'Todo' || 
+        String(puesto.cuadra || '') === filtroCuadra;
+
+      return coincideBusqueda && coincidePatente && coincideFila && coincideCuadra;
     });
+  }, [puestos, search, filtroPatente, filtroFila, filtroCuadra]);
 
-    return (
-        <Container size="xl" py="xl">
-            <Paper shadow="sm" p="lg" withBorder>
-                <Group justify="space-between" mb="lg">
-                    <div>
-                        <Title order={2} c="dark">Gestión de Puestos y Patentes</Title>
-                        <Text c="dimmed" size="sm">Administración general del mercado ElDorado</Text>
-                    </div>
-                    <Group>
-                        <Button color="blue" onClick={() => setModalOpen(true)}>+ Nuevo Puesto</Button>
-                        <Button variant="light" color="teal">Generar Reporte</Button>
-                    </Group>
-                </Group>
 
-                <FiltroPuesto onFiltrar={setCriterios} />
+  const handleSavePuesto = async (data) => {
+    try {
+      await puestosService.crear(data);
+      console.log("Guardado OK");
+      close();
+      cargarPuestos();   
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-                <Table.ScrollContainer minWidth={800} mt="xl">
-                    <Table verticalSpacing="sm" highlightOnHover withTableBorder>
-                        <Table.Thead bg="gray.0">
-                            <Table.Tr>
-                                <Table.Th>ID</Table.Th>
-                                <Table.Th>Ubicación</Table.Th>
-                                <Table.Th>Afiliado</Table.Th>
-                                <Table.Th>C.I.</Table.Th>
-                                <Table.Th>Adquisición</Table.Th>
-                                <Table.Th>Rubros</Table.Th>
-                                <Table.Th>Estado</Table.Th>
-                                <Table.Th>Acciones</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {loading ? (
-                                <Table.Tr>
-                                    <Table.Td colSpan={8}>
-                                        <Group justify="center" py="xl"><Loader size="md" /> <Text>Cargando datos...</Text></Group>
-                                    </Table.Td>
-                                </Table.Tr>
-                            ) : rows.length > 0 ? rows : (
-                                <Table.Tr>
-                                    <Table.Td colSpan={8} align="center"><Text c="dimmed">No se encontraron resultados</Text></Table.Td>
-                                </Table.Tr>
-                            )}
-                        </Table.Tbody>
-                    </Table>
-                </Table.ScrollContainer>
-            </Paper>
 
-            {/* Modales - Se mantienen igual en lógica */}
-            <FormularioPuestoPatente isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
-            <DetalleModal isOpen={showModalDetalles} onClose={() => setShowModalDetalles(false)} puesto={puestoSeleccionado} datos={{ tenencias, afiliados, patentes }} />
-            <ModalHistorialPuesto isOpen={showModalHistorial} onClose={() => setShowModalHistorial(false)} idPuesto={puestoSeleccionado?.id_puesto} tenencias={tenencias} afiliados={afiliados} />
-            <FormularioTraspaso isOpen={showModalTraspaso} onClose={() => setShowModalTraspaso(false)} puesto={puestoSeleccionado} afiliados={afiliados} />
-        </Container>
-    );
-};
+  useEffect(() => {
+    cargarPuestos();
+  }, []);
 
-export default GestionPatentesPuestos;
+  const cargarPuestos = async () => {
+    try {
+      const data = await puestosService.listar();
+      setPuestos(data);
+    } catch (e) {
+      console.error("Error al cargar puestos", e);
+    }
+  };
+
+
+
+  return (
+    <Stack gap="md" p="md">
+        
+      <ModalCrearPuesto 
+        opened={opened} 
+        close={close} 
+        onSave={handleSavePuesto} 
+      />
+      <Title order={2}>Gestión de Puestos</Title>
+
+      <Paper shadow="xs" p="md" withBorder>
+        <Stack gap="md">
+          <Group>
+            <TextInput 
+              placeholder="Buscar por ID, Apoderado o CI..." 
+              leftSection={<IconSearch size={16} />} 
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              size="md"
+              style={{flex: 1}}
+            />
+            <Select 
+              placeholder="Todo"
+              style={{ width: '120px' }}
+              data={[
+                { value: 'Todo', label: 'Todo'},
+                { value: 'si', label: 'Con Patente' },
+                { value: 'no', label: 'Sin Patente' }
+              ]}
+              value={filtroPatente}
+              onChange={setFiltroPatente}
+              clearable
+            />
+            <Select 
+              placeholder="Todas las Filas"
+              style={{ width: '180px' }}
+              data={[
+                { value: 'Todo', label: 'Todas las Filas'},
+                { value: 'A', label: 'A' },
+                { value: 'B', label: 'B' },
+                { value: 'C', label: 'C' }
+              ]}
+              value={filtroFila}
+              onChange={setFiltroFila}
+              clearable
+              styles={{
+                input: { paddingLeft: 8, paddingRight: 8 },
+                item:{whiteSpace: 'normal'}
+              }}
+            />
+            <Select 
+              placeholder="Todas las Cuadras"
+              style={{ width: '180px' }}
+              data={[
+                { value: 'Todo', label: 'Todas las Cuadras'},
+                { value: '1', label: '1' },
+                { value: '2', label: '2' },
+                { value: '3', label: '3' }
+              ]}
+              value={filtroCuadra}
+              onChange={setFiltroCuadra}
+              clearable
+              styles={{
+                input: { paddingLeft: 8, paddingRight: 8 },
+                item:{whiteSpace: 'normal'}
+              }}
+            />
+          </Group>
+
+          <Group > 
+            <Button 
+                leftSection={<IconPlus size={18} />} 
+                onClick={open}
+                variant="filled" 
+                color="black"
+                radius="xl">
+              Añadir Puesto
+            </Button>
+            <Button 
+                leftSection={<IconFileExport size={18} />} 
+                variant="filled" 
+                color="black"
+                radius="xl">
+              Generar Reporte
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
+
+      <Paper shadow="xs" withBorder>
+        <Table verticalSpacing="sm" highlightOnHover>
+          <Table.Thead> 
+            <Table.Tr style={{ backgroundColor: '#f8f9fa' }}>
+              <Table.Th>ID Puesto</Table.Th>
+              <Table.Th>Fila/Cuadra</Table.Th>
+              <Table.Th>Apoderado</Table.Th>
+              <Table.Th>C.I.</Table.Th>
+              <Table.Th>Fecha Adquisición</Table.Th>
+              <Table.Th>Rubros</Table.Th>
+              <Table.Th>Estado Patente</Table.Th>
+              <Table.Th>Acciones</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {puestosFiltrados.map((puesto) => (
+              <Table.Tr key={puesto.id}>
+                <Table.Td>{puesto.nroPuesto || puesto.id}</Table.Td>
+                <Table.Td>{`${puesto.fila} - ${puesto.cuadra}`}</Table.Td>
+                <Table.Td>{puesto.apoderado ? puesto.apoderado : 'Vacante'}</Table.Td>
+                <Table.Td>{puesto.ci || '-'}</Table.Td>
+                <Table.Td>{puesto.fecha_adquisicion || puesto.fecha || '-'}</Table.Td>
+                <Table.Td>{puesto.rubro || puesto.rubros || '-'}</Table.Td>
+                <Table.Td>
+                  {puesto.tiene_patente || puesto.patente ?(
+                    <Badge key="con-patente" color="green">CON PATENTE</Badge>
+                  ) : (
+                    <Badge key="sin-patente" color="yellow">SIN PATENTE</Badge>
+                  )}
+
+                </Table.Td>
+                <Table.Td>
+                   <Menu shadow="md" width={200}>
+                    <Menu.Target>
+                      <ActionIcon variant="light" color="blue">
+                        <IconDotsVertical size={16} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Label>Opciones</Menu.Label>
+                      <Menu.Item key = "ver-detalles" leftSection={<IconEye size={14} />}>Ver Detalles</Menu.Item>
+                      <Menu.Item key = "ver-historial" leftSection={<IconHistory size={14} />}>Ver Historial</Menu.Item>
+                      <Menu.Divider />
+                      <Menu.Item key = "traspaso" color="orange" leftSection={<IconArrowsExchange size={14} />}>
+                        Traspaso
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Paper>
+    </Stack>
+  );
+}
+export default GestionPatentesPuestosModule;
