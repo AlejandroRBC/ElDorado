@@ -1,3 +1,4 @@
+//config/db.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
@@ -90,6 +91,64 @@ function crearTablas() {
       console.log('✅ Tabla tenencia_puesto creada/verificada');
     }
   });
+  
+  db.serialize(() => {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS historial_puesto (
+        id_historial INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_tenencia INTEGER,
+        id_puesto INTEGER NOT NULL,
+        id_afiliado INTEGER NOT NULL,
+        fecha_ini DATE,
+        fecha_fin DATE,
+        razon VARCHAR(50),
+        fecha_accion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Trigger INSERT
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS trg_historial_insert
+      AFTER INSERT ON tenencia_puesto
+      FOR EACH ROW
+      BEGIN
+        INSERT INTO historial_puesto
+        (id_tenencia, id_puesto, id_afiliado, fecha_ini, fecha_fin, razon, fecha_accion)
+        VALUES (
+          NEW.id_tenencia,
+          NEW.id_puesto,
+          NEW.id_afiliado,
+          NEW.fecha_ini,
+          NEW.fecha_fin,
+          NEW.razon,
+          CURRENT_TIMESTAMP
+        );
+      END;
+    `);
+
+    // Trigger UPDATE
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS trg_historial_update
+      AFTER UPDATE ON tenencia_puesto
+      FOR EACH ROW
+      WHEN OLD.fecha_fin IS NULL AND NEW.fecha_fin IS NOT NULL
+      BEGIN
+        INSERT INTO historial_puesto
+        (id_tenencia, id_puesto, id_afiliado, fecha_ini, fecha_fin, razon, fecha_accion)
+        VALUES (
+          NEW.id_tenencia,
+          NEW.id_puesto,
+          NEW.id_afiliado,
+          NEW.fecha_ini,
+          NEW.fecha_fin,
+          NEW.razon,
+          CURRENT_TIMESTAMP
+        );
+      END;
+    `);
+  });
+
+
 }
 
 // Insertar datos de ejemplo para probar

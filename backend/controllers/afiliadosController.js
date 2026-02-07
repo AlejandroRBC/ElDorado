@@ -1,3 +1,4 @@
+//controllers/afiliadosController
 const db = require('../config/db');
 
 
@@ -222,6 +223,140 @@ const deshabilitarAfiliado = (req, res) => {
   );
 
 };
+// =============================
+// BUSCAR AFILIADOS (por CI o nombre)
+// =============================
+const buscarAfiliados = (req, res) => {
+  const { q } = req.query;
+
+  if (!q) {
+    return res.status(400).json({ message: "Falta término de búsqueda" });
+  }
+
+  const sql = `
+    SELECT * 
+    FROM afiliado
+    WHERE ci LIKE ? OR nombre LIKE ? OR paterno LIKE ? OR materno LIKE ?
+    ORDER BY paterno, nombre
+    LIMIT 10
+  `;
+
+  const termino = `%${q}%`;
+  db.all(sql, [termino, termino, termino, termino], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).json({ message: "Error en búsqueda" });
+    }
+
+    res.json(rows);
+  });
+};
+// =============================
+// OBTENER AFILIADOS ACTIVOS
+// =============================
+const obtenerActivos = (req, res) => {
+  const sql = `
+    SELECT *
+    FROM afiliado
+    WHERE es_habilitado = 1
+    ORDER BY paterno, nombre
+  `;
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).json({
+        message: "Error obteniendo afiliados activos"
+      });
+    }
+
+    res.json(rows);
+  });
+};
+
+// =============================
+// OBTENER PUESTOS DE UN AFILIADO
+// =============================
+const obtenerPuestosAfiliado = (req, res) => {
+  const { id } = req.params;
+
+  const sql = `
+    SELECT 
+      p.*,
+      t.fecha_ini,
+      t.razon
+    FROM puesto p
+    JOIN tenencia_puesto t ON p.id_puesto = t.id_puesto
+    WHERE t.id_afiliado = ?
+    AND t.fecha_fin IS NULL
+    ORDER BY p.fila, p.cuadra, p.nroPuesto
+  `;
+
+  db.all(sql, [id], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).json({
+        message: "Error obteniendo puestos del afiliado"
+      });
+    }
+
+    res.json(rows);
+  });
+};
+
+// =============================
+// BUSQUEDA AVANZADA
+// =============================
+const buscarAvanzado = (req, res) => {
+  const { nombre, ci, ocupacion, habilitado } = req.query;
+
+  let condiciones = [];
+  let parametros = [];
+
+  if (nombre) {
+    condiciones.push("(nombre LIKE ? OR paterno LIKE ? OR materno LIKE ?)");
+    const termino = `%${nombre}%`;
+    parametros.push(termino, termino, termino);
+  }
+
+  if (ci) {
+    condiciones.push("ci LIKE ?");
+    parametros.push(`%${ci}%`);
+  }
+
+  if (ocupacion) {
+    condiciones.push("ocupacion LIKE ?");
+    parametros.push(`%${ocupacion}%`);
+  }
+
+  if (habilitado !== undefined) {
+    condiciones.push("es_habilitado = ?");
+    parametros.push(habilitado === 'true' ? 1 : 0);
+  }
+
+  let whereClause = condiciones.length > 0 ? 
+    `WHERE ${condiciones.join(' AND ')}` : 
+    '';
+
+  const sql = `
+    SELECT *
+    FROM afiliado
+    ${whereClause}
+    ORDER BY paterno, nombre
+    LIMIT 100
+  `;
+
+  db.all(sql, parametros, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).json({
+        message: "Error en búsqueda avanzada"
+      });
+    }
+
+    res.json(rows);
+  });
+};
 
 
 
@@ -231,5 +366,9 @@ module.exports = {
   buscarAfiliadoPorId,
   crearAfiliado,
   actualizarAfiliado,
-  deshabilitarAfiliado
+  deshabilitarAfiliado,
+  buscarAfiliados,
+  obtenerActivos,         // NUEVO
+  obtenerPuestosAfiliado, // NUEVO
+  buscarAvanzado
 };

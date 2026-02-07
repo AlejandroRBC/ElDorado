@@ -1,3 +1,5 @@
+//controllers/puestosController
+
 const db = require('../config/db');
 
 

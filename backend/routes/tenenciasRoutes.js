@@ -1,14 +1,28 @@
 const express = require('express');
 const router = express.Router();
+const {
+  asignarPuesto,
+  traspasarPuesto,
+  abandonoPuesto,
+  despojarPuesto,
+  historialPuesto,
+  tenenciaActiva,
+  historialCompleto,
+  traspasoMultiple,        // NUEVO
+  obtenerInfoTraspaso      // NUEVO
+} = require('../controllers/tenenciasController');
 
-const ctrl = require('../controllers/tenenciasController');
+// Rutas existentes
+router.post('/asignar', asignarPuesto);
+router.post('/traspasar', traspasarPuesto);
+router.post('/abandonar', abandonoPuesto);
+router.post('/despojar', despojarPuesto);
+router.get('/historial/:id', historialPuesto);
+router.get('/activa/:id', tenenciaActiva);
+router.get('/historial-completo/:id_puesto', historialCompleto);
 
-router.post('/asignar', ctrl.asignarPuesto);
-router.post('/traspaso', ctrl.traspasarPuesto);
-router.post('/abandono', ctrl.abandonoPuesto);
-router.post('/despojo', ctrl.despojarPuesto);
-
-router.get('/historial/:id', ctrl.historialPuesto);
-router.get('/activa/:id', ctrl.tenenciaActiva);
+// Nuevas rutas para traspaso mejorado
+router.post('/traspaso-multiple', traspasoMultiple);
+router.get('/info-traspaso/:idPuesto', obtenerInfoTraspaso);
 
 module.exports = router;
