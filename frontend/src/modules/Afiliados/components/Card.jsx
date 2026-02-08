@@ -57,12 +57,11 @@ const Card = ({ afiliado }) => {
         {/* Foto de perfil grande */}
         <Box
           style={{
-            width: '120px',
-            height: '120px',
+            width: '90px',
+            height: '90px',
             borderRadius: '10px',
             overflow: 'hidden',
             backgroundColor: 'white',
-            
             flexShrink: 0,
           }}
         >
@@ -97,7 +96,7 @@ const Card = ({ afiliado }) => {
 
         {/* Información del afiliado */}
         <Stack gap={8} style={{ flex: 1 }}>
-          <Text fw={700} size="lg" style={{ color: '#0f0f0f' }}>
+          <Text fw={700} size="sm" style={{ color: '#0f0f0f' }}>
             {afiliado.nombre}
           </Text>
           

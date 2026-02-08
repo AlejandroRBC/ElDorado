@@ -5,11 +5,12 @@ import { useState } from 'react';
 import ListaCards from './components/ListaCards';
 import TablaAfiliados from './components/TablaAfiliados';
 import { useAfiliados } from './hooks/useAfiliados';
+import ModalAfiliado from './components/ModalAfiliado'; // Importar el modal
 
 const AfiliadosModule = () => {
   const [vistaTabla, setVistaTabla] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  
+  const [modalAbierto, setModalAbierto] = useState(false); // Estado para el modal
   
   // Usar nuestro hook personalizado para datos reales
   const { 
@@ -18,7 +19,8 @@ const AfiliadosModule = () => {
     error, 
     conexion,
     buscarAfiliados,
-    cargarAfiliados 
+    cargarAfiliados,
+    crearAfiliado // Agregar esta función del hook
   } = useAfiliados();
 
   // Manejar búsqueda
@@ -34,6 +36,28 @@ const AfiliadosModule = () => {
   const handleClearSearch = async () => {
     setSearchValue('');
     await cargarAfiliados();
+  };
+
+  // Abrir modal para añadir afiliado
+  const abrirModalAfiliado = () => {
+    setModalAbierto(true);
+  };
+
+  // Manejar envío del formulario del modal
+  const handleCrearAfiliado = async (afiliadoData) => {
+    try {
+      const resultado = await crearAfiliado(afiliadoData);
+      
+      if (resultado.exito) {
+        alert('Afiliado creado exitosamente');
+        await cargarAfiliados(); // Recargar la lista
+      } else {
+        alert(`Error: ${resultado.error}`);
+      }
+    } catch (error) {
+      console.error('Error al crear afiliado:', error);
+      alert('Error al crear afiliado');
+    }
   };
 
   // Mostrar estado de conexión
@@ -56,7 +80,6 @@ const AfiliadosModule = () => {
       );
     }
     
-    // Opcional: mostrar que está conectado (puedes comentar esto)
     return null;
   };
 
@@ -67,6 +90,13 @@ const AfiliadosModule = () => {
       
       {/* Estado de conexión */}
       {renderConexionStatus()}
+      
+      {/* Modal para añadir afiliado */}
+      <ModalAfiliado 
+        opened={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+        onSubmit={handleCrearAfiliado}
+      />
       
       <Paper 
         p="xl" 
@@ -228,7 +258,7 @@ const AfiliadosModule = () => {
                   fontWeight: 300,
                   padding: '0 25px',
                 }}
-                onClick={() => alert('Funcionalidad en desarrollo')}
+                onClick={abrirModalAfiliado} // Cambiado para abrir el modal
               >
                 Añadir Afiliado
               </Button>
@@ -349,7 +379,7 @@ const AfiliadosModule = () => {
           </Stack>
         )}
 
-        {/* Contador de resultados (opcional, puedes agregarlo donde quieras) */}
+        {/* Contador de resultados */}
         {!cargando && !error && afiliados.length > 0 && (
           <Text size="sm" style={{ color: '#666', marginTop: '20px', textAlign: 'center' }}>
             Mostrando {afiliados.length} afiliado{afiliados.length !== 1 ? 's' : ''}

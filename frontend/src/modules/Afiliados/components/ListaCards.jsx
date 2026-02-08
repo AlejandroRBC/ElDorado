@@ -8,11 +8,11 @@ const ListaCards = ({ afiliados = [] }) => {
         <Grid.Col 
           key={afiliado.id} 
           span={{
-            base: 12,
-            xs: 6,
-            sm: 6,
-            md: 4,
-            lg: 3,
+            base: 13,
+            xs: 7,
+            sm: 7,
+            md: 5,
+            lg: 4,
           }}
         >
           <Card afiliado={afiliado} />

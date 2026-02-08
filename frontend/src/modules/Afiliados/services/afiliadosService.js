@@ -49,5 +49,27 @@ export const afiliadosService = {
       console.error(`Error en afiliadosService.obtenerPorId ${id}:`, error);
       throw error;
     }
+  },
+  // Agregar esta función al service:
+crear: async (afiliadoData) => {
+  try {
+      const response = await fetch(`${API_URL}/afiliados`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(afiliadoData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Error ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en afiliadosService.crear:', error);
+    throw error;
   }
+},
 };

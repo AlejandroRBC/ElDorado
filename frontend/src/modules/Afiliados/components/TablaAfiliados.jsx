@@ -50,16 +50,9 @@ const TablaAfiliados = ({ afiliados = [] }) => {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge
-          variant="light"
-          style={{
-            backgroundColor: 'rgba(237, 190, 60, 0.1)',
-            color: '#edbe3c',
-            fontWeight: 600,
-          }}
-        >
+        <Text size="sm" style={{ color: '#666' }}>
           {afiliado.ocupacion}
-        </Badge>
+        </Text>
       </Table.Td>
       <Table.Td>
         <Group gap={4} wrap="wrap">
@@ -104,10 +97,7 @@ const TablaAfiliados = ({ afiliados = [] }) => {
               },
             }}
             onClick={() => verDetalles(afiliado.id)}
-            onClick={(e) => {
-              e.stopPropagation();
-              verDetalles(afiliado.id);
-            }}
+            
           >
             <IconEye size={16} />
           </ActionIcon>

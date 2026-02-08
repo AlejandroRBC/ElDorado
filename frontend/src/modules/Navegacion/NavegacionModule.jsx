@@ -16,7 +16,7 @@ const NavegacionModule = () => {
     <AppShell
       header={{ height: 73 }}
       navbar={{ width: 200, breakpoint: 'sm' }}
-      padding={0}
+      padding={-10}
     >
       <AppShell.Header style={{ backgroundColor: 'white', border: 'none' }}>
         <Topbar />

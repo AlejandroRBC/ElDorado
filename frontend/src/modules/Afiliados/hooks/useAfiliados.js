@@ -53,14 +53,44 @@ export const useAfiliados = () => {
     }
   };
 
-  return {
-    afiliados,
-    cargando,
-    error,
-    conexion,
-    cargarAfiliados,
-    buscarAfiliados
-  };
+const crearAfiliado = async (afiliadoData) => {
+  try {
+    const resultado = await afiliadosService.crear(afiliadoData);
+    
+    // Agregar el nuevo afiliado a la lista local
+    const nuevoAfiliado = {
+      id: resultado.afiliado.id,
+      nombre: `${afiliadoData.nombre} ${afiliadoData.paterno}`,
+      ci: `${afiliadoData.ci}-${afiliadoData.extension}`,
+      rubro: 'Nuevo',
+      patentes: [],
+      estado: 'Activo',
+      telefono: '',
+      
+      direccion: '',
+      fechaRegistro: new Date().toISOString().split('T')[0],
+      url_perfil: '/assets/perfiles/sinPerfil.png'
+    };
+    
+    setAfiliados(prev => [...prev, nuevoAfiliado]);
+    
+    return { exito: true, datos: resultado };
+  } catch (err) {
+    console.error('Error al crear afiliado:', err);
+    return { exito: false, error: err.message };
+  }
+};
+
+// Y agregar en el return:
+return {
+  afiliados,
+  cargando,
+  error,
+  conexion,
+  cargarAfiliados,
+  buscarAfiliados,
+  crearAfiliado // Agregar esta línea
+};
 };
 
 // Datos mock de respaldo
