@@ -1,9 +1,13 @@
 import { Modal, Group, Text, Button, TextInput, Select, Checkbox, Stack, Box, Divider, rem, Alert } from '@mantine/core';
 import { IconUpload, IconPhoto, IconX, IconAlertCircle } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
-import api from '../../../api/axiosConfig';
+import { useCrearAfiliado } from '../hooks/useCrearAfiliado';
 
-const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
+const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
+  const { crearAfiliadoCompleto, loading, error, success, reset } = useCrearAfiliado();
+  const [localError, setLocalError] = useState('');
+  const [localSuccess, setLocalSuccess] = useState('');
+
   const [formData, setFormData] = useState({
     ci: '',
     extension: 'LP',
@@ -20,17 +24,17 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
     nro_puesto: '',
     rubro_puesto: '',
     tiene_patente: false,
+    foto: null,
+    fotoPreview: null
   });
 
-  // Estados adicionales
+  // Estados para puestos
   const [cuadrasDisponibles, setCuadrasDisponibles] = useState([]);
   const [filasDisponibles, setFilasDisponibles] = useState([]);
   const [numerosDisponibles, setNumerosDisponibles] = useState([]);
   const [puestosCombinados, setPuestosCombinados] = useState({});
   const [isDragging, setIsDragging] = useState(false);
   const [loadingPuestos, setLoadingPuestos] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
@@ -52,18 +56,40 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
     { value: 'F', label: 'Femenino' }
   ];
 
-  // Cargar estructura de puestos
+  // Resetear cuando se abre/cierra
   useEffect(() => {
     if (opened) {
-      cargarEstructuraPuestos();
       resetForm();
+      cargarEstructuraPuestos();
+      reset();
+      setLocalError('');
+      setLocalSuccess('');
     }
   }, [opened]);
+
+  useEffect(() => {
+    if (success && !loading) {
+      setLocalSuccess('Afiliado creado exitosamente');
+      setTimeout(() => {
+        resetForm();
+        onClose();
+        if (onAfiliadoCreado) {
+          onAfiliadoCreado();
+        }
+      }, 1500);
+    }
+  }, [success, loading]);
+
+  useEffect(() => {
+    if (error) {
+      setLocalError(error);
+    }
+  }, [error]);
 
   const cargarEstructuraPuestos = async () => {
     setLoadingPuestos(true);
     try {
-      // TODO: Cambiar por API real cuando exista
+      // TODO: Cambiar por API real
       const estructuraSimulada = {
         '1ra cuadra': { A: [101, 102, 103, 104, 105], B: [106, 107, 108, 109, 110] },
         '2da cuadra': { A: [201, 202, 203, 204, 205], B: [206, 207, 208, 209, 210] },
@@ -72,11 +98,8 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
         'callejon': { A: [501, 502, 503, 504, 505] }
       };
 
-      const puestosOcupados = [
-        '101-A-1ra cuadra',
-        '102-A-1ra cuadra',
-      ];
-
+      const puestosOcupados = ['101-A-1ra cuadra', '102-A-1ra cuadra'];
+      
       const puestosDisponiblesFiltrados = {};
       Object.keys(estructuraSimulada).forEach(cuadra => {
         puestosDisponiblesFiltrados[cuadra] = {};
@@ -95,13 +118,12 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
       
     } catch (error) {
       console.error('Error cargando puestos:', error);
-      setError('Error al cargar puestos disponibles');
     } finally {
       setLoadingPuestos(false);
     }
   };
 
-  // Actualizar filas cuando cambia la cuadra
+  // Lógica de selects dependientes
   useEffect(() => {
     if (formData.cuadra_puesto && puestosCombinados[formData.cuadra_puesto]) {
       const filas = Object.keys(puestosCombinados[formData.cuadra_puesto])
@@ -118,7 +140,6 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
     }
   }, [formData.cuadra_puesto, puestosCombinados]);
 
-  // Actualizar números cuando cambia la fila
   useEffect(() => {
     if (formData.cuadra_puesto && formData.fila_puesto && 
         puestosCombinados[formData.cuadra_puesto]?.[formData.fila_puesto]) {
@@ -134,7 +155,7 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
     }
   }, [formData.cuadra_puesto, formData.fila_puesto, puestosCombinados]);
 
-  // Funciones para drag & drop
+  // Funciones para archivos
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -154,15 +175,13 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
       const file = files[0];
       if (file.type.startsWith('image/')) {
         handleFileSelect(file);
-      } else {
-        setError('Por favor, selecciona solo imágenes');
       }
     }
   };
 
   const handleFileSelect = (file) => {
     if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen es demasiado grande (máximo 5MB)');
+      setLocalError('La imagen es demasiado grande (máximo 5MB)');
       return;
     }
     
@@ -171,7 +190,7 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
       foto: file,
       fotoPreview: URL.createObjectURL(file)
     }));
-    setError('');
+    setLocalError('');
   };
 
   const handleFileInputChange = (e) => {
@@ -186,117 +205,26 @@ const ModalAfiliado = ({ opened, onClose, onSubmit }) => {
       ...prev,
       [field]: value
     }));
-    setError('');
+    setLocalError('');
   };
 
   const handleSubmit = async () => {
-    // Validaciones básicas
-    if (!formData.ci || !formData.nombre || !formData.paterno) {
-      setError('[FRONT ]Por favor complete los campos requeridos (CI, Nombre y Apellido Paterno)');
-      return;
-    }
 
-    if (formData.ci.length < 5) {
-      setError('El CI debe tener al menos 5 dígitos');
-      return;
-    }
-
-    // Validar que si se llena algún campo de puesto, se llenen todos
-    const camposPuesto = [formData.cuadra_puesto, formData.fila_puesto, formData.nro_puesto];
-    const algunCampoPuestoLleno = camposPuesto.some(campo => campo);
-    const todosCamposPuestoLlenos = camposPuesto.every(campo => campo);
     
-    if (algunCampoPuestoLleno && !todosCamposPuestoLlenos) {
-      setError('Por favor complete todos los campos del puesto (Cuadra, Fila y Número) o déjelos vacíos');
+    // Validaciones locales
+    if (!formData.ci || !formData.nombre || !formData.paterno) {
+      console.log('Validación falló: campos requeridos');
+      setLocalError('Por favor complete los campos requeridos (CI, Nombre y Apellido Paterno)');
       return;
     }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      // 1. Preparar datos básicos del afiliado
-      const afiliadoData = {
-        ci: formData.ci,
-        extension: formData.extension,
-        nombre: formData.nombre,
-        paterno: formData.paterno,
-        materno: formData.materno || '',
-        sexo: formData.sexo,
-        fecNac: formData.fecNac || null,
-        telefono: formData.telefono || '',
-        ocupacion: formData.ocupacion || '',
-        direccion: formData.direccion || '',
-      };
-
-      console.log('Enviando datos del afiliado:', afiliadoData);
-
-      // 2. Crear el afiliado en el backend
-      const response = await api.post('/afiliados', afiliadoData);
-      
-      if (response.data && response.data.afiliado) {
-        const afiliadoId = response.data.afiliado.id || response.data.afiliado.id_afiliado;
-        
-        // 3. Subir imagen si hay una
-        if (formData.foto) {
-          await subirImagenPerfil(afiliadoId, formData.foto);
-        }
-        
-        // 4. Asignar puesto si se seleccionó uno
-        if (todosCamposPuestoLlenos) {
-          await asignarPuesto(afiliadoId, formData);
-        }
-
-        // 5. Notificar éxito
-        if (onSubmit) {
-          onSubmit(response.data);
-        }
-        
-        resetForm();
-        onClose();
-      }
-      
-    } catch (err) {
-      console.error('Error al crear afiliado:', err);
-      setError(err.response?.data?.error || err.message || 'Error al crear afiliado');
-    } finally {
-      setLoading(false);
+    const resultado = await crearAfiliadoCompleto(formData);
+    
+    if (resultado.exito) {
+      setLocalSuccess('Afiliado creado exitosamente');
+    } else {
+      console.log('Error:', resultado.error);
     }
   };
-
- // Función para subir imagen de perfil
-const subirImagenPerfil = async (afiliadoId, fotoFile) => {
-  const formDataImg = new FormData();
-  formDataImg.append('foto', fotoFile);
-  
-  try {
-    await api.post(`/afiliados/${afiliadoId}/upload-perfil`, formDataImg, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  } catch (error) {
-    console.error('Error al subir imagen:', error);
-  }
-};
-
-// Función para asignar puesto
-const asignarPuesto = async (afiliadoId, data) => {
-  try {
-    const puestoData = {
-      fila: data.fila_puesto,
-      cuadra: data.cuadra_puesto,
-      nroPuesto: parseInt(data.nro_puesto),
-      rubro: data.rubro_puesto || '',
-      tiene_patente: data.tiene_patente,
-      razon: 'NUEVITO'
-    };
-    
-    await api.post(`/afiliados/${afiliadoId}/asignar-puesto`, puestoData);
-  } catch (error) {
-    console.error('Error al asignar puesto:', error);
-  }
-};
 
   const resetForm = () => {
     setFormData({
@@ -315,11 +243,14 @@ const asignarPuesto = async (afiliadoId, data) => {
       nro_puesto: '',
       rubro_puesto: '',
       tiene_patente: false,
+      foto: null,
+      fotoPreview: null
     });
     setFilasDisponibles([]);
     setNumerosDisponibles([]);
     setIsDragging(false);
-    setError('');
+    setLocalError('');
+    setLocalSuccess('');
   };
 
   const handleCancel = () => {
@@ -362,16 +293,29 @@ const asignarPuesto = async (afiliadoId, data) => {
       }}
     >
       <Box p="md">
-        {error && (
+        {/* Mostrar errores */}
+        {localError && (
           <Alert 
             icon={<IconAlertCircle size={16} />} 
             title="Error" 
             color="red" 
             mb="md"
             withCloseButton
-            onClose={() => setError('')}
+            onClose={() => setLocalError('')}
           >
-            {error}
+            {localError}
+          </Alert>
+        )}
+
+        {/* Mostrar éxito */}
+        {localSuccess && (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            title="Éxito" 
+            color="green" 
+            mb="md"
+          >
+            {localSuccess}
           </Alert>
         )}
         
@@ -709,7 +653,7 @@ const asignarPuesto = async (afiliadoId, data) => {
               fontWeight: 600,
               border: '1px solid #EDBE3C',
               height: rem(36),
-              '&:hover': {
+              '&:hover': loading ? undefined : {
                 backgroundColor: '#d4a933',
               }
             }}

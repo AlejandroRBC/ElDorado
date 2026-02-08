@@ -32,7 +32,7 @@ export const afiliadosService = {
       return { error: 'No se pudo conectar con el servidor' };
     }
   },
-  // Obtener afiliado por ID
+  
   obtenerPorId: async (id) => {
     try {
       const response = await fetch(`${API_URL}/afiliados/${id}`);
@@ -50,26 +50,73 @@ export const afiliadosService = {
       throw error;
     }
   },
-  // Agregar esta función al service:
-crear: async (afiliadoData) => {
-  try {
+  
+  crear: async (afiliadoData) => {
+    try {
       const response = await fetch(`${API_URL}/afiliados`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(afiliadoData),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Error ${response.status}`);
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(afiliadoData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en afiliadosService.crear:', error);
+      throw error;
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error en afiliadosService.crear:', error);
-    throw error;
-  }
-},
+  },
+
+  // NUEVO: Subir imagen de perfil
+  subirFotoPerfil: async (afiliadoId, fotoFile) => {
+    try {
+      const formData = new FormData();
+      formData.append('foto', fotoFile);
+      
+      const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/upload-perfil`, {
+        method: 'POST',
+        body: formData,
+        // NOTA: No establezcas Content-Type manualmente para FormData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en afiliadosService.subirFotoPerfil:', error);
+      throw error;
+    }
+  },
+
+  // NUEVO: Asignar puesto
+  asignarPuesto: async (afiliadoId, puestoData) => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/asignar-puesto`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(puestoData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en afiliadosService.asignarPuesto:', error);
+      throw error;
+    }
+  },
 };

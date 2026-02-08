@@ -20,7 +20,7 @@ const AfiliadosModule = () => {
     conexion,
     buscarAfiliados,
     cargarAfiliados,
-    crearAfiliado // Agregar esta función del hook
+    
   } = useAfiliados();
 
   // Manejar búsqueda
@@ -44,20 +44,9 @@ const AfiliadosModule = () => {
   };
 
   // Manejar envío del formulario del modal
-  const handleCrearAfiliado = async (afiliadoData) => {
-    try {
-      const resultado = await crearAfiliado(afiliadoData);
-      
-      if (resultado.exito) {
-        alert('Afiliado creado exitosamente');
-        await cargarAfiliados(); // Recargar la lista
-      } else {
-        alert(`Error: ${resultado.error}`);
-      }
-    } catch (error) {
-      console.error('Error al crear afiliado:', error);
-      alert('Error al crear afiliado');
-    }
+  const handleCrearAfiliado = () => {
+    // Solo recargamos la lista cuando se cierra el modal
+    cargarAfiliados();
   };
 
   // Mostrar estado de conexión
@@ -95,7 +84,7 @@ const AfiliadosModule = () => {
       <ModalAfiliado 
         opened={modalAbierto}
         onClose={() => setModalAbierto(false)}
-        onSubmit={handleCrearAfiliado}
+        onAfiliadoCreado={handleCrearAfiliado}
       />
       
       <Paper 
