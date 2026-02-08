@@ -1,16 +1,17 @@
-import { useLogin } from './loginHooks';
+import { useLogin } from './hooks/useLogin';
 import { LoginForm } from './components/LoginForm';
+import './styles/login.css'; 
 
 export default function LoginModule() {
-  // Extraemos la lógica del hook
   const { form, handleLogin, loading } = useLogin();
 
-  // Se lo pasamos a la UI
   return (
-    <LoginForm 
-      form={form} 
-      onSubmit={handleLogin} 
-      loading={loading} 
-    />
+    <div className="login-container">
+      <LoginForm 
+        form={form} 
+        onSubmit={handleLogin} 
+        loading={loading} 
+      />
+    </div>
   );
 }

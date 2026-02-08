@@ -7,14 +7,15 @@ export default function Sidebar({
     setColapsada 
 }) {
     const menuItems = [
-        { id: 'home',icon : '🧊', label: 'home' },
-        { id: 'afiliados',icon : '🧊', label: 'Afiliados' },
-        { id: 'puestos', icon : '🧊',label: 'Puestos' },
-        { id: 'patentes', icon : '🧊',label: 'Patentes' },
-        { id: 'actividades', icon : '🧊',label: 'Actividades' },
-        { id: 'deudas', icon : '🧊',label: 'Deudas' },
-        { id: 'reportes', icon : '🧊',label: 'Reportes' },
-        { id: 'configuracion', icon : '🧊',label: 'Configuración' },
+        { id: 'home',        icon: '🧊', label: 'Home' },
+        { id: 'afiliados',   icon: '🧊', label: 'Afiliados' },
+        { id: 'mapa',   icon: '🧊', label: 'Mapa' },
+        { id: 'puestos',     icon: '🧊', label: 'Puestos' },
+        { id: 'patentes',    icon: '🧊', label: 'Patentes' },
+        { id: 'actividades', icon: '🧊', label: 'Actividades' },
+        { id: 'deudas',      icon: '🧊', label: 'Deudas' },
+        { id: 'reportes',    icon: '🧊', label: 'Reportes' },
+        { id: 'configuracion', icon: '🧊', label: 'Configuración' },
     ];
 
     const handleItemClick = (moduloId) => {
@@ -29,7 +30,7 @@ export default function Sidebar({
             <div className="sidebar-header">
                 <div className="logo-container">
                     <div className="logo-icon">
-                        {/* aqui va uan img del logo XD  */}
+                        {/* aqui va una img del logo XD */}
                     </div>
                     {!colapsada && (
                         <div className="logo-text">
@@ -58,9 +59,7 @@ export default function Sidebar({
                             >
                                 <span className="nav-icon">{item.icon}</span>
                                 {!colapsada && (
-                                    <>
-                                        <span className="nav-label">{item.label}</span>
-                                    </>
+                                    <span className="nav-label">{item.label}</span>
                                 )}
                             </button>
                         </li>
