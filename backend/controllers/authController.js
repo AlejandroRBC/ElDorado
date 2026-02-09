@@ -167,39 +167,5 @@ const login = (req, res) => {
     });
 };
 
-const login = (req, res) => {
-    // 1. Extraemos 'usuario' que viene del frontend
-    const { usuario, password } = req.body;
-    try {
-        const sql = `
-            SELECT u.*, a.nombre, a.paterno 
-            FROM usuarios u
-            JOIN afiliado a ON u.id_afiliado = a.id_afiliado
-            WHERE u.nom_usuario = ? AND u.password = ? AND u.es_Vigente = 1
-        `;
-        const user = db.prepare(sql).get(usuario, password);
-        
-        if (user) {
-            registrarAuditoria({
-                nom_usuario_esclavo: user.nom_usuario,
-                nom_afiliado_esclavo: `${user.nombre} ${user.paterno}`,
-                rol: user.rol,
-                id_afiliado: user.id_afiliado,
-                motivo: "Inicio de sesión",
-                nom_usuario_master: "SISTEMA",
-                nom_afiliado_master: "AUTOGESTIÓN"
-            });
-
-            
-            delete user.password;
-            res.status(200).json({ success: true, user });
-        } else {
-            res.status(401).json({ success: false, message: "Usuario o contraseña incorrectos" });
-        }
-    } catch (error) {
-        console.error("Error en login:", error.message);
-        res.status(500).json({ success: false, message: "Error interno en el servidor" });
-    }
-};
 
 module.exports = { login };

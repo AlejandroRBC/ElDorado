@@ -6,7 +6,7 @@ const fs = require('fs');
 
 
 const authRoutes = require('./routes/authRoutes');
-const afiliadosRoutes = require('./routes/afiliadosRoutes');
+
 
 
 
