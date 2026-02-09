@@ -1,13 +1,27 @@
-import { Group, TextInput, Button, Paper,Text } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { Group, TextInput, Button, Paper, Text, Menu, Avatar } from '@mantine/core';
+import { IconSearch, IconLogout, IconUser, IconSettings } from '@tabler/icons-react';
 import { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Topbar = () => {
   const [searchValue, setSearchValue] = useState('');
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = () => {
     console.log('Buscando:', searchValue);
     // Aquí iría la lógica de búsqueda
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Redirigir al login
+  };
+
+  const handleProfile = () => {
+    console.log('Ver perfil');
+    // Navegar a perfil del usuario
   };
 
   return (
@@ -23,6 +37,7 @@ const Topbar = () => {
       }}
     >
       <Group justify="space-between">
+        {/* Lado izquierdo - Logo y búsqueda */}
         <Group gap="lg">
           {/* Logo */}
           <Text
@@ -34,7 +49,7 @@ const Topbar = () => {
               fontFamily: 'sans-serif',
             }}
           >
-            EL  DORADO
+            EL DORADO
           </Text>
 
           {/* Botón de búsqueda */}
@@ -74,6 +89,64 @@ const Topbar = () => {
               },
             }}
           />
+        </Group>
+
+        {/* Lado derecho - Información del usuario y logout */}
+        <Group gap="md">
+          {user && (
+            <>
+              <Text size="sm" style={{ color: '#0f0f0f' }}>
+                {user.usuario}
+              </Text>
+              
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <Avatar 
+                    size="md" 
+                    radius="xl" 
+                    color="black"
+                    style={{ 
+                      cursor: 'pointer',
+                      backgroundColor: '#edbe3c',
+                      color: '#0f0f0f',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {user.usuario?.charAt(0).toUpperCase() || 'U'}
+                  </Avatar>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Label>Usuario: {user.usuario}</Menu.Label>
+                  <Menu.Label>Rol: {user.rol}</Menu.Label>
+                  <Menu.Divider />
+                  
+                  <Menu.Item
+                    leftSection={<IconUser size={14} />}
+                    onClick={handleProfile}
+                  >
+                    Mi Perfil
+                  </Menu.Item>
+                  
+                  <Menu.Item
+                    leftSection={<IconSettings size={14} />}
+                  >
+                    Configuración
+                  </Menu.Item>
+                  
+                  <Menu.Divider />
+                  
+                  <Menu.Item
+                    leftSection={<IconLogout size={14} />}
+                    onClick={handleLogout}
+                    color="red"
+                  >
+                    Cerrar Sesión
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </>
+          )}
         </Group>
       </Group>
     </Paper>

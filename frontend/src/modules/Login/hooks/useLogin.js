@@ -22,7 +22,7 @@ export function useLogin() {
       const data = await authService.login(values);
       
       if (data.success) {
-        // ÉXITO - Mostrar mensaje del backend o uno genérico
+        // ÉXITO - Mostrar mensaje del backend
         notifications.show({
           title: '¡Acceso Correcto!',
           message: data.message || `Bienvenido, ${data.user.usuario}`,
@@ -39,7 +39,7 @@ export function useLogin() {
         };
         
       } else {
-        // ERROR del backend - Mostrar mensaje exacto que viene del backend
+        // ERROR del backend
         notifications.show({
           title: 'Error de Autenticación',
           message: data.message || 'Error desconocido',
@@ -54,7 +54,7 @@ export function useLogin() {
       }
       
     } catch (err) {
-      // ERROR de conexión/red (no llegó al backend)
+      // ERROR de conexión/red
       notifications.show({
         title: 'Error de Conexión',
         message: err.message || 'No se pudo conectar con el servidor',

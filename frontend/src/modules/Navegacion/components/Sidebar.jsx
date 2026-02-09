@@ -4,6 +4,7 @@ import {
   IconHome,
   IconUsers,
   IconLicense,
+  IconMap
 } from '@tabler/icons-react';
 
 // Configuración de módulos
@@ -25,6 +26,12 @@ const modules = [
     path: '/gestionPuestos',
     icon: IconLicense,
     component: 'GestionPatentesPuestosModule',
+  },
+  {
+    name: 'Mapa',
+    path: '/mapa',
+    icon: IconMap,
+    component: 'MapaModule',
   },
 ];
 

@@ -5,13 +5,14 @@ import Sidebar from './components/Sidebar';
 import { Suspense, lazy } from 'react';
 
 // Lazy loading de módulos
-const HomeModule = lazy(() => import('../Inicio/InicioModule'));
+const InicioModule = lazy(() => import('../Inicio/InicioModule'));
 const AfiliadosModule = lazy(() => import('../Afiliados/AfiliadosModule'));
-
 const GestionPatentesPuestosModule = lazy(() => import('../../modules/GestionPatentesPuestos/GestionPatentesPuestosModule'));
+const MapaModule = lazy(() => import('../Mapa/MapaModule'));
 
 // esta importacion es para parte de afiliados
 const DetallesAfiliado = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
+
 const NavegacionModule = () => {
   return (
     <AppShell
@@ -31,12 +32,12 @@ const NavegacionModule = () => {
         <Suspense fallback={<div>Cargando módulo...</div>}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
-            <Route path="/inicio" element={<HomeModule />} />
+            <Route path="/inicio" element={<InicioModule />} />
             <Route path="/afiliados" element={<AfiliadosModule />} />
-
-            <Route path="/gestionPuestos" element={<GestionPatentesPuestosModule />} /> 
-
-            {/* ruta para pode rentrar al detalle de un afiliado */}
+            <Route path="/gestionPuestos" element={<GestionPatentesPuestosModule />} />
+            <Route path="/mapa" element={<MapaModule />} /> {/* Nueva ruta */}
+            
+            {/* ruta para poder entrar al detalle de un afiliado */}
             <Route path="/afiliados/:id" element={<DetallesAfiliado />} />
 
             {/* Agrega más rutas aquí */}
