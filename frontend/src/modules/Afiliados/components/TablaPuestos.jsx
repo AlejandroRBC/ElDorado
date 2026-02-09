@@ -2,6 +2,23 @@ import { Table, Badge, Group, ActionIcon, Text, ScrollArea } from '@mantine/core
 import { IconEdit, IconTrash, IconEye } from '@tabler/icons-react';
 
 const TablaPuestos = ({ puestos }) => {
+
+  if (puestos.length === 0) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '40px',
+        color: '#666',
+        backgroundColor: '#f9f9f9',
+        borderRadius: '8px'
+      }}>
+        <Text size="lg">No hay puestos registrados</Text>
+        <Text size="sm" style={{ marginTop: '10px' }}>
+          Este afiliado no tiene puestos asignados
+        </Text>
+      </div>
+    );
+  }
   const rows = puestos.map((puesto) => (
     <Table.Tr key={puesto.id} style={{ borderBottom: '1px solid #eee' }}>
       <Table.Td>
@@ -25,30 +42,11 @@ const TablaPuestos = ({ puestos }) => {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge
-          variant="light"
-          style={{
-            backgroundColor: 'rgba(237, 190, 60, 0.1)',
-            color: '#edbe3c',
-            fontWeight: 600,
-          }}
-        >
+        <Text size="sm" style={{ color: '#666' }}>
           {puesto.rubro}
-        </Badge>
+        </Text>
       </Table.Td>
-      <Table.Td>
-        <Badge
-          size="sm"
-          style={{
-            backgroundColor: puesto.estado === 'Activo' ? '#4CAF50' : 
-                           puesto.estado === 'Inactivo' ? '#F44336' : '#FF9800',
-            color: 'white',
-            fontWeight: 600,
-          }}
-        >
-          {puesto.estado}
-        </Badge>
-      </Table.Td>
+      
       <Table.Td>
         <Group gap={4}>
           <ActionIcon
@@ -108,13 +106,13 @@ const TablaPuestos = ({ puestos }) => {
       >
         <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
           <Table.Tr>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Nro</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Fila</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Cuadra</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Fecha Obtención</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Rubro</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Estado</Table.Th>
-            <Table.Th style={{ color: '#0f0f0f', fontWeight: 600 }}>Opciones</Table.Th>
+            <Table.Th >Nro</Table.Th>
+            <Table.Th >Fila</Table.Th>
+            <Table.Th >Cuadra</Table.Th>
+            <Table.Th >Fecha Obtención</Table.Th>
+            <Table.Th >Rubro</Table.Th>
+            
+            <Table.Th >Opciones</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

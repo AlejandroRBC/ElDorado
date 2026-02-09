@@ -75,7 +75,6 @@ const Sidebar = () => {
         position: 'fixed',
         left: 0,
         top: '20%',
-        
         overflowY: 'auto',
       }}
     >

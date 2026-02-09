@@ -40,7 +40,7 @@ exports.create = async (req, res) => {
     // Validaciones básicas
     if (!req.body.ci || !req.body.nombre || !req.body.paterno) {
       return res.status(400).json({ 
-        error: 'CI, nombre y apellido paterno son requeridos' 
+        error: 'CI, nombre y apellido paterno son requeridos <br>'+req.body; 
       });
     }
     
