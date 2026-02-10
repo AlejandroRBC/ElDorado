@@ -1,9 +1,9 @@
-import { useAuth } from './context/AuthContext';
+import { useLogin } from './context/LoginContext';
 import LoginModule from './modules/Login/LoginModule';
 import NavegacionModule from './modules/Navegacion/NavegacionModule';
 
 function AppContent() {
-  const { isAuth, loading } = useAuth();
+  const { isLogin, loading } = useLogin();
 
   // Mostrar cargando mientras verifica autenticación
   if (loading) {
@@ -22,7 +22,7 @@ function AppContent() {
   }
 
   // Si no está autenticado, mostrar el login
-  if (!isAuth) {
+  if (!isLogin) {
     return <LoginModule />;
   }
 

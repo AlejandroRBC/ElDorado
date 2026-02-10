@@ -2,7 +2,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import { Notifications } from '@mantine/notifications';
-import { AuthProvider } from './context/AuthContext';
+import { LoginProvider } from './context/LoginContext';
 import AppContent from './AppContent';
 import { theme } from './theme';
 import './App.css';
@@ -14,11 +14,11 @@ import '@mantine/notifications/styles.css';
 function App() {
   return (
     <MantineProvider theme={theme}>
-      <Notifications />
+      <Notifications position="top-right" />
       <BrowserRouter>
-        <AuthProvider>
+        <LoginProvider>
           <AppContent />
-        </AuthProvider>
+        </LoginProvider>
       </BrowserRouter>
     </MantineProvider>
   );

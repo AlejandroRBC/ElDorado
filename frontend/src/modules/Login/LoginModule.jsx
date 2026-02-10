@@ -1,9 +1,9 @@
-import { useLogin } from './hooks/useLogin';
+import { useLoginForm } from './hooks/useLogin';
 import { LoginForm } from './components/LoginForm';
 import './styles/login.css'; 
 
 export default function LoginModule() {
-  const { form, handleLogin, loading } = useLogin();
+  const { form, handleLogin, loading } = useLoginForm();
 
   return (
     <div className="login-container">

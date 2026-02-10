@@ -1,12 +1,12 @@
 import { Group, TextInput, Button, Paper, Text, Menu, Avatar } from '@mantine/core';
 import { IconSearch, IconLogout, IconUser, IconSettings } from '@tabler/icons-react';
 import { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useLogin } from '../../../context/LoginContext';
 import { useNavigate } from 'react-router-dom';
 
 const Topbar = () => {
   const [searchValue, setSearchValue] = useState('');
-  const { user, logout } = useAuth();
+  const { user, logout } = useLogin();
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -120,14 +120,6 @@ const Topbar = () => {
                   <Menu.Label>Usuario: {user.usuario}</Menu.Label>
                   <Menu.Label>Rol: {user.rol}</Menu.Label>
                   <Menu.Divider />
-                  
-                  <Menu.Item
-                    leftSection={<IconUser size={14} />}
-                    onClick={handleProfile}
-                  >
-                    Mi Perfil
-                  </Menu.Item>
-                  
                   <Menu.Item
                     leftSection={<IconSettings size={14} />}
                   >

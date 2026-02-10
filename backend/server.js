@@ -5,11 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-const authRoutes = require('./routes/authRoutes');
-
-
-
-
+const LoginRoutes = require('./routes/LoginRoutes');
 const puestosRoutes = require('./routes/puestosRoutes');
 const afiliadosRoutes = require('./routes/afiliadosRoutes');
 const tenenciaRoutes = require('./routes/tenenciasRoutes');
@@ -36,7 +32,7 @@ app.use('/assets', express.static(path.join(__dirname, '../frontend/src/assets')
 
 // --- REDIRECCIÓN DE RUTAS ---
 // Todas las rutas dentro de authRoutes tendrán el prefijo /api/auth
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', LoginRoutes);
 app.use('/api/afiliados', afiliadosRoutes);
 
 

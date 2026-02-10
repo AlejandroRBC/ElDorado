@@ -1,21 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+const LoginContext = createContext();
 
-export function AuthProvider({ children }) {
+export function LoginProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuth, setIsAuth] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
 
   // Verificar si hay sesión guardada al cargar
   useEffect(() => {
-    const checkAuth = () => {
+    const checkLogin = () => {
       const savedUser = localStorage.getItem('user_session');
       if (savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
-          setIsAuth(true);
+          setIsLogin(true);
         } catch (error) {
           console.error('Error parsing user session:', error);
           localStorage.removeItem('user_session');
@@ -24,34 +24,34 @@ export function AuthProvider({ children }) {
       setLoading(false);
     };
 
-    checkAuth();
+    checkLogin();
   }, []);
 
-  // Función para iniciar sesión
+  // Iniciar sesión
   const login = (userData) => {
     setUser(userData);
-    setIsAuth(true);
+    setIsLogin(true);
     localStorage.setItem('user_session', JSON.stringify(userData));
   };
 
-  // Función para cerrar sesión
+  // Cerrar sesión
   const logout = () => {
     setUser(null);
-    setIsAuth(false);
+    setIsLogin(false);
     localStorage.removeItem('user_session');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuth, loading, login, logout }}>
+    <LoginContext.Provider value={{ user, isLogin, loading, login, logout }}>
       {children}
-    </AuthContext.Provider>
+    </LoginContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
+export function useLogin() {
+  const context = useContext(LoginContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useLogin must be used within a LoginProvider');
   }
   return context;
 }
