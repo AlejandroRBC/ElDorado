@@ -112,13 +112,13 @@ const AfiliadosModule = () => {
 
   // Opciones para selects
   const opcionesPatente = [
-    { value: 'true', label: '✅ Con Patente' },
-    { value: 'false', label: '❌ Sin Patente' }
+    { value: 'true', label: 'Con Patente' },
+    { value: 'false', label: 'Sin Patente' }
   ];
 
   const opcionesOrden = [
-    { value: 'alfabetico', label: '📝 Orden Alfabético' },
-    { value: 'registro', label: '📅 Fecha de Registro' }
+    { value: 'alfabetico', label: 'Orden Alfabético' },
+    { value: 'registro', label: 'Fecha de Registro' }
   ];
 
   const opcionesPuestoCount = [

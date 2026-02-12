@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle } from '@tabler/icons-react';
 import { useAfiliado } from '../hooks/useAfiliado';
 import TablaPuestos from './TablaPuestos';
+import { getPerfilUrl } from '../../../utils/imageHelper';
+
 
 const DetallesAfiliado = () => {
   const { id } = useParams();
@@ -158,9 +160,8 @@ const DetallesAfiliado = () => {
                     flexShrink: 0,
                   }}
                 >
-                  <img
-                    src={afiliado.url_perfil || '/assets/perfiles/sinPerfil.png'}
-                    alt={`Perfil de ${afiliado.nombreCompleto || afiliado.nombre}`}
+                  <img src={getPerfilUrl(afiliado)} alt="Perfil" 
+
                     style={{
                       width: '100%',
                       height: '100%',

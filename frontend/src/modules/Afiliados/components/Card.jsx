@@ -1,6 +1,8 @@
 import { Text, Group, Badge, Stack, ActionIcon, Box, Button } from '@mantine/core';
 import { IconEdit, IconChevronRight } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { getPerfilUrl } from '../../../utils/imageHelper';
+
 
 const Card = ({ afiliado }) => {
   const navigate = useNavigate();
@@ -66,8 +68,8 @@ const Card = ({ afiliado }) => {
           }}
         >
           <img
-            src="/assets/perfiles/sinPerfil.png"
-            alt={`Perfil de ${afiliado.nombre}`}
+  src={getPerfilUrl(afiliado)}
+  alt={`Perfil de ${afiliado.nombre}`}
             style={{
               width: '100%',
               height: '100%',
