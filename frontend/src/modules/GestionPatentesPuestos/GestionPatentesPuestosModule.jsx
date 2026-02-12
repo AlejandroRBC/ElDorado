@@ -38,33 +38,35 @@ function GestionPatentesPuestosModule() {
 
   // Función de filtrado
   const puestosFiltrados = useMemo(() => {
-    return puestos.filter((puesto) => {
-      const coincideBusqueda =
-        search === '' ||
-        String(puesto.nroPuesto || '').includes(search) ||
-        (puesto.apoderado || '').toLowerCase().includes(search.toLowerCase()) ||
-        (puesto.ci || '').includes(search);
+    
+  return puestos.filter(puesto => {
+    // Búsqueda general
+    const coincideBusqueda =
+      search.trim() === '' ||
+      String(puesto.id_puesto).includes(search) ||
+      (puesto.apoderado || '').toLowerCase().includes(search.toLowerCase()) ||
+      (puesto.ci || '').includes(search);
 
-      let coincidePatente = true;
-      if (filtroPatente && filtroPatente !== 'Todo') {
-        if (filtroPatente === 'si') {
-          coincidePatente = Boolean(puesto.tiene_patente);
-        } else {
-          coincidePatente = !Boolean(puesto.tiene_patente);
-        }
-      }
+    // Patente
+    const coincidePatente =
+      filtroPatente === null || filtroPatente === 'Todo'
+        ? true
+        : filtroPatente === 'si'
+        ? Boolean(puesto.tiene_patente)
+        : !Boolean(puesto.tiene_patente);
 
-      const coincideFila =
-         !filtroFila || filtroFila === 'Todo' || 
-         String(puesto.fila || '') === filtroFila;
+    // Fila
+    const coincideFila =
+      !filtroFila || filtroFila === 'Todo' ? true : puesto.fila === filtroFila;
 
-      const coincideCuadra =
-        !filtroCuadra || filtroCuadra === 'Todo' || 
-        String(puesto.cuadra || '') === filtroCuadra;
+    // Cuadra
+    const coincideCuadra =
+      !filtroCuadra || filtroCuadra === 'Todo' ? true : puesto.cuadra === filtroCuadra;
 
-      return coincideBusqueda && coincidePatente && coincideFila && coincideCuadra;
-    });
+    return coincideBusqueda && coincidePatente && coincideFila && coincideCuadra;
+  });
   }, [puestos, search, filtroPatente, filtroFila, filtroCuadra]);
+
 
   const handleAbrirTraspaso = (puesto = null) => {
     setPuestoParaTraspaso(puesto);
@@ -72,26 +74,23 @@ function GestionPatentesPuestosModule() {
   };
 
 
-  const handleEjecutarTraspaso = async ({ desde, para, puestos, motivoDetallado }) => {
+  const handleEjecutarTraspaso = async ({ desde, para, motivo }) => {
     try {
       setLoading(true);
-      // Usar el endpoint de traspaso múltiple
-      const resultado = await puestosService.traspasoMultiple({
-        desdeAfiliado: desde,
-        paraAfiliado: para,
-        puestos: puestos,
-        motivo: motivoDetallado || 'Traspaso desde sistema'
+
+      const resultado = await puestosService.traspasar({
+        id_puesto: puestoParaTraspaso.id_puesto,
+        desde_afiliado: desde,
+        para_afiliado: para,
+        motivo: motivo || 'Traspaso sistema'
       });
 
       if (resultado.success) {
-        // Recargar lista de puestos
         await cargarPuestos();
         closeTraspaso();
-      } else {
-        setError("Error en traspaso: " + resultado.errores?.map(e => e.error).join(', '));
       }
+
     } catch (error) {
-      console.error('Error en traspaso:', error);
       setError("Error al realizar traspaso");
     } finally {
       setLoading(false);
@@ -100,13 +99,16 @@ function GestionPatentesPuestosModule() {
 
   useEffect(() => {
     cargarPuestos();
+    
   }, []);
+
 
   const cargarPuestos = async () => {
     try {
       setLoading(true); // ← AQUÍ ES DONDE SE USA setLoading
       setError(null);
       const data = await puestosService.listar();
+      console.log("Todos los datos que llegan del servidor:", data);
       setPuestos(data);
     } catch (e) {
       console.error("Error al cargar puestos", e);
@@ -256,7 +258,7 @@ function GestionPatentesPuestosModule() {
               <Table.Tbody>
                 {puestosFiltrados.map((puesto) => (
                   <Table.Tr key={puesto.id_puesto || puesto.id} style={{ textAlign: 'center' }}>
-                    <Table.Td><Text size="sm" fw={700}>{puesto.nroPuesto}</Text></Table.Td>
+                    <Table.Td><Text size="sm" fw={700}>{puesto.id_puesto}</Text></Table.Td>
                     <Table.Td><Text size="sm">{`${puesto.fila} - ${puesto.cuadra}`}</Text></Table.Td>
                     <Table.Td>
                        <Text size="sm" fw={500}>{puesto.apoderado || 'VACANTE'}</Text>

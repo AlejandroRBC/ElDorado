@@ -122,11 +122,66 @@ function insertarDatosEjemplo() {
         `, a);
       });
       crearUsuarioAdmin();
+
     } else {
       crearUsuarioAdmin();
     }
+    insertarPuestosEjemplo();
   });
 }
+
+function insertarPuestosEjemplo() {
+  const puestos = [
+    ['A','1',1,3,4,1,'Ropa'],      // con patente
+    ['A','1',2,3,4,0,'Comida'],    // sin patente
+    ['B','2',5,2,3,1,'Verduras'],
+    ['C','1',3,3,3,0,'Artesanía']
+  ];
+
+  puestos.forEach(p => {
+    db.run(`
+      INSERT OR IGNORE INTO puesto
+      (fila, cuadra, nroPuesto, ancho, largo, tiene_patente, rubro)
+      VALUES (?,?,?,?,?,?,?)
+    `, p);
+  });
+
+  
+  asignarTenenciasActivas();
+}
+
+
+function asignarTenenciasActivas() {
+  db.all(`SELECT id_puesto FROM puesto`, (err, puestos) => {
+    if (!puestos) return;
+
+    puestos.forEach((p, i) => {
+
+      db.get(`
+        SELECT id_tenencia 
+        FROM tenencia_puesto
+        WHERE id_puesto=? AND fecha_fin IS NULL
+      `, [p.id_puesto], (err, existe) => {
+
+        if (!existe) {
+          const idAfiliado = (i % 3) + 1;
+
+          db.run(`
+            INSERT INTO tenencia_puesto
+            (id_afiliado, id_puesto, razon)
+            VALUES (?,?, 'asignacion_inicial')
+          `, [idAfiliado, p.id_puesto]);
+        }
+
+      });
+
+    });
+
+    console.log("✅ Tenencias activas verificadas");
+  });
+}
+
+
 
 function crearUsuarioAdmin() {
   db.get(`SELECT COUNT(*) AS count FROM usuarios WHERE nom_usuario='admin'`, (err, row) => {

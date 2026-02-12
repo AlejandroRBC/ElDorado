@@ -1,240 +1,100 @@
-//controllers/puestosController
-
 const db = require('../config/db');
 
-
-// ===============================
-// LISTAR TODOS LOS PUESTOS
-// ===============================
-const listarPuestos = (req, res) => {
+exports.listar = (req, res) => {
 
   const sql = `
-    SELECT *
-    FROM puesto
-    ORDER BY fila, cuadra, nroPuesto
-  `;
+    SELECT
+      p.id_puesto,
+      p.fila,
+      p.cuadra,
+      p.nroPuesto,
+      p.ancho,
+      p.largo,
+      p.tiene_patente,
+      p.rubro,
 
-  db.all(sql, [], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({
-        message: "Error al listar puestos"
-      });
-    }
+      t.fecha_ini AS fecha_adquisicion,
 
-    res.json(rows);
-  });
-
-};
-
-
-
-// ===============================
-// VER PUESTO POR ID
-// ===============================
-const obtenerPuesto = (req, res) => {
-
-  const { id } = req.params;
-
-  db.get(
-    `SELECT * FROM puesto WHERE id_puesto = ?`,
-    [id],
-    (err, row) => {
-
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ message: "Error" });
-      }
-
-      if (!row) {
-        return res.status(404).json({
-          message: "Puesto no encontrado"
-        });
-      }
-
-      res.json(row);
-    }
-  );
-
-};
-
-
-
-// ===============================
-// CREAR PUESTO
-// ===============================
-const crearPuesto = (req, res) => {
-
-  const {
-    fila,
-    cuadra,
-    nroPuesto,
-    ancho,
-    largo,
-    tiene_patente,
-    rubro
-  } = req.body;
-
-  const sql = `
-    INSERT INTO puesto
-    (fila, cuadra, nroPuesto, ancho, largo, tiene_patente, rubro)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  db.run(sql, [
-    fila,
-    cuadra,
-    nroPuesto,
-    ancho,
-    largo,
-    tiene_patente ? 1 : 0,
-    rubro
-  ],
-  function(err) {
-
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({
-        message: "Error al crear puesto",
-        error: err.message
-      });
-    }
-
-    res.status(201).json({
-      message: "Puesto creado",
-      id: this.lastID
-    });
-
-  });
-
-};
-
-
-
-// ===============================
-// ACTUALIZAR PUESTO
-// ===============================
-const actualizarPuesto = (req, res) => {
-
-  const { id } = req.params;
-  const datos = req.body;
-
-  const sql = `
-    UPDATE puesto
-    SET fila = ?,
-        cuadra = ?,
-        nroPuesto = ?,
-        ancho = ?,
-        largo = ?,
-        tiene_patente = ?,
-        rubro = ?
-    WHERE id_puesto = ?
-  `;
-
-  db.run(sql, [
-    datos.fila,
-    datos.cuadra,
-    datos.nroPuesto,
-    datos.ancho,
-    datos.largo,
-    datos.tiene_patente ? 1 : 0,
-    datos.rubro,
-    id
-  ],
-  function(err) {
-
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({
-        message: "Error al actualizar"
-      });
-    }
-
-    res.json({
-      message: "Puesto actualizado",
-      cambios: this.changes
-    });
-
-  });
-
-};
-
-
-
-// ===============================
-// ELIMINAR PUESTO
-// ===============================
-const eliminarPuesto = (req, res) => {
-
-  const { id } = req.params;
-
-  db.run(
-    `DELETE FROM puesto WHERE id_puesto = ?`,
-    [id],
-    function(err) {
-
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({
-          message: "Error al eliminar"
-        });
-      }
-
-      res.json({
-        message: "Puesto eliminado"
-      });
-
-    }
-  );
-
-};
-
-
-
-// ===============================
-// LISTAR PUESTOS CON AFILIADO ACTUAL
-// (JOIN con tenencia activa)
-// ===============================
-const listarPuestosConAfiliado = (req, res) => {
-
-  const sql = `
-    SELECT 
-      p.*,
       a.id_afiliado,
-      a.nombre,
-      a.paterno,
-      a.ci
+      a.ci,
+      (a.nombre || ' ' || a.paterno) AS apoderado
+
     FROM puesto p
+
     LEFT JOIN tenencia_puesto t 
-      ON p.id_puesto = t.id_puesto
-      AND t.fecha_fin IS NULL
+    ON t.id_tenencia = (
+        SELECT id_tenencia
+        FROM tenencia_puesto
+        WHERE id_puesto = p.id_puesto
+        ORDER BY id_tenencia DESC
+        LIMIT 1
+    )
     LEFT JOIN afiliado a
-      ON t.id_afiliado = a.id_afiliado
+      ON a.id_afiliado = t.id_afiliado
+
     ORDER BY p.fila, p.cuadra, p.nroPuesto
   `;
 
   db.all(sql, [], (err, rows) => {
-
     if (err) {
-      console.error(err.message);
-      return res.status(500).json({
-        message: "Error en consulta"
-      });
+      console.error(err);
+      return res.status(500).json({ error: "Error al listar puestos" });
     }
 
     res.json(rows);
+  });
+};
+
+exports.infoTraspaso = (req, res) => {
+
+  const idPuesto = parseInt(req.params.id);
+
+  if (!idPuesto) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  db.get(`
+    SELECT a.*
+    FROM tenencia_puesto t
+    JOIN afiliado a ON a.id_afiliado = t.id_afiliado
+    WHERE t.id_puesto = ?
+    AND t.fecha_fin IS NULL
+    ORDER BY t.id_tenencia DESC
+    LIMIT 1
+  `, [idPuesto], (err, afiliado) => {
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Error buscando afiliado actual" });
+    }
+
+    if (!afiliado) {
+      return res.json({
+        afiliadoActual: null,
+        puestosDelAfiliado: []
+      });
+    }
+
+    db.all(`
+      SELECT p.*
+      FROM tenencia_puesto t
+      JOIN puesto p ON p.id_puesto = t.id_puesto
+      WHERE t.id_afiliado = ?
+      AND t.fecha_fin IS NULL
+    `, [afiliado.id_afiliado], (err2, puestos) => {
+
+      if (err2) {
+        console.error(err2);
+        return res.status(500).json({ error: "Error buscando puestos" });
+      }
+
+      res.json({
+        afiliadoActual: afiliado,
+        puestosDelAfiliado: puestos
+      });
+
+    });
 
   });
 
-};
-
-
-
-module.exports = {
-  listarPuestos,
-  obtenerPuesto,
-  crearPuesto,
-  actualizarPuesto,
-  eliminarPuesto,
-  listarPuestosConAfiliado
 };

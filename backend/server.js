@@ -38,7 +38,7 @@ app.use('/assets', express.static(path.join(__dirname, '../frontend/src/assets')
 // Todas las rutas dentro de authRoutes tendrán el prefijo /api/auth
 app.use('/api/auth', authRoutes);
 app.use('/api/afiliados', afiliadosRoutes);
-
+app.use('/api/puestos', puestosRoutes);
 
 
 // Ruta principal
@@ -63,9 +63,6 @@ app.get('/', (req, res) => {
   });
   
 
-app.use('/api/puestos',puestosRoutes);
-app.use('/api/afiliados',afiliadosRoutes);
-app.use('/api/tenencias',tenenciaRoutes);
 
 app.listen(PORT, () => {
     console.log(`-------------------------------------------`);
