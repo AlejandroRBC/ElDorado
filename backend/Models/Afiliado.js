@@ -7,35 +7,72 @@ const Afiliado = {
       let query = `
         SELECT 
           a.*,
-          GROUP_CONCAT(p.nroPuesto || '-' || p.fila || '-' || p.cuadra) as puestos
+          COUNT(DISTINCT tp.id_tenencia) as total_puestos,
+          SUM(CASE WHEN p.tiene_patente = 1 THEN 1 ELSE 0 END) as puestos_con_patente,
+          GROUP_CONCAT(p.nroPuesto || '-' || p.fila || '-' || p.cuadra) as puestos_codes,
+          GROUP_CONCAT(DISTINCT p.rubro) as rubros,
+          MIN(CASE WHEN tp.fecha_fin IS NULL THEN tp.fecha_ini END) as fecha_primer_puesto
         FROM afiliado a
-        LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado 
-          AND tp.fecha_fin IS NULL
+        LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado AND tp.fecha_fin IS NULL
         LEFT JOIN puesto p ON tp.id_puesto = p.id_puesto  
         WHERE a.es_habilitado = 1
       `;
       
       const queryParams = [];
       
-      // Filtrar por búsqueda
+      // 1. FILTRO DE BÚSQUEDA
       if (params.search) {
         query += ` AND (
           a.paterno LIKE ? OR 
           a.nombre LIKE ? OR 
+          a.materno LIKE ? OR
           a.ci LIKE ? OR
-          a.ocupacion LIKE ?
+          a.ocupacion LIKE ? OR
+          p.rubro LIKE ? OR
+          p.nroPuesto LIKE ?
         )`;
         const searchTerm = `%${params.search}%`;
-        queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        queryParams.push(
+          searchTerm, searchTerm, searchTerm, 
+          searchTerm, searchTerm, searchTerm, searchTerm
+        );
       }
       
-      // Filtrar por rubro
+      // 2. FILTRO POR PATENTE (con o sin patente)
+      if (params.conPatente !== null && params.conPatente !== undefined) {
+        const valorPatente = params.conPatente === 'true' || params.conPatente === true ? 1 : 0;
+        // Filtrar afiliados que tengan AL MENOS UN puesto con el estado de patente especificado
+        query += ` AND a.id_afiliado IN (
+          SELECT DISTINCT tp.id_afiliado 
+          FROM tenencia_puesto tp
+          JOIN puesto p ON tp.id_puesto = p.id_puesto
+          WHERE tp.fecha_fin IS NULL AND p.tiene_patente = ?
+        )`;
+        queryParams.push(valorPatente);
+      }
+      
+      // 3. FILTRO POR NÚMERO DE PUESTOS
+      if (params.puestoCount !== null && params.puestoCount !== undefined) {
+        const count = parseInt(params.puestoCount);
+        query += ` HAVING total_puestos ${count === 5 ? '>=' : '='} ?`;
+        queryParams.push(count);
+      } else {
+        query += ` GROUP BY a.id_afiliado`;
+      }
+      
+      // 4. FILTRO POR RUBRO
       if (params.rubro) {
-        query += ` AND a.ocupacion = ?`;
-        queryParams.push(params.rubro);
+        query += ` HAVING rubros LIKE ?`;
+        queryParams.push(`%${params.rubro}%`);
       }
       
-      query += ` GROUP BY a.id_afiliado ORDER BY a.paterno, a.materno`;
+      // 5. ORDENAMIENTO
+      if (params.orden === 'registro') {
+        query += ` ORDER BY a.fecha_afiliacion DESC`;
+      } else {
+        // Orden alfabético por defecto
+        query += ` ORDER BY a.paterno, a.materno, a.nombre`;
+      }
       
       db.all(query, queryParams, (err, rows) => {
         if (err) {
@@ -45,7 +82,7 @@ const Afiliado = {
         
         // Transformar datos para frontend
         const afiliados = rows.map(row => {
-          // Calcular edad si hay fecha de nacimiento
+          // Calcular edad
           let edad = null;
           if (row.fecNac) {
             const hoy = new Date();
@@ -62,14 +99,17 @@ const Afiliado = {
             nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
             ci: `${row.ci}-${row.extension}`,
             ocupacion: row.ocupacion,
-            patentes: row.puestos ? row.puestos.split(',').filter(p => p) : [],
+            patentes: row.puestos_codes ? row.puestos_codes.split(',').filter(p => p) : [],
+            total_puestos: row.total_puestos || 0,
+            puestos_con_patente: row.puestos_con_patente || 0,
             estado: 'Activo',
             telefono: row.telefono,
             direccion: row.direccion,
             fechaRegistro: row.fecha_afiliacion,
             url_perfil: row.url_perfil || '/assets/perfiles/sinPerfil.png',
             edad: edad,
-            sexo: row.sexo === 'M' ? 'Masculino' : 'Femenino'
+            sexo: row.sexo === 'M' ? 'Masculino' : 'Femenino',
+            fecha_afiliacion: row.fecha_afiliacion
           };
         });
         
@@ -77,6 +117,62 @@ const Afiliado = {
       });
     });
   },
+
+  // Obtener rubros únicos de puestos activos
+  getRubrosUnicos: () => {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT DISTINCT p.rubro 
+        FROM puesto p
+        WHERE p.rubro IS NOT NULL AND p.rubro != ''
+        ORDER BY p.rubro
+      `;
+      
+      db.all(query, [], (err, rows) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        
+        const rubros = rows.map(row => row.rubro).filter(Boolean);
+        resolve(rubros);
+      });
+    });
+  },
+
+  // Obtener estadísticas para contadores
+  getEstadisticas: () => {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT 
+          COUNT(DISTINCT a.id_afiliado) as total_afiliados,
+          COUNT(DISTINCT CASE 
+            WHEN p.tiene_patente = 1 AND tp.fecha_fin IS NULL 
+            THEN p.id_puesto 
+          END) as puestos_con_patente,
+          COUNT(DISTINCT CASE 
+            WHEN p.tiene_patente = 0 AND tp.fecha_fin IS NULL 
+            THEN p.id_puesto 
+          END) as puestos_sin_patente,
+          COUNT(DISTINCT CASE 
+            WHEN tp.id_afiliado IS NOT NULL AND tp.fecha_fin IS NULL 
+            THEN p.id_puesto 
+          END) as puestos_ocupados
+        FROM afiliado a
+        LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado AND tp.fecha_fin IS NULL
+        LEFT JOIN puesto p ON tp.id_puesto = p.id_puesto
+      `;
+      
+      db.get(query, [], (err, row) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(row || {});
+      });
+    });
+  },
+
 
 
 

@@ -144,6 +144,30 @@ router.post('/:id/asignar-puesto', (req, res) => {
   }
 });
 
+
+
+
+router.get('/rubros', async (req, res) => {
+  try {
+    const Afiliado = require('../models/Afiliado');
+    const rubros = await Afiliado.getRubrosUnicos();
+    res.json(rubros);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/estadisticas', async (req, res) => {
+  try {
+    const Afiliado = require('../models/Afiliado');
+    const estadisticas = await Afiliado.getEstadisticas();
+    res.json(estadisticas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Rutas existentes
 router.get('/test', afiliadosController.test);
 router.get('/', afiliadosController.getAll);

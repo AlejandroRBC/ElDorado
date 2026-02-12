@@ -1,10 +1,23 @@
 const Afiliado = require('../models/Afiliado');
 
-// Obtener todos los afiliados
 exports.getAll = async (req, res) => {
   try {
-    const { search, rubro } = req.query;
-    const afiliados = await Afiliado.findAll({ search, rubro });
+    const { 
+      search, 
+      rubro, 
+      orden = 'alfabetico',
+      puestoCount = null,
+      conPatente = null 
+    } = req.query;
+    
+    const afiliados = await Afiliado.findAll({ 
+      search, 
+      rubro,
+      orden,
+      puestoCount,
+      conPatente
+    });
+    
     res.json(afiliados);
   } catch (error) {
     console.error('Error en getAll:', error);
@@ -15,6 +28,27 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// Obtener rubros únicos para el filtro
+exports.getRubros = async (req, res) => {
+  try {
+    const rubros = await Afiliado.getRubrosUnicos();
+    res.json(rubros);
+  } catch (error) {
+    console.error('Error al obtener rubros:', error);
+    res.status(500).json({ error: 'Error al obtener rubros' });
+  }
+};
+
+// Obtener estadísticas para los contadores
+exports.getEstadisticas = async (req, res) => {
+  try {
+    const estadisticas = await Afiliado.getEstadisticas();
+    res.json(estadisticas);
+  } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
+    res.status(500).json({ error: 'Error al obtener estadísticas' });
+  }
+};
 // Obtener afiliado por ID
 exports.getById = async (req, res) => {
   try {

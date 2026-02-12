@@ -4,8 +4,16 @@ export const afiliadosService = {
   obtenerTodos: async (filtros = {}) => {
     try {
       const params = new URLSearchParams();
+      
       if (filtros.search) params.append('search', filtros.search);
       if (filtros.rubro) params.append('rubro', filtros.rubro);
+      if (filtros.orden) params.append('orden', filtros.orden);
+      if (filtros.conPatente !== undefined && filtros.conPatente !== null) {
+        params.append('conPatente', filtros.conPatente);
+      }
+      if (filtros.puestoCount !== undefined && filtros.puestoCount !== null) {
+        params.append('puestoCount', filtros.puestoCount);
+      }
       
       const queryString = params.toString();
       const url = queryString ? `${API_URL}/afiliados?${queryString}` : `${API_URL}/afiliados`;
@@ -22,6 +30,31 @@ export const afiliadosService = {
       throw error;
     }
   },
+
+  // Obtener rubros únicos
+  obtenerRubros: async () => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/rubros`);
+      if (!response.ok) throw new Error('Error al obtener rubros');
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo rubros:', error);
+      return [];
+    }
+  },
+
+  // Obtener estadísticas
+  obtenerEstadisticas: async () => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/estadisticas`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas');
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo estadísticas:', error);
+      return {};
+    }
+  },
+
 
   probarConexion: async () => {
     try {
