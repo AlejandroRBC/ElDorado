@@ -111,7 +111,7 @@ exports.traspasar = (req, res) => {
 
       db.run("BEGIN TRANSACTION");
 
-      // 1️⃣ Obtener tenencia activa actual
+      //Obtener tenencia activa actual
       db.get(`
         SELECT *
         FROM tenencia_puesto
@@ -126,7 +126,7 @@ exports.traspasar = (req, res) => {
           return res.status(400).json({ error: "No existe tenencia activa" });
         }
 
-        // 🔒 evitar traspaso al mismo afiliado
+        //evitar traspaso al mismo afiliado
         if (tenenciaActual.id_afiliado == id_nuevo_afiliado) {
           db.run("ROLLBACK");
           return res.status(400).json({ 
@@ -134,7 +134,7 @@ exports.traspasar = (req, res) => {
           });
         }
 
-        // 2️⃣ cerrar tenencia actual
+        // cerrar tenencia actual
         db.run(`
           UPDATE tenencia_puesto
           SET fecha_fin = CURRENT_DATE,
@@ -147,7 +147,7 @@ exports.traspasar = (req, res) => {
             return res.status(500).json({ error: err2.message });
           }
 
-          // 3️⃣ crear nueva tenencia
+          //crear nueva tenencia
           db.run(`
             INSERT INTO tenencia_puesto
             (id_afiliado, id_puesto, razon)
@@ -163,7 +163,7 @@ exports.traspasar = (req, res) => {
 
             res.json({
               success: true,
-              mensaje: "✅ Puesto traspasado correctamente"
+              mensaje: "Puesto traspasado correctamente"
             });
 
           });
@@ -174,4 +174,56 @@ exports.traspasar = (req, res) => {
 
     });
 
-  };
+};
+
+exports.actualizar = (req, res) => {
+  const id = parseInt(req.params.id);
+  const {
+    nroPuesto,
+    rubro,
+    fila,
+    cuadra,
+    ancho,
+    largo,
+    tiene_patente
+  } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  const sql = `
+    UPDATE puesto
+    SET nroPuesto = ?,
+        rubro = ?,
+        fila = ?,
+        cuadra = ?,
+        ancho = ?,
+        largo = ?,
+        tiene_patente = ?
+    WHERE id_puesto = ?
+  `;
+
+  db.run(sql, [
+    nroPuesto,
+    rubro,
+    fila,
+    cuadra,
+    ancho,
+    largo,
+    tiene_patente ? 1 : 0,
+    id
+  ], function (err) {
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Error al actualizar puesto" });
+    }
+
+    res.json({
+      success: true,
+      mensaje: "Puesto actualizado"
+    });
+  });
+};
+

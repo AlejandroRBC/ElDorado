@@ -12,8 +12,14 @@ export const puestosService = {
     const response = await axios.get(`${API_BASE}/puestos/info-traspaso/${idPuesto}`);
     return response.data;
   },
-    traspasar: async (data) => {
+  traspasar: async (data) => {
     const res = await axios.post(`${API_BASE}/puestos/traspasar`, data);
+    return res.data;
+  },
+
+  actualizarPuesto: async (id, data) => {
+    console.log("ENTRÓ A ACTUALIZAR");
+    const res = await axios.put(`${API_BASE}/puestos/${id}`, data);
     return res.data;
   }
 

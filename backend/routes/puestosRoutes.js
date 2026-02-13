@@ -9,5 +9,7 @@ router.get('/info-traspaso/:id', puestosController.infoTraspaso);
 
 router.post('/traspasar', puestosController.traspasar);
 
+router.put('/:id', puestosController.actualizar);
+
 
 module.exports = router;
