@@ -8,7 +8,7 @@ const UsuarioRoutes = require('./routes/UsuarioRoutes');
 const LoginRoutes = require('./routes/LoginRoutes');
 const puestosRoutes = require('./routes/puestosRoutes');
 const afiliadosRoutes = require('./routes/afiliadosRoutes');
-const tenenciaRoutes = require('./routes/tenenciasRoutes');
+
 
 const app = express();
 const PORT = 3000;
@@ -70,7 +70,7 @@ app.use('/assets', express.static(path.join(__dirname, '../frontend/src/assets')
 app.use('/api/auth', LoginRoutes);
 app.use('/api/afiliados', afiliadosRoutes);
 app.use('/api/puestos', puestosRoutes);
-app.use('/api/tenencias', tenenciaRoutes);
+
 app.use('/api/usuario', UsuarioRoutes);
 
 app.get('/', (req, res) => {

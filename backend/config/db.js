@@ -181,7 +181,7 @@ function insertarDatosEjemplo() {
     } else {
       crearUsuarioAdmin();
     }
-    insertarPuestosEjemplo();
+    
   });
 }
 
