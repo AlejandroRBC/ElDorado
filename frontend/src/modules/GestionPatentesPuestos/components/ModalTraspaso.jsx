@@ -4,13 +4,19 @@ import {
   Paper, Loader, Box, Image, Divider, Checkbox, Badge
 } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { useDebouncedValue } from '@mantine/hooks';
 import { afiliadosService } from "../service/afiliadosService";
 import { puestosService } from "../service/puestosService";
 
 export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso }) {
   const [loadingData, setLoadingData] = useState(false);
   const [searchTermA, setSearchTermA] = useState('');
+
+  //estados para la busqueda del afliliado
+  const [resultadosDesde, setResultadosDesde] = useState([]); 
+  const [resultadosA, setResultadosA] = useState([]);
   
+
   // Datos del Emisor (Desde)
   const [afiliadoDesde, setAfiliadoDesde] = useState(null);
   const [puestosDelAfiliado, setPuestosDelAfiliado] = useState([]);
@@ -23,22 +29,47 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
 
   const [searchTermDesde, setSearchTermDesde] = useState('');
 
+
+  const [desdeDebounced] = useDebouncedValue(searchTermDesde, 400);
+  const [aDebounced] = useDebouncedValue(searchTermA, 400);
+
   const avatarPlaceholder = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   // 1. CARGAR DATOS AL ABRIR
   useEffect(() => {
-    if (opened) {
-      if (puestoSeleccionado) {
-        // Caso A: Viene de la tabla (Automático)
-        cargarDatosIniciales();
-      } else {
-        // Caso B: Viene del botón superior (Resetear para búsqueda manual)
-        setAfiliadoDesde(null);
-        setPuestosDelAfiliado([]);
-        setPuestosSeleccionadosIds([]);
-      }
+    if (!opened) return;
+
+    if (puestoSeleccionado) {
+      cargarDatosIniciales();
+    } else {
+      resetModal();
     }
+
   }, [opened, puestoSeleccionado]);
+
+
+
+
+  useEffect(() => {
+    if (desdeDebounced.length < 2) return;
+
+    afiliadosService.buscarTiempoReal(desdeDebounced)
+      .then(setResultadosDesde)
+      .catch(() => setResultadosDesde([]));
+  }, [desdeDebounced]);
+
+
+  useEffect(() => {
+    if (aDebounced.length < 2) return;
+
+    afiliadosService.buscarTiempoReal(aDebounced)
+      .then(setResultadosA)
+      .catch(() => setResultadosA([]));
+  }, [aDebounced]);
+
+  
+
+
   // Función para buscar al emisor manualmente (si no se seleccionó puesto en la tabla)
   const buscarAfiliadoEmisor = async () => {
     if (!searchTermDesde) return;
@@ -49,7 +80,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
       setAfiliadoDesde(afiliado);
       
       // Cargamos sus puestos usando su ID
-      const puestos = await afiliadosService.obtenerPuestos(afiliado.id);
+      const puestos = await afiliadosService.obtenerPuestos(afiliado.id_afiliado);
       setPuestosDelAfiliado(puestos || []);
     } catch (error) {
       console.error("No se encontró el emisor");
@@ -59,21 +90,26 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
     }
   };
   const cargarDatosIniciales = async () => {
+    setLoadingData(true);
+
     try {
-      setLoadingData(true);
-      // Obtenemos info del dueño actual y sus puestos
-      const res = await puestosService.obtenerInfoTraspaso(puestoSeleccionado.id_puesto || puestoSeleccionado.id);
-      
-      setAfiliadoDesde(res.afiliadoActual);
-      setPuestosDelAfiliado(res.puestosDelAfiliado);
-      // Por defecto, seleccionamos el puesto desde el que se hizo clic
-      setPuestosSeleccionadosIds([puestoSeleccionado.id_puesto || puestoSeleccionado.id]);
-    } catch (error) {
-      console.error("Error cargando info de traspaso", error);
-    } finally {
-      setLoadingData(false);
+      const res = await puestosService.obtenerInfoTraspaso(
+        puestoSeleccionado.id_puesto
+      );
+
+      setAfiliadoDesde(res.afiliadoActual || null);
+      setPuestosDelAfiliado(res.puestosDelAfiliado || []);
+      setPuestosSeleccionadosIds([puestoSeleccionado.id_puesto]);
+
+    } catch (err) {
+      console.error("Error cargando traspaso:", err);
+      setAfiliadoDesde(null);
+      setPuestosDelAfiliado([]);
     }
+
+    setLoadingData(false);   // ← fuera del finally evita bug render
   };
+
 
   // 2. BUSCAR NUEVO DUEÑO (POR CI)
   const buscarNuevoAfiliado = async () => {
@@ -90,9 +126,9 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
     }
   };
 
-  const togglePuesto = (id) => {
+  const togglePuesto = (id_puesto) => {
     setPuestosSeleccionadosIds(prev => 
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+      prev.includes(id_puesto) ? prev.filter(p => p !== id_puesto) : [...prev, id_puesto]
     );
   };
 
@@ -101,15 +137,40 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
     if (puestosSeleccionadosIds.length === 0) return alert("Seleccione al menos un puesto");
 
     onTraspaso({
-      desde: afiliadoDesde.id,
-      para: afiliadoA.id,
+      desde: afiliadoDesde.id_afiliado,
+      para: afiliadoA.id_afiliado,
       puestos: puestosSeleccionadosIds,
       motivoDetallado: "Traspaso de puesto(s) solicitado por el usuario."
     });
   };
 
+  const resetModal = () => {
+    setSearchTermDesde('');
+    setSearchTermA('');
+
+    setResultadosDesde([]);
+    setResultadosA([]);
+
+    setAfiliadoDesde(null);
+    setAfiliadoA(null);
+
+    setPuestosDelAfiliado([]);
+    setPuestosSeleccionadosIds([]);
+  };
+
+
   return (
-    <Modal opened={opened} onClose={close} size="75%" centered withCloseButton={false} padding={0} radius="lg">
+    <Modal 
+      opened={opened} 
+      onClose={() => {
+        resetModal();
+        close();
+      }}
+
+      size="75%" 
+      centered withCloseButton={false} 
+      padding={0} 
+      radius="lg">
       <Box style={{ display: 'flex', minHeight: '520px', position: 'relative' }}>
         {loadingData && (
             <Box style={{position:'absolute', inset:0, background:'rgba(255,255,255,0.7)', zIndex:10, display:'flex', alignItems:'center', justifyContent:'center'}}>
@@ -131,17 +192,47 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                 </Paper>
                 
                 {!puestoSeleccionado ? (
-                  // CASO MANUAL: Buscador activo
-                  <TextInput
-                    placeholder="CI del emisor"
-                    variant="filled" size="xs"
-                    value={searchTermDesde}
-                    onChange={(e) => setSearchTermDesde(e.currentTarget.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && buscarAfiliadoEmisor()}
-                    rightSection={<IconSearch size={14} style={{cursor:'pointer'}} onClick={buscarAfiliadoEmisor}/>}
-                    styles={{ input: { textAlign: 'center' } }}
-                  />
+                  <>
+                    <TextInput
+                      placeholder="Nombre o CI"
+                      variant="filled"
+                      size="xs"
+                      value={searchTermDesde}
+                      onChange={(e) => setSearchTermDesde(e.currentTarget.value)}
+                      styles={{ input: { textAlign: 'center' } }}
+                    />
+
+                    {resultadosDesde.length > 0 && (
+                      <Paper shadow="md" mt={4}>
+                        {resultadosDesde.map(a => (
+                          <Box
+                            key={a.id_afiliado}
+                            p="xs"
+                            style={{ cursor: 'pointer' }}
+                            onClick={async () => {
+                              setAfiliadoDesde(a);
+                              setResultadosDesde([]);
+                              setSearchTermDesde(`${a.ci} — ${a.nombre}`);
+
+                              const puestos = await afiliadosService.obtenerPuestos(a.id_afiliado);
+                              setPuestosDelAfiliado(puestos || []);
+                            }}
+                          >
+                            <Text size="sm">
+                              {a.ci} — {a.nombre} {a.paterno}
+                            </Text>
+                          </Box>
+                        ))}
+                      </Paper>
+                    )}
+                    {afiliadoDesde && !puestoSeleccionado && (
+                      <Text fw={700} size="xs" ta="center">
+                        {afiliadoDesde.nombre} {afiliadoDesde.paterno} {afiliadoDesde.materno}
+                      </Text>
+                    )}
+                  </>
                 ) : (
+
                   // CASO AUTOMÁTICO: Solo lectura
                   <Stack gap={2} align="center">
                     <Text fw={700} size="sm" ta="center">
@@ -161,14 +252,40 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                    <Image src={afiliadoA?.url_perfil || avatarPlaceholder} height={200} fit="cover" />
                 </Paper>
                 <TextInput
-                  placeholder="CI del nuevo dueño"
-                  variant="filled" size="xs"
-                  rightSection={buscandoA ? <Loader size={10}/> : <IconSearch size={14} onClick={buscarNuevoAfiliado} style={{cursor:'pointer'}}/>}
+                  placeholder="Nombre o CI del nuevo dueño"
+                  variant="filled"
+                  size="xs"
                   value={searchTermA}
                   onChange={(e) => setSearchTermA(e.currentTarget.value)}
                   onKeyDown={(e) => e.key === 'Enter' && buscarNuevoAfiliado()}
+                  rightSection={
+                    buscandoA
+                      ? <Loader size={10}/>
+                      : <IconSearch size={14} onClick={buscarNuevoAfiliado} style={{cursor:'pointer'}}/>
+                  }
                 />
-                {afiliadoA && <Text fw={700} size="xs" ta="center">{afiliadoA.nombre} {afiliadoA.paterno}</Text>}
+
+                {resultadosA.length > 0 && (
+                  <Paper shadow="md" mt={4}>
+                    {resultadosA.map(a => (
+                      <Box
+                        key={a.id_afiliado}
+                        p="xs"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setAfiliadoA(a);
+                          setResultadosA([]);
+                          setSearchTermA(`${a.ci} — ${a.nombre}`);
+                        }}
+                      >
+                        <Text size="sm">
+                          {a.ci} — {a.nombre} {a.paterno}
+                        </Text>
+                      </Box>
+                    ))}
+                  </Paper>
+                )}
+                {afiliadoA && <Text fw={700} size="xs" ta="center">{afiliadoA.nombre} {afiliadoA.paterno} {afiliadoA.materno}</Text>}
               </Stack>
             </Group>
 
@@ -178,7 +295,11 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                 style={{ backgroundColor: '#0F0F0F' }} // Color Negro exacto
                 radius="xl" 
                 px={45} 
-                onClick={close}>
+                onClick={() => {
+                  resetModal();
+                  close();
+                }}
+                >
                   Cancelar
               </Button>
               <Button 
@@ -207,12 +328,12 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
             {/* Añadimos la validación puestosDelAfiliado && ... */}
             {puestosDelAfiliado && puestosDelAfiliado.length > 0 ? (
                 puestosDelAfiliado.map((p) => {
-                const esSeleccionado = puestosSeleccionadosIds.includes(p.id);
+                const esSeleccionado = puestosSeleccionadosIds.includes(p.id_puesto);
                 
                 return (
                     <Box
-                    key={p.id}
-                    onClick={() => togglePuesto(p.id)}
+                    key={p.id_puesto}
+                    onClick={() => togglePuesto(p.id_puesto)}
                     style={{
                         display: 'flex',
                         alignItems: 'center',

@@ -31,7 +31,7 @@ function crearTablas() {
       extension VARCHAR(3) DEFAULT 'LP',
       nombre VARCHAR(100) NOT NULL,
       paterno VARCHAR(100) NOT NULL,
-      materno VARCHAR(100),
+      materno VARCHAR(100) NOT NULL,
       sexo VARCHAR(1) CHECK(sexo IN ('M', 'F')),
       fecNac DATE,
       telefono VARCHAR(20),
@@ -180,9 +180,12 @@ function insertarDatosEjemplo() {
           }
         });
       });
+      crearUsuarioAdmin();
+
     } else {
       crearUsuarioAdmin();
     }
+    insertarPuestosEjemplo();
   });
 }
 

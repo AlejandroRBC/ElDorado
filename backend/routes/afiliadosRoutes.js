@@ -186,7 +186,13 @@ router.get('/estadisticas', async (req, res) => {
 // Rutas existentes
 router.get('/test', afiliadosController.test);
 router.get('/', afiliadosController.getAll);
+//buscador para los traspasos (Emisaor y receptor)
+router.get('/buscar', afiliadosController.buscar);
+
+router.get('/:id/puestos', afiliadosController.obtenerPuestos);
+
 router.get('/:id', afiliadosController.getById);
 router.post('/', afiliadosController.create);
+
 
 module.exports = router;

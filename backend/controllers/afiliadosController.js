@@ -1,4 +1,5 @@
 const Afiliado = require('../models/Afiliado');
+const db = require('../config/db');
 
 exports.getAll = async (req, res) => {
   try {
@@ -155,5 +156,57 @@ exports.test = (req, res) => {
   res.json({ 
     mensaje: 'API de Afiliados funcionando',
     fecha: new Date().toISOString()
+  });
+};
+
+// buscador para el recpetior y emisor
+exports.buscar = (req, res) => {
+  const q = req.query.q || '';
+
+  const sql = `
+    SELECT id_afiliado, ci, nombre, paterno, url_perfil
+    FROM afiliado
+    WHERE 
+      ci LIKE ? OR
+      nombre LIKE ? OR
+      paterno LIKE ?
+    LIMIT 10
+  `;
+
+  const like = `%${q}%`;
+
+  db.all(sql, [like, like, like], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+};
+
+// Obtener puestos activos de un afiliado
+exports.obtenerPuestos = (req, res) => {
+  const id = req.params.id;
+
+  const sql = `
+    SELECT 
+      p.id_puesto,
+      p.fila,
+      p.cuadra,
+      p.nroPuesto,
+      p.rubro,
+      p.tiene_patente
+    FROM puesto p
+    JOIN tenencia_puesto t 
+      ON t.id_puesto = p.id_puesto
+    WHERE t.id_afiliado = ?
+      AND t.fecha_fin IS NULL
+    ORDER BY p.fila, p.cuadra, p.nroPuesto
+  `;
+
+  db.all(sql, [id], (err, rows) => {
+    if (err) {
+      console.error("Error obtenerPuestos:", err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    res.json(rows);
   });
 };
