@@ -158,7 +158,7 @@ obtenerPuestosDisponibles: async () => {
   try {
     const response = await fetch(`${API_URL}/puestos/disponibles`);
     if (!response.ok) {
-      throw new Error(`AQUI Error ${response.status}: ${response.statusText}`);
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
     const result = await response.json();
     
