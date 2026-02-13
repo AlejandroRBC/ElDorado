@@ -18,7 +18,7 @@ export const useAfiliado = (id) => {
       
       const datos = await afiliadosService.obtenerPorId(id);
       setAfiliado(datos);
-      console.log("hola papp u ");
+      
     } catch (err) {
       setError(err.message || 'Error al cargar afiliado');
       console.error(`Error cargando afiliado ${id}:`, err);

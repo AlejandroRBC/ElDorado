@@ -71,14 +71,15 @@ router.post('/:id/upload-perfil', upload.single('foto'), (req, res) => {
 });
 
 // Ruta para asignar puesto a afiliado
+
 router.post('/:id/asignar-puesto', (req, res) => {
   try {
     const { fila, cuadra, nroPuesto, rubro, tiene_patente, razon } = req.body;
     const idAfiliado = req.params.id;
     
-    // 1. Buscar o crear el puesto
+    // 1. Buscar el puesto (NO CREAR NUEVO)
     db.get(
-      `SELECT id_puesto FROM puesto WHERE fila = ? AND cuadra = ? AND nroPuesto = ?`,
+      `SELECT id_puesto, disponible FROM puesto WHERE fila = ? AND cuadra = ? AND nroPuesto = ?`,
       [fila, cuadra, nroPuesto],
       (err, puesto) => {
         if (err) {
@@ -86,59 +87,70 @@ router.post('/:id/asignar-puesto', (req, res) => {
           return res.status(500).json({ error: 'Error al buscar puesto' });
         }
         
-        let idPuesto;
-        
-        if (puesto) {
-          // Puesto existe, actualizar si es necesario
-          idPuesto = puesto.id_puesto;
-          db.run(
-            `UPDATE puesto SET rubro = ?, tiene_patente = ? WHERE id_puesto = ?`,
-            [rubro || null, tiene_patente ? 1 : 0, idPuesto],
-            (err) => {
-              if (err) console.error('Error actualizando puesto:', err);
-            }
-          );
-        } else {
-          // Crear nuevo puesto
-          db.run(
-            `INSERT INTO puesto (fila, cuadra, nroPuesto, rubro, tiene_patente) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [fila, cuadra, nroPuesto, rubro || null, tiene_patente ? 1 : 0],
-            function(err) {
-              if (err) {
-                console.error('Error creando puesto:', err);
-                return res.status(500).json({ error: 'Error al crear puesto' });
-              }
-              idPuesto = this.lastID;
-              crearTenenciaPuesto();
-            }
-          );
-          return;
+        if (!puesto) {
+          return res.status(404).json({ error: 'Puesto no encontrado' });
         }
-        
-        crearTenenciaPuesto();
-        
-        function crearTenenciaPuesto() {
-          // 2. Crear tenencia_puesto
-          db.run(
-            `INSERT INTO tenencia_puesto (id_afiliado, id_puesto, razon) 
-             VALUES (?, ?, ?)`,
-            [idAfiliado, idPuesto, razon || 'NUEVITO'],
-            function(err) {
-              if (err) {
-                console.error('Error creando tenencia_puesto:', err);
-                return res.status(500).json({ error: 'Error al asignar puesto' });
-              }
-              
-              res.json({
-                success: true,
-                message: 'Puesto asignado exitosamente',
-                id_tenencia: this.lastID,
-                id_puesto: idPuesto
-              });
-            }
-          );
+
+        // Verificar si el puesto está disponible
+        if (puesto.disponible === 0) {
+          return res.status(400).json({ error: 'El puesto no está disponible' });
         }
+
+        // Verificar si ya está ocupado
+        db.get(
+          `SELECT * FROM tenencia_puesto WHERE id_puesto = ? AND fecha_fin IS NULL`,
+          [puesto.id_puesto],
+          (err, tenenciaActiva) => {
+            if (err) {
+              console.error('Error verificando tenencia:', err);
+              return res.status(500).json({ error: 'Error al verificar puesto' });
+            }
+
+            if (tenenciaActiva) {
+              return res.status(400).json({ error: 'El puesto ya está ocupado' });
+            }
+
+            const idPuesto = puesto.id_puesto;
+
+            // 2. Actualizar datos del puesto
+            db.run(
+              `UPDATE puesto SET rubro = ?, tiene_patente = ? WHERE id_puesto = ?`,
+              [rubro || null, tiene_patente ? 1 : 0, idPuesto],
+              (err) => {
+                if (err) console.error('Error actualizando puesto:', err);
+              }
+            );
+
+            // 3. Crear tenencia_puesto
+            db.run(
+              `INSERT INTO tenencia_puesto (id_afiliado, id_puesto, razon, fecha_ini) 
+               VALUES (?, ?, ?, CURRENT_DATE)`,
+              [idAfiliado, idPuesto, razon || 'ASIGNADO'],
+              function(err) {
+                if (err) {
+                  console.error('Error creando tenencia_puesto:', err);
+                  return res.status(500).json({ error: 'Error al asignar puesto' });
+                }
+                
+                // 4. Marcar puesto como NO disponible
+                db.run(
+                  `UPDATE puesto SET disponible = 0 WHERE id_puesto = ?`,
+                  [idPuesto],
+                  (err) => {
+                    if (err) console.error('Error actualizando disponibilidad:', err);
+                  }
+                );
+                
+                res.json({
+                  success: true,
+                  message: 'Puesto asignado exitosamente',
+                  id_tenencia: this.lastID,
+                  id_puesto: idPuesto
+                });
+              }
+            );
+          }
+        );
       }
     );
   } catch (error) {

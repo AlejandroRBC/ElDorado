@@ -33,6 +33,7 @@ puesto
 - largo int
 - tiene_patente boolean
 - rubro TEXT
+- Disponible boolean // para ver si un puesto esta ocupado o no, cuando se le asigna un puesto a un afiliado este valor cambia, o si se libera o despoja tambn cambia
 
 tenencia_puesto
 - id_tenencia PK int
@@ -43,7 +44,7 @@ tenencia_puesto
 // mientras este pertenezca a un afiliado este valor queda como NULL, cuando se traspasa se graba el dia del traspaso
 // para sacar el historial comparamos las fechas de inicio y fin y el trazo se guiara segun el id_puesto o el id_afiliado
 - RAZON varchar()
-// la razon muestra si es por un TRASPASO de puestos entre afiliados, despojo es cuando la asociaon le QUITA el puesto a un afiliado, LIBERADO es cuando un afiliado le cede el puesto a la asociacion, y NUEVITO es cuando un afiliado vuelve AFILIARSE, o cuando un afiliado compra un puesto LIBERADO o DESPOJADO
+// la razon muestra si es por un TRASPASO de puestos entre afiliados, despojo es cuando la asociaon le QUITA el puesto a un afiliado, LIBERADO es cuando un afiliado le cede el puesto a la asociacion, y ASIGNADO es cuando un afiliado vuelve AFILIARSE, o cuando un afiliado compra un puesto LIBERADO o DESPOJADO
 
 historial de usuarios
 - id_Historial_usu PK int

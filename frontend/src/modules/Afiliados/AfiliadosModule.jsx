@@ -133,7 +133,7 @@ const AfiliadosModule = () => {
   const opcionesRubros = [
     ...rubrosDisponibles.map(rubro => ({ 
       value: rubro, 
-      label: `🏷️ ${rubro}` 
+      label: ` ${rubro}` 
     }))
   ];
 

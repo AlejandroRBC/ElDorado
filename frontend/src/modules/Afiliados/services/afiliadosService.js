@@ -152,7 +152,25 @@ export const afiliadosService = {
     }
   },
 
-  // NUEVO: Asignar puesto
+
+// Obtener puestos disponibles (no ocupados, no pasos)
+obtenerPuestosDisponibles: async () => {
+  try {
+    const response = await fetch(`${API_URL}/puestos/disponibles`);
+    if (!response.ok) {
+      throw new Error(`AQUI Error ${response.status}: ${response.statusText}`);
+    }
+    const result = await response.json();
+    
+    
+    return result.data || result;
+  } catch (error) {
+    console.error('Error en obtenerPuestosDisponibles:', error);
+    throw error;
+  }
+},
+
+// Asignar puesto a afiliado
   asignarPuesto: async (afiliadoId, puestoData) => {
     try {
       const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/asignar-puesto`, {
@@ -170,7 +188,7 @@ export const afiliadosService = {
       
       return await response.json();
     } catch (error) {
-      console.error('Error en afiliadosService.asignarPuesto:', error);
+      console.error('Error en asignarPuesto:', error);
       throw error;
     }
   },

@@ -58,9 +58,12 @@ function crearTablas() {
       largo INTEGER,
       tiene_patente BOOLEAN DEFAULT 0,
       rubro TEXT,
+      disponible BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
     )
   `);
+
+
 
   // 3. TENENCIA_PUESTO
   db.run(`

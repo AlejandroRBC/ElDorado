@@ -18,6 +18,22 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+// Ruta principal
+app.get('/', (req, res) => {
+  res.json({
+    mensaje: 'API de ELDORADO',
+    version: '1.0',
+    rutas: {
+      afiliados: '/api/afiliados',
+      afiliadoPorId: '/api/afiliados/:id',
+      test: '/api/afiliados/test'
+    }
+  });
+});
+
+
+
 // Crear carpeta uploads si no existe
 const uploadsDir = path.join(__dirname, 'uploads', 'perfiles');
 if (!fs.existsSync(uploadsDir)) {
@@ -34,35 +50,19 @@ app.use('/assets', express.static(path.join(__dirname, '../frontend/src/assets')
 // Todas las rutas dentro de authRoutes tendrán el prefijo /api/auth
 app.use('/api/auth', LoginRoutes);
 app.use('/api/afiliados', afiliadosRoutes);
-
-
-
-// Ruta principal
-app.get('/', (req, res) => {
-    res.json({
-      mensaje: 'API de ELDORADO',
-      version: '1.0',
-      rutas: {
-        afiliados: '/api/afiliados',
-        afiliadoPorId: '/api/afiliados/:id',
-        test: '/api/afiliados/test'
-      }
-    });
-  });
-  
-  // Manejo de rutas no encontradas
-  app.use((req, res) => {
-    res.status(404).json({
-      error: 'Ruta no encontrada',
-      ruta: req.url
-    });
-  });
-  
-
 app.use('/api/puestos',puestosRoutes);
 app.use('/api/afiliados',afiliadosRoutes);
 app.use('/api/tenencias',tenenciaRoutes);
 
+
+
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Ruta no encontrada',
+    ruta: req.url
+  });
+});
 app.listen(PORT, () => {
     console.log(`-------------------------------------------`);
     console.log(`🚀 Servidor ElDorado: http://localhost:${PORT}`);

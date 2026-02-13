@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle } from '@tabler/icons-react';
 import { useAfiliado } from '../hooks/useAfiliado';
 import TablaPuestos from './TablaPuestos';
+import ModalAsignarPuesto from './ModalAsignarPuesto';
+import { useState } from 'react';
 import { getPerfilUrl } from '../../../utils/imageHelper';
 
 
@@ -12,6 +14,8 @@ const DetallesAfiliado = () => {
   
   // Usar hook para obtener datos reales del afiliado
   const { afiliado, cargando, error, cargarAfiliado } = useAfiliado(id);
+
+  const [modalPuestoAbierto, setModalPuestoAbierto] = useState(false);
 
   // Si no hay afiliado y no está cargando, mostrar mensaje
   if (!cargando && !afiliado && !error) {
@@ -313,22 +317,29 @@ const DetallesAfiliado = () => {
                 
                 {/* Botones para puestos */}
                 <Group gap="md">
-                  <Button
-                    leftSection={<IconPlus size={18} />}
-                    
-                    style={{
-                      backgroundColor: '#0f0f0f',
-                      color: 'white',
-                      borderRadius: '100px',
-                      fontWeight: 500,
-                      border: '2px solid #0f0f0f',
-                      padding: '8px 16px',
-                    }}
-                    onClick={() => alert('Funcionalidad en desarrollo')}
-                  >
-                    Añadir Puesto
-                  </Button>
-                  
+                <Button
+                  leftSection={<IconPlus size={18} />}
+                  style={{
+                    backgroundColor: '#0f0f0f',
+                    color: 'white',
+                    borderRadius: '100px',
+                    fontWeight: 500,
+                    border: '2px solid #0f0f0f',
+                    padding: '8px 16px',
+                  }}
+                  onClick={() => setModalPuestoAbierto(true)}  
+                >
+                  Añadir Puesto
+                </Button>
+                <ModalAsignarPuesto
+                  opened={modalPuestoAbierto}
+                  onClose={() => setModalPuestoAbierto(false)}
+                  idAfiliado={id}
+                  onPuestoAsignado={() => {
+                    cargarAfiliado(); // Recargar datos del afiliado
+                    setModalPuestoAbierto(false);
+                  }}
+                />
                   <Button
                     leftSection={<IconTransfer size={18} />}
                     style={{
