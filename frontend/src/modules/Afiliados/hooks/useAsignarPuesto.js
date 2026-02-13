@@ -10,12 +10,24 @@ export const useAsignarPuesto = (idAfiliado) => {
   const cargarPuestosDisponibles = async () => {
     try {
       setPuestosCargando(true);
-      // Llamar al endpoint que devuelve puestos disponibles (no ocupados, no pasos)
+      console.log('📥 Cargando puestos disponibles...');
+      
       const puestos = await afiliadosService.obtenerPuestosDisponibles();
-      setPuestosDisponibles(puestos);
+      
+      console.log('✅ Puestos recibidos del backend:', puestos?.length || 0);
+      
+      // 👇 VERIFICAR QUÉ FILAS LLEGAN
+      const filas = [...new Set(puestos.map(p => p.fila))].sort();
+      console.log('📊 Filas disponibles:', filas);
+      
+      // 👇 VERIFICAR CUÁNTOS DE FILA B
+      const filaB = puestos.filter(p => p.fila === 'B');
+      console.log('📍 Puestos fila B:', filaB.length);
+      
+      setPuestosDisponibles(puestos || []);
       return puestos;
     } catch (error) {
-      console.error('Error cargando puestos disponibles:', error);
+      console.error('❌ Error cargando puestos disponibles:', error);
       notifications.show({
         title: 'Error',
         message: 'No se pudieron cargar los puestos disponibles',
@@ -38,26 +50,35 @@ export const useAsignarPuesto = (idAfiliado) => {
         nroPuesto: puestoData.nroPuesto,
         rubro: puestoData.rubro || '',
         tiene_patente: puestoData.tiene_patente || false,
-        razon: 'ASIGNADO'  // 👈 Cambiado de 'NUEVITO' a 'ASIGNADO'
+        razon: 'ASIGNADO'
       };
 
       const resultado = await afiliadosService.asignarPuesto(idAfiliado, dataToSend);
       
       notifications.show({
-        title: 'Éxito',
-        message: `Puesto ${puestoData.nroPuesto}-${puestoData.fila}-${puestoData.cuadra} asignado correctamente`,
+        title: '✅ Éxito',
+        message: `Puesto ${puestoData.nroPuesto}-${puestoData.fila}-${puestoData.cuadra} asignado`,
         color: 'green'
       });
       
       return { exito: true, datos: resultado };
     } catch (error) {
-      console.error('Error asignando puesto:', error);
+      console.error('❌ Error asignando puesto:', error);
       
-      notifications.show({
-        title: 'Error',
-        message: error.message || 'No se pudo asignar el puesto',
-        color: 'red'
-      });
+      // 👇 SI EL ERROR ES PORQUE YA ESTÁ OCUPADO
+      if (error.message?.includes('ocupado') || error.message?.includes('disponible')) {
+        notifications.show({
+          title: '⚠️ Puesto no disponible',
+          message: 'Este puesto ya está ocupado',
+          color: 'yellow'
+        });
+      } else {
+        notifications.show({
+          title: '❌ Error',
+          message: error.message || 'No se pudo asignar el puesto',
+          color: 'red'
+        });
+      }
       
       return { exito: false, error: error.message };
     } finally {

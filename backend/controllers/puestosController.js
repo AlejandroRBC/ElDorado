@@ -239,7 +239,7 @@ const listarPuestosConAfiliado = (req, res) => {
 // ===============================
 const listarPuestosDisponibles = (req, res) => {
   const sql = `
-    SELECT 
+      SELECT 
       p.id_puesto,
       p.fila,
       p.cuadra,

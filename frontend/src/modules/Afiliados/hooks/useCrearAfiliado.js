@@ -19,10 +19,8 @@ export const useCrearAfiliado = () => {
         throw new Error('CI, Nombre y Apellido Paterno son requeridos');
       }
 
-      // 2. Validar que tenga al menos un puesto
-      if (!datos.puestos || datos.puestos.length === 0) {
-        throw new Error('Debe asignar al menos un puesto');
-      }
+      
+    
 
       // 3. Preparar datos básicos del afiliado
       const datosBasicos = {

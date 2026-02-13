@@ -18,7 +18,7 @@ const PuestoItem = memo(({ puesto, onUpdate, onRemove }) => {
   const handleRemove = useCallback(() => {
     onRemove(puesto.id_temporal);
   }, [puesto.id_temporal, onRemove]);
-
+ 
   return (
     <Paper p="xs" withBorder style={{ backgroundColor: '#fafafa' }}>
       <Group justify="space-between" align="center" wrap="nowrap">
@@ -98,6 +98,7 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
   const [puestosSeleccionados, setPuestosSeleccionados] = useState([]);
   const [busquedaPuestos, setBusquedaPuestos] = useState('');
   const [paginaActual, setPaginaActual] = useState(0);
+  const [errorPuestosOcupados, setErrorPuestosOcupados] = useState([]);
   
   const ITEMS_POR_PAGINA = 30;
   const fileInputRef = useRef(null);
@@ -124,21 +125,32 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
       cargarPuestosDisponibles();
       resetForm();
       setNotificacionEnviada(false);
+      setErrorPuestosOcupados([]);
     }
   }, [opened]);
 
-  // ============ FILTRAR PUESTOS DISPONIBLES ============
-  const puestosFiltrados = useMemo(() => {
-    if (!puestosDisponibles?.length) return [];
-    if (!busquedaPuestos) return puestosDisponibles.slice(0, 200);
+  
+   // ============ ESTADOS PARA FILTROS ============
+   const [filtroFila, setFiltroFila] = useState('');
+   const [filtroCuadra, setFiltroCuadra] = useState('');
+   const [filtroNumero, setFiltroNumero] = useState('');
+  // ============ FILTRAR PUESTOS DISPONIBLES CON SELECTS ============
+const puestosFiltrados = useMemo(() => {
+  if (!puestosDisponibles?.length) return [];
+  
+  return puestosDisponibles.filter(puesto => {
+    // Filtro por fila
+    if (filtroFila && puesto.fila !== filtroFila) return false;
     
-    const search = busquedaPuestos.toLowerCase().trim();
-    return puestosDisponibles.filter(puesto => 
-      puesto.nroPuesto.toString().includes(search) ||
-      puesto.fila.toLowerCase().includes(search) ||
-      puesto.cuadra.toLowerCase().includes(search)
-    ).slice(0, 200);
-  }, [puestosDisponibles, busquedaPuestos]);
+    // Filtro por cuadra
+    if (filtroCuadra && puesto.cuadra !== filtroCuadra) return false;
+    
+    // Filtro por número de puesto
+    if (filtroNumero && !puesto.nroPuesto.toString().includes(filtroNumero)) return false;
+    
+    return true;
+  });
+}, [puestosDisponibles, filtroFila, filtroCuadra, filtroNumero]);
 
   // ============ PUESTOS PAGINADOS ============
   const puestosPaginados = useMemo(() => {
@@ -146,12 +158,20 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
     return puestosFiltrados.slice(start, start + ITEMS_POR_PAGINA);
   }, [puestosFiltrados, paginaActual]);
 
-  // ============ AGREGAR PUESTO ============
+  // ============ AGREGAR PUESTO - CON VALIDACIÓN ============
   const agregarPuesto = useCallback((puesto) => {
     setPuestosSeleccionados(prev => {
+      // Verificar si ya está seleccionado
       if (prev.some(p => p.id_puesto === puesto.id_puesto)) {
+        notifications.show({
+          title: '⚠️ Puesto duplicado',
+          message: `${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra} ya está en la lista`,
+          color: 'yellow',
+          autoClose: 2000
+        });
         return prev;
       }
+      
       return [
         ...prev,
         {
@@ -249,6 +269,7 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
     setActiveTab('datos');
     setLocalError('');
     setNotificacionEnviada(false);
+    setErrorPuestosOcupados([]);
     reset();
   }, [formData.fotoPreview, reset]);
 
@@ -257,12 +278,13 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
     if (!formData.ci?.trim()) return 'El CI es requerido';
     if (!formData.nombre?.trim()) return 'El nombre es requerido';
     if (!formData.paterno?.trim()) return 'El apellido paterno es requerido';
-    if (!formData.telefono?.trim()) return 'El teléfono es requerido';
+    
     return null;
   }, [formData]);
 
-  // ============ ENVIAR FORMULARIO ============
+  // ============ ENVIAR FORMULARIO - AHORA PERMITE CREAR SIN PUESTOS ============
   const handleSubmit = async () => {
+    // 1. Validar datos personales
     const errorValidacion = validarFormulario();
     if (errorValidacion) {
       setLocalError(errorValidacion);
@@ -270,31 +292,52 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
       return;
     }
 
-    if (puestosSeleccionados.length === 0) {
-      setLocalError('Debe asignar al menos un puesto');
-      setActiveTab('puestos');
-      return;
-    }
-
-    const resultado = await crearAfiliadoCompleto({
+    // 2. Preparar datos para enviar
+    const datosAEnviar = {
       ...formData,
-      puestos: puestosSeleccionados
-    });
+      puestos: puestosSeleccionados // Puede ser array vacío
+    };
 
-    if (resultado.exito && !notificacionEnviada) {
-      setNotificacionEnviada(true);
-      notifications.show({
-        title: '✅ Éxito',
-        message: `Afiliado creado con ${puestosSeleccionados.length} puesto${puestosSeleccionados.length !== 1 ? 's' : ''}`,
-        color: 'green',
-        autoClose: 3000
-      });
-      
-      setTimeout(() => {
-        resetForm();
-        onClose();
-        if (onAfiliadoCreado) onAfiliadoCreado();
-      }, 1500);
+    // 3. Enviar al backend
+    const resultado = await crearAfiliadoCompleto(datosAEnviar);
+
+    // 4. Manejar respuesta
+    if (resultado.exito) {
+      // Verificar si hubo errores con algunos puestos
+      if (resultado.puestosFallidos && resultado.puestosFallidos.length > 0) {
+        setErrorPuestosOcupados(resultado.puestosFallidos);
+        
+        // Filtrar solo los puestos que SÍ se asignaron correctamente
+        setPuestosSeleccionados(prev => 
+          prev.filter(p => !resultado.puestosFallidos.includes(p.id_puesto))
+        );
+        
+        notifications.show({
+          title: '⚠️ Advertencia',
+          message: `Afiliado creado pero ${resultado.puestosFallidos.length} puesto(s) no pudieron asignarse (ya estaban ocupados)`,
+          color: 'yellow',
+          autoClose: 5000
+        });
+      } else {
+        // Todo salió bien
+        if (!notificacionEnviada) {
+          setNotificacionEnviada(true);
+          notifications.show({
+            title: '✅ Éxito',
+            message: puestosSeleccionados.length > 0 
+              ? `Afiliado creado con ${puestosSeleccionados.length} puesto${puestosSeleccionados.length !== 1 ? 's' : ''}`
+              : 'Afiliado creado exitosamente (sin puestos)',
+            color: 'green',
+            autoClose: 3000
+          });
+        }
+        
+        setTimeout(() => {
+          resetForm();
+          onClose();
+          if (onAfiliadoCreado) onAfiliadoCreado();
+        }, 1500);
+      }
     }
   };
 
@@ -310,7 +353,10 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
   return (
     <Modal
       opened={opened}
-      onClose={resetForm}
+      onClose={() => {
+        resetForm();
+        onClose();  
+      }}
       size="90%"
       title={
         <Group align="center" gap="xs">
@@ -341,10 +387,10 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
         <Tabs value={activeTab} onChange={setActiveTab} style={{ flexShrink: 0 }}>
           <Tabs.List style={{ padding: '0 20px', backgroundColor: '#fafafa' }}>
             <Tabs.Tab value="datos" leftSection={<IconUser size={16} />}>
-              📋 Datos Personales
+              Datos Personales
             </Tabs.Tab>
             <Tabs.Tab value="puestos" leftSection={<IconMapPinFilled size={16} />}>
-              🏪 Puestos ({puestosSeleccionados.length})
+              Puestos {puestosSeleccionados.length > 0 ? `(${puestosSeleccionados.length})` : ''}
             </Tabs.Tab>
           </Tabs.List>
         </Tabs>
@@ -359,10 +405,29 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
             </Alert>
           )}
 
+          {/* ERROR DE PUESTOS OCUPADOS */}
+          {errorPuestosOcupados.length > 0 && (
+            <Alert icon={<IconX size={16} />} title="Puestos no disponibles" color="yellow" mb="md" withCloseButton onClose={() => setErrorPuestosOcupados([])}>
+              <Stack gap="xs">
+                <Text size="sm">Los siguientes puestos ya estaban ocupados y no se asignaron:</Text>
+                <Group gap="xs">
+                  {errorPuestosOcupados.map((id, idx) => {
+                    const puesto = puestosSeleccionados.find(p => p.id_puesto === id);
+                    return puesto && (
+                      <Badge key={idx} color="red" variant="outline">
+                        {puesto.nroPuesto}-{puesto.fila}-{puesto.cuadra}
+                      </Badge>
+                    );
+                  })}
+                </Group>
+              </Stack>
+            </Alert>
+          )}
+
           {/* ============ TAB 1: DATOS PERSONALES ============ */}
           {activeTab === 'datos' && (
             <Stack gap="xl">
-              {/* SECCIÓN FOTO DE PERFIL + DATOS - AHORA EN LA MISMA FILA */}
+              {/* SECCIÓN FOTO DE PERFIL + DATOS */}
               <Paper p="lg" withBorder radius="md">
                 <Group align="flex-start" gap="xl" wrap="nowrap">
                   
@@ -490,7 +555,6 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
                         value={formData.telefono}
                         onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                         leftSection={<IconPhone size={16} />}
-                        required
                       />
                       <TextInput
                         label="Ocupación"
@@ -507,6 +571,8 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
                         style={{ gridColumn: 'span 2' }}
                       />
                     </SimpleGrid>
+                    
+                    
                   </Box>
                 </Group>
               </Paper>
@@ -514,161 +580,247 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
               <Group justify="flex-end" mt="xl">
                 <Button 
                   variant="outline" 
-                  onClick={resetForm}
+                  onClick={() => {
+                    resetForm();
+                    onClose();  
+                  }}
                   style={{ borderColor: '#0f0f0f', color: '#0f0f0f', borderRadius: '100px', padding: '0 30px', height: '45px' }}
                 >
                   Cancelar
                 </Button>
                 <Button 
                   onClick={() => setActiveTab('puestos')}
-                  style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', padding: '0 30px', height: '45px' }}
+                  variant="outline"
+                  style={{ borderColor: '#0f0f0f', color: '#0f0f0f', borderRadius: '100px', padding: '0 30px', height: '45px' }}
                 >
-                  Continuar a Puestos ({puestosSeleccionados.length})
+                  {puestosSeleccionados.length > 0 
+                    ? `Ver Puestos (${puestosSeleccionados.length})` 
+                    : 'Agregar Puestos'}
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  loading={loading}
+                  style={{
+                    backgroundColor: '#edbe3c',
+                    color: '#0f0f0f',
+                    borderRadius: '100px',
+                    padding: '0 30px',
+                    height: '45px',
+                    fontWeight: 600
+                  }}
+                >
+                  {loading ? 'Creando...' : 'Crear Afiliado'}
                 </Button>
               </Group>
             </Stack>
           )}
 
           {/* ============ TAB 2: SELECCIÓN DE PUESTOS ============ */}
-          {activeTab === 'puestos' && (
-            <Stack gap="md" style={{ height: '100%' }}>
-              
-              {/* LISTA DE PUESTOS SELECCIONADOS - CON SCROLL PROPIO */}
-              {puestosSeleccionados.length > 0 && (
-                <Paper p="md" withBorder radius="md">
-                  <Group justify="space-between" mb="md">
-                    <Text fw={700} size="md">Puestos Seleccionados ({puestosSeleccionados.length})</Text>
-                    {puestosSeleccionados.length > 0 && (
-                      <Badge color="yellow" variant="filled">
-                        {puestosSeleccionados.length} puesto{puestosSeleccionados.length !== 1 ? 's' : ''}
-                      </Badge>
-                    )}
-                  </Group>
-                  <Divider mb="md" />
-                  <ScrollArea style={{ height: '200px' }} scrollbarSize={6}>
-                    <Stack gap="xs">
-                      {puestosSeleccionados.map((puesto) => (
-                        <PuestoItem
-                          key={puesto.id_temporal}
-                          puesto={puesto}
-                          onUpdate={actualizarPuesto}
-                          onRemove={eliminarPuesto}
-                        />
-                      ))}
-                    </Stack>
-                  </ScrollArea>
-                </Paper>
-              )}
+          {/* ============ TAB 2: SELECCIÓN DE PUESTOS ============ */}
+{activeTab === 'puestos' && (
+  <Stack gap="md">
+    
+    {/* LISTA DE PUESTOS SELECCIONADOS */}
+    {puestosSeleccionados.length > 0 && (
+      <Paper p="md" withBorder radius="md">
+        <Group justify="space-between" mb="md">
+          <Text fw={700} size="md">Puestos Seleccionados ({puestosSeleccionados.length})</Text>
+          <Badge color="yellow" variant="filled">
+            {puestosSeleccionados.length} puesto{puestosSeleccionados.length !== 1 ? 's' : ''}
+          </Badge>
+        </Group>
+        <Divider mb="md" />
+        <ScrollArea style={{ height: '200px' }} scrollbarSize={6}>
+          <Stack gap="xs">
+            {puestosSeleccionados.map((puesto) => (
+              <PuestoItem
+                key={puesto.id_temporal}
+                puesto={puesto}
+                onUpdate={actualizarPuesto}
+                onRemove={eliminarPuesto}
+              />
+            ))}
+          </Stack>
+        </ScrollArea>
+      </Paper>
+    )}
 
-              {/* BUSCADOR DE PUESTOS */}
-              <Paper p="md" withBorder radius="md">
-                <Stack gap="md">
-                  <Group justify="space-between">
-                    <Text fw={700} size="md">Agregar Puestos</Text>
-                    <Badge color="green" variant="light">
-                      {puestosFiltrados.length} disponibles
-                    </Badge>
-                  </Group>
+    {/* FILTROS CON SELECTS - NUEVO DISEÑO */}
+    <Paper p="md" withBorder radius="md">
+      <Stack gap="md">
+        <Group justify="space-between">
+          <Text fw={700} size="md">Agregar Puestos</Text>
+          <Badge color="green" variant="light">
+            {puestosFiltrados.length} disponibles
+          </Badge>
+        </Group>
 
-                  <TextInput
-                    placeholder="Buscar por número, fila o cuadra..."
-                    leftSection={<IconSearch size={16} />}
-                    value={busquedaPuestos}
-                    onChange={(e) => {
-                      setBusquedaPuestos(e.target.value);
-                      setPaginaActual(0);
-                    }}
-                    rightSection={busquedaPuestos && <CloseButton onClick={() => setBusquedaPuestos('')} />}
-                  />
+        {/* FILA DE SELECTS PARA FILTRAR */}
+        <Group grow gap="xs">
+          <Select
+            placeholder="Fila"
+            data={[
+              { value: '', label: 'Todas las filas' },
+              { value: 'A', label: 'Fila A' },
+              { value: 'B', label: 'Fila B' }
+            ]}
+            value={filtroFila}
+            onChange={(value) => {
+              setFiltroFila(value);
+              setPaginaActual(0);
+            }}
+            clearable
+            size="sm"
+            styles={{
+              input: { backgroundColor: '#f6f8fe', border: '1px solid #f6f8fe' }
+            }}
+          />
+          
+          <Select
+            placeholder="Cuadra"
+            data={[
+              { value: '', label: 'Todas las cuadras' },
+              { value: 'Cuadra 1', label: 'Cuadra 1' },
+              { value: 'Cuadra 2', label: 'Cuadra 2' },
+              { value: 'Cuadra 3', label: 'Cuadra 3' },
+              { value: 'Cuadra 4', label: 'Cuadra 4' },
+              { value: 'Callejón', label: 'Callejón' }
+            ]}
+            value={filtroCuadra}
+            onChange={(value) => {
+              setFiltroCuadra(value);
+              setPaginaActual(0);
+            }}
+            clearable
+            size="sm"
+            styles={{
+              input: { backgroundColor: '#f6f8fe', border: '1px solid #f6f8fe' }
+            }}
+          />
+          
+          <TextInput
+            placeholder="N° puesto"
+            value={filtroNumero}
+            onChange={(e) => {
+              setFiltroNumero(e.target.value);
+              setPaginaActual(0);
+            }}
+            size="sm"
+            styles={{
+              input: { backgroundColor: '#f6f8fe', border: '1px solid #f6f8fe' }
+            }}
+          />
+        </Group>
 
-                  {puestosCargando ? (
-                    <Stack align="center" py="xl">
-                      <Loader />
-                      <Text size="sm" c="dimmed">Cargando puestos disponibles...</Text>
-                    </Stack>
-                  ) : (
-                    <>
-                      {/* PAGINACIÓN */}
-                      {puestosFiltrados.length > ITEMS_POR_PAGINA && (
-                        <Group justify="flex-end" gap="xs">
-                          <Button 
-                            size="xs" 
-                            variant="subtle"
-                            disabled={paginaActual === 0}
-                            onClick={() => setPaginaActual(p => Math.max(0, p - 1))}
-                          >
-                            ← Anterior
-                          </Button>
-                          <Text size="sm" fw={500}>
-                            {paginaActual * ITEMS_POR_PAGINA + 1}-
-                            {Math.min((paginaActual + 1) * ITEMS_POR_PAGINA, puestosFiltrados.length)}
-                          </Text>
-                          <Button 
-                            size="xs" 
-                            variant="subtle"
-                            disabled={(paginaActual + 1) * ITEMS_POR_PAGINA >= puestosFiltrados.length}
-                            onClick={() => setPaginaActual(p => p + 1)}
-                          >
-                            Siguiente →
-                          </Button>
-                        </Group>
-                      )}
+        {/* BOTÓN PARA LIMPIAR FILTROS */}
+        {(filtroFila || filtroCuadra || filtroNumero) && (
+          <Group justify="flex-end">
+            <Button 
+              size="xs" 
+              variant="subtle" 
+              onClick={() => {
+                setFiltroFila('');
+                setFiltroCuadra('');
+                setFiltroNumero('');
+                setPaginaActual(0);
+              }}
+              leftSection={<IconX size={12} />}
+            >
+              Limpiar filtros
+            </Button>
+          </Group>
+        )}
 
-                      {/* GRILLA DE PUESTOS - CON SCROLL PROPIO */}
-                      <ScrollArea style={{ height: '300px' }} scrollbarSize={6}>
-                        <SimpleGrid cols={4} spacing="xs">
-                          {puestosPaginados.map((puesto) => (
-                            <PuestoDisponible
-                              key={puesto.id_puesto}
-                              puesto={puesto}
-                              yaSeleccionado={puestosSeleccionados.some(p => p.id_puesto === puesto.id_puesto)}
-                              onAgregar={agregarPuesto}
-                            />
-                          ))}
-                        </SimpleGrid>
-                      </ScrollArea>
-                    </>
-                  )}
-                </Stack>
-              </Paper>
-
-              {/* BOTONES DE ACCIÓN */}
-              <Group justify="space-between" mt="xl" style={{ flexShrink: 0 }}>
+        {puestosCargando ? (
+          <Stack align="center" py="xl">
+            <Loader />
+            <Text size="sm" c="dimmed">Cargando puestos disponibles...</Text>
+          </Stack>
+        ) : (
+          <>
+            {/* PAGINACIÓN */}
+            {puestosFiltrados.length > ITEMS_POR_PAGINA && (
+              <Group justify="flex-end" gap="xs">
                 <Button 
-                  variant="subtle" 
-                  onClick={() => setActiveTab('datos')}
-                  leftSection={<IconX size={16} />}
+                  size="xs" 
+                  variant="subtle"
+                  disabled={paginaActual === 0}
+                  onClick={() => setPaginaActual(p => Math.max(0, p - 1))}
                 >
-                  Volver a Datos
+                  ← Anterior
                 </Button>
-                <Group>
-                  <Button 
-                    variant="outline" 
-                    onClick={resetForm}
-                    style={{ borderColor: '#0f0f0f', color: '#0f0f0f', borderRadius: '100px', padding: '0 25px', height: '45px' }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    loading={loading}
-                    disabled={puestosSeleccionados.length === 0}
-                    style={{
-                      backgroundColor: '#edbe3c',
-                      color: '#0f0f0f',
-                      borderRadius: '100px',
-                      padding: '0 25px',
-                      height: '45px',
-                      fontWeight: 600,
-                      minWidth: '200px'
-                    }}
-                  >
-                    {loading ? 'Creando...' : `Crear Afiliado (${puestosSeleccionados.length})`}
-                  </Button>
-                </Group>
+                <Text size="sm" fw={500}>
+                  {paginaActual * ITEMS_POR_PAGINA + 1}-
+                  {Math.min((paginaActual + 1) * ITEMS_POR_PAGINA, puestosFiltrados.length)}
+                </Text>
+                <Button 
+                  size="xs" 
+                  variant="subtle"
+                  disabled={(paginaActual + 1) * ITEMS_POR_PAGINA >= puestosFiltrados.length}
+                  onClick={() => setPaginaActual(p => p + 1)}
+                >
+                  Siguiente →
+                </Button>
               </Group>
-            </Stack>
-          )}
+            )}
+
+            {/* GRILLA DE PUESTOS */}
+            <ScrollArea style={{ height: '300px' }} scrollbarSize={6}>
+              <SimpleGrid cols={4} spacing="xs">
+                {puestosPaginados.map((puesto) => (
+                  <PuestoDisponible
+                    key={puesto.id_puesto}
+                    puesto={puesto}
+                    yaSeleccionado={puestosSeleccionados.some(p => p.id_puesto === puesto.id_puesto)}
+                    onAgregar={agregarPuesto}
+                  />
+                ))}
+              </SimpleGrid>
+            </ScrollArea>
+          </>
+        )}
+      </Stack>
+    </Paper>
+
+    {/* BOTONES DE ACCIÓN */}
+    <Group justify="space-between" mt="xl">
+      <Button 
+        variant="subtle" 
+        onClick={() => setActiveTab('datos')}
+        leftSection={<IconX size={16} />}
+      >
+        Volver a Datos
+      </Button>
+      <Group>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            resetForm();
+            onClose();
+          }}
+          style={{ borderColor: '#0f0f0f', color: '#0f0f0f', borderRadius: '100px', padding: '0 25px', height: '45px' }}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          loading={loading}
+          style={{
+            backgroundColor: '#edbe3c',
+            color: '#0f0f0f',
+            borderRadius: '100px',
+            padding: '0 25px',
+            height: '45px',
+            fontWeight: 600,
+            minWidth: '200px'
+          }}
+        >
+          {loading ? 'Creando...' : `Crear Afiliado ${puestosSeleccionados.length > 0 ? `(${puestosSeleccionados.length})` : ''}`}
+        </Button>
+      </Group>
+    </Group>
+  </Stack>
+)}
         </ScrollArea>
       </Box>
     </Modal>
