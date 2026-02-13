@@ -110,8 +110,6 @@ exports.traspasar = (req, res) => {
     db.serialize(() => {
 
       db.run("BEGIN TRANSACTION");
-
-      //Obtener tenencia activa actual
       db.get(`
         SELECT *
         FROM tenencia_puesto
@@ -126,19 +124,17 @@ exports.traspasar = (req, res) => {
           return res.status(400).json({ error: "No existe tenencia activa" });
         }
 
-        //evitar traspaso al mismo afiliado
+        
         if (tenenciaActual.id_afiliado == id_nuevo_afiliado) {
           db.run("ROLLBACK");
           return res.status(400).json({ 
             error: "El puesto ya pertenece a ese afiliado" 
           });
         }
-
-        // cerrar tenencia actual
         db.run(`
           UPDATE tenencia_puesto
           SET fecha_fin = CURRENT_DATE,
-              razon = ?
+              razon = 'TRASPASO'
           WHERE id_tenencia = ?
         `, [razon || 'traspaso', tenenciaActual.id_tenencia], (err2) => {
 
@@ -146,21 +142,17 @@ exports.traspasar = (req, res) => {
             db.run("ROLLBACK");
             return res.status(500).json({ error: err2.message });
           }
-
-          //crear nueva tenencia
           db.run(`
             INSERT INTO tenencia_puesto
             (id_afiliado, id_puesto, razon)
-            VALUES (?, ?, 'traspaso_recibido')
+            VALUES (?, ?, 'TRASPASO')
           `, [id_nuevo_afiliado, id_puesto], (err3) => {
 
             if (err3) {
               db.run("ROLLBACK");
               return res.status(500).json({ error: err3.message });
             }
-
             db.run("COMMIT");
-
             res.json({
               success: true,
               mensaje: "Puesto traspasado correctamente"
