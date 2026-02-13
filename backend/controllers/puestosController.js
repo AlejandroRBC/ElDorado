@@ -17,7 +17,7 @@ exports.listar = (req, res) => {
 
       a.id_afiliado,
       a.ci,
-      (a.nombre || ' ' || a.paterno) AS apoderado
+      (a.nombre || ' ' || a.paterno || ' ' || a.materno) AS apoderado
 
     FROM puesto p
 
@@ -26,13 +26,14 @@ exports.listar = (req, res) => {
         SELECT id_tenencia
         FROM tenencia_puesto
         WHERE id_puesto = p.id_puesto
+        AND fecha_fin IS NULL
         ORDER BY id_tenencia DESC
         LIMIT 1
     )
     LEFT JOIN afiliado a
       ON a.id_afiliado = t.id_afiliado
 
-    ORDER BY p.fila, p.cuadra, p.nroPuesto
+    ORDER BY p.id_puesto ASC
   `;
 
   db.all(sql, [], (err, rows) => {
@@ -96,5 +97,81 @@ exports.infoTraspaso = (req, res) => {
     });
 
   });
-
 };
+
+exports.traspasar = (req, res) => {
+
+    const { id_puesto, id_nuevo_afiliado, razon } = req.body;
+
+    if (!id_puesto || !id_nuevo_afiliado) {
+      return res.status(400).json({ error: "Datos incompletos" });
+    }
+
+    db.serialize(() => {
+
+      db.run("BEGIN TRANSACTION");
+
+      // 1️⃣ Obtener tenencia activa actual
+      db.get(`
+        SELECT *
+        FROM tenencia_puesto
+        WHERE id_puesto = ?
+        AND fecha_fin IS NULL
+        ORDER BY id_tenencia DESC
+        LIMIT 1
+      `, [id_puesto], (err, tenenciaActual) => {
+
+        if (err || !tenenciaActual) {
+          db.run("ROLLBACK");
+          return res.status(400).json({ error: "No existe tenencia activa" });
+        }
+
+        // 🔒 evitar traspaso al mismo afiliado
+        if (tenenciaActual.id_afiliado == id_nuevo_afiliado) {
+          db.run("ROLLBACK");
+          return res.status(400).json({ 
+            error: "El puesto ya pertenece a ese afiliado" 
+          });
+        }
+
+        // 2️⃣ cerrar tenencia actual
+        db.run(`
+          UPDATE tenencia_puesto
+          SET fecha_fin = CURRENT_DATE,
+              razon = ?
+          WHERE id_tenencia = ?
+        `, [razon || 'traspaso', tenenciaActual.id_tenencia], (err2) => {
+
+          if (err2) {
+            db.run("ROLLBACK");
+            return res.status(500).json({ error: err2.message });
+          }
+
+          // 3️⃣ crear nueva tenencia
+          db.run(`
+            INSERT INTO tenencia_puesto
+            (id_afiliado, id_puesto, razon)
+            VALUES (?, ?, 'traspaso_recibido')
+          `, [id_nuevo_afiliado, id_puesto], (err3) => {
+
+            if (err3) {
+              db.run("ROLLBACK");
+              return res.status(500).json({ error: err3.message });
+            }
+
+            db.run("COMMIT");
+
+            res.json({
+              success: true,
+              mensaje: "✅ Puesto traspasado correctamente"
+            });
+
+          });
+
+        });
+
+      });
+
+    });
+
+  };

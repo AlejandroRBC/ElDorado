@@ -35,7 +35,7 @@ function crearTablas() {
       extension VARCHAR(3) DEFAULT 'LP',
       nombre VARCHAR(100) NOT NULL,
       paterno VARCHAR(100) NOT NULL,
-      materno VARCHAR(100),
+      materno VARCHAR(100) NOT NULL,
       sexo VARCHAR(1) CHECK(sexo IN ('M', 'F')),
       fecNac DATE,
       telefono VARCHAR(20),
@@ -58,6 +58,7 @@ function crearTablas() {
       largo INTEGER,
       tiene_patente BOOLEAN DEFAULT 0,
       rubro TEXT,
+      estado BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
     )
   `);
@@ -134,8 +135,8 @@ function insertarPuestosEjemplo() {
   const puestos = [
     ['A','1',1,3,4,1,'Ropa'],      // con patente
     ['A','1',2,3,4,0,'Comida'],    // sin patente
-    ['B','2',5,2,3,1,'Verduras'],
-    ['C','1',3,3,3,0,'Artesanía']
+    ['B','2',3,2,3,1,'Verduras'],
+    ['C','1',4,3,3,0,'Artesanía']
   ];
 
   puestos.forEach(p => {

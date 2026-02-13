@@ -7,4 +7,7 @@ router.get('/listar', puestosController.listar);
 
 router.get('/info-traspaso/:id', puestosController.infoTraspaso);
 
+router.post('/traspasar', puestosController.traspasar);
+
+
 module.exports = router;

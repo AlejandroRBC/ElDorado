@@ -7,7 +7,8 @@ import {
 import { Badge as MantineBadge, Box } from '@mantine/core';
 import { 
   IconSearch, IconPlus, IconFileExport, IconDotsVertical, 
-  IconEye, IconHistory, IconArrowsExchange, IconX
+  IconEye, IconHistory, IconArrowsExchange, IconX,
+  IconEdit
 } from '@tabler/icons-react';
 
 import { ModalMostrarHistorial } from "./components/ModalMostrarHistorial";
@@ -74,28 +75,36 @@ function GestionPatentesPuestosModule() {
   };
 
 
-  const handleEjecutarTraspaso = async ({ desde, para, motivo }) => {
+  const handleEjecutarTraspaso = async (data) => {
     try {
       setLoading(true);
 
+      const idPuesto = data.puestos[0]; // solo 1 puesto por ahora
+
+      if (data.desde === data.para) {
+        alert("No puede traspasar a sí mismo");
+        return;
+      }
+
       const resultado = await puestosService.traspasar({
-        id_puesto: puestoParaTraspaso.id_puesto,
-        desde_afiliado: desde,
-        para_afiliado: para,
-        motivo: motivo || 'Traspaso sistema'
+        id_puesto: idPuesto,
+        id_nuevo_afiliado: data.para,
+        razon: data.motivoDetallado || 'Traspaso sistema'
       });
 
       if (resultado.success) {
-        await cargarPuestos();
-        closeTraspaso();
+        await cargarPuestos();   // ✅ refresca tabla
+        closeTraspaso();         // ✅ cierra modal
       }
 
     } catch (error) {
+      console.error(error);
       setError("Error al realizar traspaso");
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     cargarPuestos();
@@ -237,8 +246,16 @@ function GestionPatentesPuestosModule() {
               <Table.Thead> 
                 <Table.Tr>
                   {[
-                    'ID Puesto', 'Fila/Cuadra', 'Apoderado', 'C.I.', 
-                    'Adquisición', 'Rubros', 'Estado Patente', 'Acciones'
+                    'ID Puesto', 
+                    'Nro Puesto',
+                    'Fila/Cuadra', 
+                    'Ancho/Largo',
+                    'Apoderado', 
+                    'C.I.', 
+                    'Adquisición', 
+                    'Rubros', 
+                    'Estado Patente', 
+                    'Acciones'
                   ].map((header) => (
                     <Table.Th key={header}>
                       <MantineBadge 
@@ -257,9 +274,35 @@ function GestionPatentesPuestosModule() {
               </Table.Thead>
               <Table.Tbody>
                 {puestosFiltrados.map((puesto) => (
-                  <Table.Tr key={puesto.id_puesto || puesto.id} style={{ textAlign: 'center' }}>
-                    <Table.Td><Text size="sm" fw={700}>{puesto.id_puesto}</Text></Table.Td>
-                    <Table.Td><Text size="sm">{`${puesto.fila} - ${puesto.cuadra}`}</Text></Table.Td>
+                  <Table.Tr 
+                    key={puesto.id_puesto || puesto.id} 
+                    style={{ textAlign: 'center' }}>
+                    <Table.Td>
+                      <Text 
+                        size="sm" 
+                        fw={700}>
+                          {puesto.id_puesto}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text 
+                        size="sm" 
+                        fw={700}>
+                          {puesto.nroPuesto}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text 
+                        size="sm">
+                          {`${puesto.fila} - ${puesto.cuadra}`}
+                        </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text 
+                        size="sm">
+                          {`${puesto.ancho}m - ${puesto.largo}m`}
+                        </Text>
+                    </Table.Td>
                     <Table.Td>
                        <Text size="sm" fw={500}>{puesto.apoderado || 'VACANTE'}</Text>
                     </Table.Td>
@@ -300,6 +343,10 @@ function GestionPatentesPuestosModule() {
                           <Menu.Divider />
                           <Menu.Item leftSection={<IconHistory size={14} />}>
                             Reporte Individual
+                          </Menu.Item>
+                          <Menu.Item 
+                            leftSection={<IconEdit size={14} />}>
+                            Editar
                           </Menu.Item>
                         </Menu.Dropdown>
                       </Menu>
