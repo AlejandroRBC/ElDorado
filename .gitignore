@@ -1,6 +1,6 @@
-data/eldorado.db
-data/eldorado.db-shm
-data/eldorado.db-wal
+data/elDorado.db
+data/elDorado.db-shm
+data/elDorado.db-wal
 node_modules
 frontend/node_modules
 backend/uploads/perfiles
