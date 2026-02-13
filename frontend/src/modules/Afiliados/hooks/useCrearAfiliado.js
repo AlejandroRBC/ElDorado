@@ -1,6 +1,6 @@
-// frontend/src/modules/Afiliados/hooks/useCrearAfiliado.js
 import { useState } from 'react';
 import { afiliadosService } from '../services/afiliadosService';
+import { notifications } from '@mantine/notifications';
 
 export const useCrearAfiliado = () => {
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,6 @@ export const useCrearAfiliado = () => {
     setLoading(true);
     setError('');
     setSuccess(false);
-    setAfiliadoCreado(null);
 
     try {
       // 1. Validar datos básicos
@@ -20,7 +19,12 @@ export const useCrearAfiliado = () => {
         throw new Error('CI, Nombre y Apellido Paterno son requeridos');
       }
 
-      // 2. Preparar datos básicos del afiliado
+      // 2. Validar que tenga al menos un puesto
+      if (!datos.puestos || datos.puestos.length === 0) {
+        throw new Error('Debe asignar al menos un puesto');
+      }
+
+      // 3. Preparar datos básicos del afiliado
       const datosBasicos = {
         ci: datos.ci.trim(),
         extension: datos.extension || 'LP',
@@ -34,9 +38,9 @@ export const useCrearAfiliado = () => {
         direccion: datos.direccion || '',
       };
 
-      console.log('Enviando datos al backend:', datosBasicos);
+      console.log('📝 Creando afiliado:', datosBasicos);
 
-      // 3. Crear afiliado en backend
+      // 4. Crear afiliado en backend
       const respuestaCrear = await afiliadosService.crear(datosBasicos);
       
       if (!respuestaCrear.afiliado) {
@@ -44,56 +48,60 @@ export const useCrearAfiliado = () => {
       }
 
       const afiliadoId = respuestaCrear.afiliado.id || respuestaCrear.afiliado.id_afiliado;
-      
-      console.log('Afiliado creado con ID:', afiliadoId);
+      console.log('✅ Afiliado creado con ID:', afiliadoId);
 
-      // 4. Subir foto si existe
+      // 5. Subir foto si existe
       if (datos.foto) {
         try {
-          console.log('Subiendo foto...');
+          console.log('📸 Subiendo foto...');
           await afiliadosService.subirFotoPerfil(afiliadoId, datos.foto);
-          console.log('Foto subida exitosamente');
+          console.log('✅ Foto subida exitosamente');
         } catch (fotoError) {
-          console.warn('No se pudo subir la foto:', fotoError);
-          // Continuamos aunque falle la foto
+          console.warn('⚠️ No se pudo subir la foto:', fotoError);
         }
       }
 
-      // 5. Asignar puesto si se especificó
-      const camposPuesto = [datos.cuadra_puesto, datos.fila_puesto, datos.nro_puesto];
-      const algunCampoPuestoLleno = camposPuesto.some(campo => campo);
-      const todosCamposPuestoLlenos = camposPuesto.every(campo => campo);
-      
-      if (algunCampoPuestoLleno && todosCamposPuestoLlenos) {
+      // 6. Asignar TODOS los puestos seleccionados
+      const puestosAsignados = [];
+      for (const puesto of datos.puestos) {
         try {
-          console.log('Asignando puesto...');
+          console.log(`🏪 Asignando puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}...`);
+          
           const puestoData = {
-            fila: datos.fila_puesto,
-            cuadra: datos.cuadra_puesto,
-            nroPuesto: parseInt(datos.nro_puesto),
-            rubro: datos.rubro_puesto || '',
-            tiene_patente: datos.tiene_patente || false,
-            razon: 'NUEVITO'
+            fila: puesto.fila,
+            cuadra: puesto.cuadra,
+            nroPuesto: parseInt(puesto.nroPuesto),
+            rubro: puesto.rubro || '',
+            tiene_patente: puesto.tiene_patente || false,
+            razon: 'ASIGNADO'
           };
           
-          await afiliadosService.asignarPuesto(afiliadoId, puestoData);
-          console.log('Puesto asignado exitosamente');
+          const resultado = await afiliadosService.asignarPuesto(afiliadoId, puestoData);
+          puestosAsignados.push(resultado);
+          console.log(`✅ Puesto asignado: ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`);
         } catch (puestoError) {
-          console.warn('No se pudo asignar el puesto:', puestoError);
-          // Continuamos aunque falle la asignación del puesto
+          console.error(`❌ Error asignando puesto ${puesto.nroPuesto}:`, puestoError);
+          throw new Error(`Error al asignar puesto ${puesto.nroPuesto}: ${puestoError.message}`);
         }
       }
 
-      // 6. Preparar respuesta
+      // 7. Preparar respuesta
       const resultadoCompleto = {
         ...respuestaCrear,
         id: afiliadoId,
+        puestos_asignados: puestosAsignados.length,
         datosCompletos: datos
       };
 
       setAfiliadoCreado(resultadoCompleto);
       setSuccess(true);
       
+      notifications.show({
+        title: '✅ Éxito',
+        message: `Afiliado creado con ${puestosAsignados.length} puesto${puestosAsignados.length !== 1 ? 's' : ''}`,
+        color: 'green'
+      });
+
       return {
         exito: true,
         datos: resultadoCompleto,
@@ -102,8 +110,14 @@ export const useCrearAfiliado = () => {
 
     } catch (err) {
       const mensajeError = err.message || 'Error al crear afiliado';
-      console.error('Error en crearAfiliadoCompleto:', err);
+      console.error('❌ Error en crearAfiliadoCompleto:', err);
       setError(mensajeError);
+      
+      notifications.show({
+        title: '❌ Error',
+        message: mensajeError,
+        color: 'red'
+      });
       
       return {
         exito: false,
