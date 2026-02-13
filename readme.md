@@ -25,6 +25,7 @@ npm install --save-dev concurrently wait-on
     npm install cors
     npm install bcryptjs
     npm install bcrypt
+    npm install express-session
 ## Frontend
     cd frontend
     npm install axios

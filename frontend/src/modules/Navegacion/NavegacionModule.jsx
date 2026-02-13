@@ -9,6 +9,7 @@ const InicioModule = lazy(() => import('../Inicio/InicioModule'));
 const AfiliadosModule = lazy(() => import('../Afiliados/AfiliadosModule'));
 const GestionPatentesPuestosModule = lazy(() => import('../../modules/GestionPatentesPuestos/GestionPatentesPuestosModule'));
 const MapaModule = lazy(() => import('../Mapa/MapaModule'));
+const UsuariosModule = lazy(() => import('../Usuario/UsuariosModule')); 
 
 // esta importacion es para parte de afiliados
 const DetallesAfiliado = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
@@ -36,7 +37,7 @@ const NavegacionModule = () => {
             <Route path="/afiliados" element={<AfiliadosModule />} />
             <Route path="/gestionPuestos" element={<GestionPatentesPuestosModule />} />
             <Route path="/mapa" element={<MapaModule />} /> {/* Nueva ruta */}
-            
+            <Route path="/admin/usuarios" element={<UsuariosModule />} />
             {/* ruta para poder entrar al detalle de un afiliado */}
             <Route path="/afiliados/:id" element={<DetallesAfiliado />} />
 

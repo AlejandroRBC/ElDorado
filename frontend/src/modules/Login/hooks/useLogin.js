@@ -4,11 +4,17 @@ import { notifications } from '@mantine/notifications';
 import { LoginService } from '../services/LoginService';
 import { useLogin } from '../../../context/LoginContext';
 
+// ============================================
+// HOOK DE FORMULARIO DE LOGIN
+// ============================================
+
+/**
+ * Maneja la lógica del formulario de login
+ */
 export function useLoginForm() {
   const [loading, setLoading] = useState(false);
-  const { login } = useLogin(); // ← LOGIN CONTEXT
+  const { login } = useLogin();
 
-  // Formulario sin validaciones (backend manda)
   const form = useForm({
     initialValues: {
       usuario: '',
@@ -16,11 +22,13 @@ export function useLoginForm() {
     },
   });
 
+  /**
+   * Procesar login
+   */
   const handleLogin = async (values) => {
     setLoading(true);
 
     try {
-      // Llamada al backend
       const data = await LoginService.login(values);
 
       if (data.success) {
@@ -31,9 +39,7 @@ export function useLoginForm() {
           autoClose: 3000,
         });
 
-        // Guardar sesión
         login(data.user);
-
         return { success: true, user: data.user };
       } else {
         notifications.show({

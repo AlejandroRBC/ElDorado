@@ -1,14 +1,13 @@
 const db = require('../config/db'); 
 const bcrypt = require('bcryptjs');
 
+// ============================================
+// LOGIN - Autenticación de usuarios
+// ============================================
 const login = (req, res) => {
     const { usuario, password } = req.body;
 
-    // ===============================
-    // VALIDACIONES COMPLETAS EN BACKEND
-    // ===============================
-    
-    // 1. Validar que existan los campos
+    // Validar campos requeridos
     if (!usuario || !password) {
         return res.status(400).json({
             success: false,
@@ -18,7 +17,7 @@ const login = (req, res) => {
 
     const usuarioLimpio = usuario.trim();
 
-    // 2. Validar longitud mínima de usuario
+    // Validar longitud mínima
     if (usuarioLimpio.length < 3) {
         return res.status(400).json({
             success: false,
@@ -26,82 +25,29 @@ const login = (req, res) => {
         });
     }
 
-    // 3. Validar longitud máxima de usuario
-    if (usuarioLimpio.length > 50) {
-        return res.status(400).json({
-            success: false,
-            message: "El usuario no puede exceder 50 caracteres"
-        });
-    }
-
-    // 4. Validar caracteres permitidos en usuario
-    const usuarioRegex = /^[a-zA-Z0-9_.-]+$/;
-    if (!usuarioRegex.test(usuarioLimpio)) {
-        return res.status(400).json({
-            success: false,
-            message: "Solo se permiten letras, números, puntos y guiones en el usuario"
-        });
-    }
-
-    // 5. Validar longitud mínima de contraseña
-    if (password.length < 6) {
-        return res.status(400).json({
-            success: false,
-            message: "La contraseña debe tener al menos 6 caracteres"
-        });
-    }
-
-    // 6. Validar longitud máxima de contraseña
-    if (password.length > 100) {
-        return res.status(400).json({
-            success: false,
-            message: "La contraseña es demasiado larga"
-        });
-    }
-
-    // 7. Validar formato del usuario (no empezar/terminar con . o -)
-    if (usuarioLimpio.startsWith('.') || usuarioLimpio.startsWith('-') || 
-        usuarioLimpio.endsWith('.') || usuarioLimpio.endsWith('-')) {
-        return res.status(400).json({
-            success: false,
-            message: "El usuario no puede empezar o terminar con punto o guión"
-        });
-    }
-
-    // 8. Validar caracteres consecutivos
-    if (usuarioLimpio.includes('..') || usuarioLimpio.includes('--') || 
-        usuarioLimpio.includes('.-') || usuarioLimpio.includes('-.')) {
-        return res.status(400).json({
-            success: false,
-            message: "El usuario no puede tener puntos o guiones consecutivos"
-        });
-    }
-
-    // ===============================
-    // CONSULTA A LA BASE DE DATOS
-    // ===============================
+    // Consulta a la base de datos
     const query = `
         SELECT 
-            id_usuario,
-            nom_usuario,
-            password,
-            rol,
-            es_vigente,
-            fecha_fin_usuario
-        FROM usuarios
-        WHERE nom_usuario = ?
+            u.id_usuario,
+            u.nom_usuario,
+            u.password,
+            u.rol,
+            u.es_vigente,
+            u.fecha_fin_usuario,
+            a.nombre || ' ' || a.paterno AS nom_afiliado 
+        FROM usuario u
+        LEFT JOIN afiliado a ON u.id_afiliado = a.id_afiliado  
+        WHERE u.nom_usuario = ?
     `;
 
     db.get(query, [usuarioLimpio], (err, user) => {
         if (err) {
-            console.error("Error en BD:", err.message);
             return res.status(500).json({
                 success: false,
                 message: "Error interno del servidor"
             });
         }
 
-        // 9. Validar si el usuario existe
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -109,7 +55,7 @@ const login = (req, res) => {
             });
         }
 
-        // 10. Validar si el usuario está activo
+        // Validar si el usuario está activo
         if (user.es_vigente !== 1) {
             return res.status(401).json({
                 success: false,
@@ -117,27 +63,9 @@ const login = (req, res) => {
             });
         }
 
-        // 11. Validar fecha de expiración
-        if (user.fecha_fin_usuario) {
-            const fechaFin = new Date(user.fecha_fin_usuario);
-            const hoy = new Date();
-            
-            if (fechaFin < hoy) {
-                // Actualizar estado a inactivo
-                db.run(`UPDATE usuarios SET es_vigente = 0 WHERE id_usuario = ?`, 
-                    [user.id_usuario]);
-                
-                return res.status(401).json({
-                    success: false,
-                    message: "Su cuenta ha sido deshabilitada . Contacte al administrador."
-                });
-            }
-        }
-
-        // 12. Validar contraseña
+        // Comparar contraseña
         bcrypt.compare(password, user.password, (err, passwordValida) => {
             if (err) {
-                console.error("Error bcrypt:", err);
                 return res.status(500).json({
                     success: false,
                     message: "Error interno del servidor"
@@ -151,15 +79,30 @@ const login = (req, res) => {
                 });
             }
 
-            // ===============================
-            // LOGIN EXITOSO
-            // ===============================
+            // Guardar en sesión
+            req.session.usuario = {
+                id_usuario: user.id_usuario,
+                nom_usuario: user.nom_usuario,
+                nom_afiliado: user.nom_afiliado || null,
+                rol: user.rol
+            };
+
+            // Guardar en tabla usuario_sesion (para triggers)
+            db.run(
+                `INSERT OR REPLACE INTO usuario_sesion 
+                 (id, id_usuario_master, nom_usuario_master, nom_afiliado_master)
+                 VALUES (1, ?, ?, ?)`,
+                [user.id_usuario, user.nom_usuario, user.nom_afiliado || 'SISTEMA']
+            );
+
+            // Respuesta exitosa
             return res.json({
                 success: true,
                 message: `Acceso concedido. Bienvenido ${user.nom_usuario}`,
                 user: {
                     id_usuario: user.id_usuario,
                     usuario: user.nom_usuario,
+                    nom_afiliado: user.nom_afiliado,
                     rol: user.rol
                 }
             });
@@ -167,5 +110,45 @@ const login = (req, res) => {
     });
 };
 
+// ============================================
+// VERIFICAR SESIÓN - Valida si hay sesión activa
+// ============================================
+const verificarSesion = (req, res) => {
+    if (req.session.usuario) {
+        return res.json({
+            success: true,
+            user: req.session.usuario
+        });
+    }
+    
+    return res.status(401).json({
+        success: false,
+        message: "No hay sesión activa"
+    });
+};
 
-module.exports = { login };
+// ============================================
+// LOGOUT - Cerrar sesión
+// ============================================
+const logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Error al cerrar sesión"
+            });
+        }
+        
+        res.clearCookie('eldorado.sid');
+        res.json({
+            success: true,
+            message: "Sesión cerrada correctamente"
+        });
+    });
+};
+
+module.exports = { 
+    login, 
+    verificarSesion, 
+    logout           
+};
