@@ -107,6 +107,48 @@ exports.create = async (req, res) => {
     });
   }
 };
+// AGREGAR MÉTODO UPDATE
+
+exports.update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const datos = req.body;
+    
+    // Validaciones básicas
+    if (!datos.ci || !datos.nombre || !datos.paterno) {
+      return res.status(400).json({ 
+        error: 'CI, nombre y apellido paterno son requeridos' 
+      });
+    }
+    
+    // Validar formato de CI
+    if (!/^\d+$/.test(datos.ci)) {
+      return res.status(400).json({ 
+        error: 'CI debe contener solo números' 
+      });
+    }
+    
+    const afiliadoActualizado = await Afiliado.update(id, datos);
+    
+    res.json({
+      mensaje: 'Afiliado actualizado exitosamente',
+      afiliado: afiliadoActualizado
+    });
+  } catch (error) {
+    console.error('Error en update:', error);
+    
+    if (error.message.includes('UNIQUE constraint failed')) {
+      return res.status(400).json({ 
+        error: 'Ya existe un afiliado con este CI' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Error al actualizar afiliado',
+      detalles: error.message 
+    });
+  }
+};
 
 // Ruta de prueba
 exports.test = (req, res) => {

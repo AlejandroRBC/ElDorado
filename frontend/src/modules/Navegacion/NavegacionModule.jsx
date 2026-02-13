@@ -12,6 +12,8 @@ const MapaModule = lazy(() => import('../Mapa/MapaModule'));
 
 // esta importacion es para parte de afiliados
 const DetallesAfiliado = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
+const EditarAfiliadoPage = lazy(() => import('../Afiliados/pages/EditarAfiliadoPage'));
+
 
 const NavegacionModule = () => {
   return (
@@ -39,6 +41,8 @@ const NavegacionModule = () => {
             
             {/* ruta para poder entrar al detalle de un afiliado */}
             <Route path="/afiliados/:id" element={<DetallesAfiliado />} />
+            <Route path="/afiliados/editar/:id" element={<EditarAfiliadoPage />} />
+
 
             {/* Agrega más rutas aquí */}
           </Routes>

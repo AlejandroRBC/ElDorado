@@ -126,6 +126,8 @@ const DetallesAfiliado = () => {
             
             <Button
               leftSection={<IconEdit size={18} />}
+              component="a"
+                href={`/afiliados/editar/${id}`}
               style={{
                 backgroundColor: '#0f0f0f',
                 color: 'white',
@@ -133,7 +135,7 @@ const DetallesAfiliado = () => {
                 fontWeight: 500,
                 padding: '10px 20px',
               }}
-              onClick={() => alert('Funcionalidad en desarrollo')}
+              
             >
               Editar Perfil de Afiliado
             </Button>
@@ -235,7 +237,7 @@ const DetallesAfiliado = () => {
                     
                     <Box>
                       <Text fw={600} size="sm" style={{ color: '#0f0f0f', marginBottom: '2px' }}>
-                        Rubro:
+                        Ocupación:
                       </Text>
                       <Text size="sm" style={{ color: '#666' }}>
                         {afiliado.ocupacion || afiliado.rubro || 'No especificado'}
@@ -250,7 +252,7 @@ const DetallesAfiliado = () => {
                         Contacto:
                       </Text>
                       <Text size="sm" style={{ color: '#666' }}>
-                        📞 {afiliado.telefono || 'No especificado'}
+                        {afiliado.telefono || 'No especificado'}
                       </Text>
                       
                     </Stack>
@@ -266,7 +268,7 @@ const DetallesAfiliado = () => {
                     
                     <Stack gap={4}>
                       <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>
-                        Registro:
+                        Fecha Afiliacion:
                       </Text>
                       <Text size="sm" style={{ color: '#666' }}>
                         {afiliado.fecha_afiliacion ? 
@@ -313,6 +315,7 @@ const DetallesAfiliado = () => {
                 <Group gap="md">
                   <Button
                     leftSection={<IconPlus size={18} />}
+                    
                     style={{
                       backgroundColor: '#0f0f0f',
                       color: 'white',

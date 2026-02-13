@@ -43,6 +43,28 @@ export const afiliadosService = {
     }
   },
 
+
+  actualizar: async (id, afiliadoData) => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(afiliadoData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en afiliadosService.actualizar:', error);
+      throw error;
+    }
+  },
   // Obtener estadísticas
   obtenerEstadisticas: async () => {
     try {

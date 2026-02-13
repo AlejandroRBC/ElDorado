@@ -5,6 +5,8 @@ const path = require('path');
 const afiliadosController = require('../controllers/afiliadosController');
 const db = require('../config/db');
 
+router.put('/:id', afiliadosController.update);
+
 // Configurar multer para subir imágenes
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

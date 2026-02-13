@@ -1,6 +1,49 @@
 const db = require('../config/db');
 
 const Afiliado = {
+  // AGREGAR MÉTODO UPDATE
+
+update: (id, afiliadoData) => {
+  return new Promise((resolve, reject) => {
+    const {
+      ci, extension, nombre, paterno, materno,
+      sexo, fecNac, telefono, ocupacion, direccion,
+      es_habilitado
+    } = afiliadoData;
+    
+    db.run(`
+      UPDATE afiliado 
+      SET ci = ?,
+          extension = ?,
+          nombre = ?,
+          paterno = ?,
+          materno = ?,
+          sexo = ?,
+          fecNac = ?,
+          telefono = ?,
+          ocupacion = ?,
+          direccion = ?,
+          es_habilitado = ?
+      WHERE id_afiliado = ?
+    `, [
+      ci, extension, nombre, paterno, materno,
+      sexo, fecNac, telefono, ocupacion, direccion,
+      es_habilitado ? 1 : 0, id
+    ], function(err) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      
+      if (this.changes === 0) {
+        reject(new Error('Afiliado no encontrado'));
+        return;
+      }
+      
+      resolve({ id, ...afiliadoData });
+    });
+  });
+},
   // Obtener todos los afiliados activos
   findAll: (params = {}) => {
     return new Promise((resolve, reject) => {
@@ -9,7 +52,7 @@ const Afiliado = {
           a.*,
           COUNT(DISTINCT tp.id_tenencia) as total_puestos,
           SUM(CASE WHEN p.tiene_patente = 1 THEN 1 ELSE 0 END) as puestos_con_patente,
-          GROUP_CONCAT(p.nroPuesto || '-' || p.fila || '-' || p.cuadra) as puestos_codes,
+          GROUP_CONCAT(p.nroPuesto || '' || p.fila || ' - ' || p.cuadra) as puestos_codes,
           GROUP_CONCAT(DISTINCT p.rubro) as rubros,
           MIN(CASE WHEN tp.fecha_fin IS NULL THEN tp.fecha_ini END) as fecha_primer_puesto
         FROM afiliado a

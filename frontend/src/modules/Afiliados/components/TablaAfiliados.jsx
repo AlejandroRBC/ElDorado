@@ -1,5 +1,5 @@
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea } from '@mantine/core';
-import { IconEdit, IconTrash, IconEye } from '@tabler/icons-react';
+import { IconEdit, IconEye } from '@tabler/icons-react'; // 👈 Eliminado IconTrash
 import { useNavigate } from 'react-router-dom';
 
 const TablaAfiliados = ({ afiliados = [] }) => {
@@ -9,9 +9,17 @@ const TablaAfiliados = ({ afiliados = [] }) => {
     navigate(`/afiliados/${id}`);
   };
 
+  const editarAfiliado = (id) => {
+    navigate(`/afiliados/editar/${id}`);
+  };
+
   if (afiliados.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '40px',
+        color: '#666'
+      }}>
         <Text size="lg">No hay afiliados para mostrar</Text>
         <Text size="sm" style={{ marginTop: '10px' }}>
           Utiliza los filtros o añade nuevos afiliados
@@ -27,8 +35,11 @@ const TablaAfiliados = ({ afiliados = [] }) => {
         borderBottom: '1px solid #eee',
         cursor: 'pointer',
         transition: 'background-color 0.2s',
-        '&:hover': { backgroundColor: '#f9f9f9' }
+        '&:hover': {
+          backgroundColor: '#f9f9f9'
+        }
       }}
+      onClick={() => verDetalles(afiliado.id)}
     >
       <Table.Td>
         <Text fw={500} style={{ color: '#0f0f0f' }}>
@@ -99,9 +110,14 @@ const TablaAfiliados = ({ afiliados = [] }) => {
             size="sm"
             style={{
               color: '#0f0f0f',
-              '&:hover': { backgroundColor: 'rgba(15, 15, 15, 0.1)' },
+              '&:hover': {
+                backgroundColor: 'rgba(15, 15, 15, 0.1)',
+              },
             }}
-            onClick={() => verDetalles(afiliado.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              verDetalles(afiliado.id);
+            }}
           >
             <IconEye size={16} />
           </ActionIcon>
@@ -110,21 +126,26 @@ const TablaAfiliados = ({ afiliados = [] }) => {
             size="sm"
             style={{
               color: '#edbe3c',
-              '&:hover': { backgroundColor: 'rgba(237, 190, 60, 0.1)' },
+              '&:hover': {
+                backgroundColor: 'rgba(237, 190, 60, 0.1)',
+              },
             }}
             onClick={(e) => {
               e.stopPropagation();
-              alert(`Editar afiliado ${afiliado.id} (en desarrollo)`);
+              editarAfiliado(afiliado.id);
             }}
           >
             <IconEdit size={16} />
           </ActionIcon>
+          {/* 🚫 BOTÓN ELIMINAR COMENTADO
           <ActionIcon
             variant="subtle"
             size="sm"
             style={{
               color: '#F44336',
-              '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
+              '&:hover': {
+                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+              },
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -135,6 +156,7 @@ const TablaAfiliados = ({ afiliados = [] }) => {
           >
             <IconTrash size={16} />
           </ActionIcon>
+          */}
         </Group>
       </Table.Td>
     </Table.Tr>

@@ -31,6 +31,8 @@ const Card = ({ afiliado }) => {
       <ActionIcon
         variant="subtle"
         size="lg"
+        component="a"
+      href={`/afiliados/editar/${afiliado.id}`}
         style={{
           position: 'absolute',
           top: '0px',
@@ -111,21 +113,27 @@ const Card = ({ afiliado }) => {
           </Text>
           
           <Group gap={6} wrap="wrap">
-            {afiliado.patentes.map((puesto, index) => (
-              <Badge
-                key={index}
-                size="sm"
-                style={{
-                  backgroundColor: '#EDBE3C',
-                  color: '#0f0f0f',
-                  fontWeight: 400,
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                }}
-              >
-                {puesto}
-              </Badge>
-            ))}
+          {afiliado.patentes && afiliado.patentes.length > 0 ? (
+                          afiliado.patentes.map((puesto, index) => (
+                            <Badge
+                              key={index}
+                              size="sm"
+                              style={{
+                                backgroundColor: '#EDBE3C',
+                                color: '#0f0f0f',
+                                fontWeight: 700,
+                                padding: '4px 10px',
+                                borderRadius: '4px',
+                              }}
+                            >
+                              {puesto}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Text size="sm" style={{ color: '#999', fontStyle: 'italic' }}>
+                            Sin puestos asignados
+                          </Text>
+                        )}
           </Group>
           
           <Box style={{ marginTop: 'auto' }}>
@@ -133,7 +141,7 @@ const Card = ({ afiliado }) => {
               Ocupacion:
             </Text>
             <Text size="sm" style={{ color: '#666' }}>
-              {afiliado.ocupacion}
+            {afiliado.ocupacion || 'No especificado'}
             </Text>
           </Box>
         </Stack>
