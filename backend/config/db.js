@@ -1,35 +1,31 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcrypt'); // ERROR 3 CORREGIDO: Importación faltante
+const bcrypt = require('bcrypt'); 
 
-// Ruta a la base de datos
 const dbPath = path.join(__dirname, '../../data/elDorado.db');
-
-// Asegurarnos que la carpeta data existe
 const dataDir = path.join(__dirname, '../../data');
+
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Conectar a SQLite
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('❌ Error al conectar a SQLite:', err.message);
   } else {
-    console.log('✅ Conectado a SQLite en:', dbPath);
-    // ERROR 4 CORREGIDO: Activar llaves foráneas
     db.run("PRAGMA foreign_keys = ON");
+    db.run("PRAGMA journal_mode = WAL");
     crearTablas();
   }
 });
 
+// ============================================
+// CREACIÓN DE TABLAS
+// ============================================
 function crearTablas() {
-  // Se usa una sola vez cada definición (ERROR 1 CORREGIDO)
-  
-  // 1. AFILIADO
-  db.run(`
-    CREATE TABLE IF NOT EXISTS afiliado (
+  const queries = [
+    `CREATE TABLE IF NOT EXISTS afiliado (
       id_afiliado INTEGER PRIMARY KEY AUTOINCREMENT,
       ci VARCHAR(20) NOT NULL UNIQUE,
       extension VARCHAR(3) DEFAULT 'LP',
@@ -44,12 +40,9 @@ function crearTablas() {
       url_perfil VARCHAR(255) DEFAULT '/assets/perfiles/sinPerfil.png',
       fecha_afiliacion DATE DEFAULT CURRENT_DATE,
       es_habilitado BOOLEAN DEFAULT 1
-    )
-  `);
+    )`,
 
-  // 2. PUESTO
-  db.run(`
-    CREATE TABLE IF NOT EXISTS puesto (
+    `CREATE TABLE IF NOT EXISTS puesto (
       id_puesto INTEGER PRIMARY KEY AUTOINCREMENT,
       fila VARCHAR(1) NOT NULL CHECK(fila IN ('A', 'B', 'C', 'D', 'E')),
       cuadra VARCHAR(50) NOT NULL,
@@ -60,8 +53,7 @@ function crearTablas() {
       rubro TEXT,
       disponible BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
-    )
-  `);
+    )`,
 
 
 
@@ -76,12 +68,9 @@ function crearTablas() {
       razon VARCHAR(50),
       FOREIGN KEY (id_afiliado) REFERENCES afiliado(id_afiliado),
       FOREIGN KEY (id_puesto) REFERENCES puesto(id_puesto)
-    )
-  `);
+    )`,
 
-  // 4. USUARIOS
-  db.run(`
-    CREATE TABLE IF NOT EXISTS usuarios (
+    `CREATE TABLE IF NOT EXISTS usuario (
       id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
       id_afiliado INTEGER,
       rol VARCHAR(50) NOT NULL,
@@ -93,23 +82,84 @@ function crearTablas() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (id_afiliado) REFERENCES afiliado(id_afiliado)
-    )
-  `, (err) => {
-    if (!err) {
-      crearIndices();
-      insertarDatosEjemplo();
-    }
-  });
-} // ERROR 2 CORREGIDO: Cierre de función correcto
+    )`,
 
-function crearIndices() {
-  db.run(`CREATE INDEX IF NOT EXISTS idx_usuarios_nom_usuario ON usuarios(nom_usuario)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_usuarios_id_afiliado ON usuarios(id_afiliado)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_usuarios_es_vigente ON usuarios(es_vigente)`);
+    `CREATE TABLE IF NOT EXISTS usuario_sesion (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      id_usuario_master INTEGER,
+      nom_usuario_master TEXT,
+      nom_afiliado_master TEXT
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS historial_usuario (
+      id_historial_usu INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_usuario INTEGER,
+      nom_usuario_esclavo TEXT,
+      nom_afiliado_esclavo TEXT,
+      rol TEXT,
+      fecha DATE DEFAULT CURRENT_DATE,
+      hora TIME DEFAULT (time('now','localtime')),
+      motivo TEXT,
+      nom_usuario_master TEXT,
+      nom_afiliado_master TEXT
+    )`
+  ];
+
+  let pendientes = queries.length;
+  queries.forEach(sql => {
+    db.run(sql, function(err) {
+      if (err) console.error('❌ Error creando tabla:', err.message);
+      pendientes--;
+      if (pendientes === 0) {
+        afterTablesCreated();
+      }
+    });
+  });
 }
 
+// ============================================
+// POST-CREACIÓN DE TABLAS
+// ============================================
+function afterTablesCreated() {
+  db.run(
+    `INSERT OR IGNORE INTO usuario_sesion (id, nom_usuario_master, nom_afiliado_master)
+     VALUES (1, 'sistema', 'sistema')`,
+    (err) => {
+      if (err) console.error('❌ Error insertando usuario_sesion:', err.message);
+    }
+  );
+
+  crearIndices();
+  require('./triggers/triggers-usuario');
+  insertarDatosEjemplo();
+}
+
+// ============================================
+// CREACIÓN DE ÍNDICES
+// ============================================
+function crearIndices() {
+  const indices = [
+    `CREATE INDEX IF NOT EXISTS idx_usuario_nom_usuario ON usuario(nom_usuario)`,
+    `CREATE INDEX IF NOT EXISTS idx_usuario_es_vigente ON usuario(es_vigente)`,
+    `CREATE INDEX IF NOT EXISTS idx_afiliado_ci ON afiliado(ci)`,
+    `CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_usuario(fecha)`,
+    `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini, fecha_fin)`
+  ];
+
+  indices.forEach(sql => {
+    db.run(sql, (err) => {
+      if (err) console.error('❌ Error creando índice:', err.message);
+    });
+  });
+}
+
+// ============================================
+// DATOS DE EJEMPLO
+// ============================================
 function insertarDatosEjemplo() {
   db.get(`SELECT COUNT(*) AS count FROM afiliado`, (err, row) => {
+    if (err) return;
+    
     if (row && row.count === 0) {
       const afiliados = [
         ['1234567','LP','Juan','Pérez','García','M','1985-05-15','76543210','Comerciante','Av Principal'],
@@ -117,30 +167,41 @@ function insertarDatosEjemplo() {
         ['9876543','LP','Carlos','López','Mendoza','M','1978-03-10','70123456','Industrial','Av Industrial']
       ];
 
+      let insertados = 0;
       afiliados.forEach(a => {
         db.run(`
           INSERT INTO afiliado 
           (ci, extension, nombre, paterno, materno, sexo, fecNac, telefono, ocupacion, direccion)
           VALUES (?,?,?,?,?,?,?,?,?,?)
-        `, a);
+        `, a, function(err) {
+          if (!err) insertados++;
+          if (insertados === afiliados.length) {
+            crearUsuarioAdmin();
+          }
+        });
       });
-      crearUsuarioAdmin();
     } else {
       crearUsuarioAdmin();
     }
   });
 }
 
+// ============================================
+// USUARIO ADMIN POR DEFECTO
+// ============================================
 function crearUsuarioAdmin() {
-  db.get(`SELECT COUNT(*) AS count FROM usuarios WHERE nom_usuario='admin'`, (err, row) => {
+  db.get(`SELECT COUNT(*) AS count FROM usuario WHERE nom_usuario='admin'`, (err, row) => {
+    if (err) return;
+    
     if (row && row.count === 0) {
       const hash = bcrypt.hashSync('123456', 10);
       db.run(`
-        INSERT INTO usuarios 
+        INSERT INTO usuario
         (id_afiliado, rol, nom_usuario, password, es_vigente)
-        VALUES (1,'superadmin','admin',?,1)
-      `, [hash]);
-      console.log('✅ Usuario admin creado → admin / 123456');
+        VALUES (1, 'superadmin', 'admin', ?, 1)
+      `, [hash], function(err) {
+        if (err) console.error('❌ Error creando admin:', err.message);
+      });
     }
   });
 }

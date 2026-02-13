@@ -1,14 +1,20 @@
-import { TextInput, PasswordInput, Button, Title, Stack, Box, Image } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Title, Stack } from '@mantine/core';
 import logo from '../../../assets/logo.png';
 import emperador from '../../../assets/emperador.jpeg';
 
+// ============================================
+// COMPONENTE DE FORMULARIO DE LOGIN
+// ============================================
+
+/**
+ * Formulario visual de login con diseño dividido
+ */
 export function LoginForm({ form, onSubmit, loading }) {
   return (
     <div className="login-full-container">
       
-      {/* ===== LADO IZQUIERDO (50%) ===== */}
+      {/* Lado izquierdo - Imagen */}
       <div className="login-left-side">
-        {/* ===== Logo ===== */}
         <div className="left-top-margin">
           <div className="logo-wrapper">
             <img 
@@ -19,55 +25,49 @@ export function LoginForm({ form, onSubmit, loading }) {
           </div>
         </div>
 
-        {/* CONTENEDOR GRIS CON IMAGEN */}
         <div className="gray-container">
-          <Box
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '20px 0 0 20px',
-              overflow: 'hidden',
-            }}
-          >
-            <Image
+          <div style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '20px 0 0 20px',
+            overflow: 'hidden',
+          }}>
+            <img
               src={emperador}
               alt="Emperador"
-              fit="cover"
-              height="100%"
-              width="100%"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
             />
-          </Box>
+          </div>
         </div>
         
-        {/* MARGEN INFERIOR */}
         <div className="left-bottom-margin"></div>
-        
       </div>
       
-      {/* ===== LADO DERECHO (50%) ===== */}
+      {/* Lado derecho - Formulario */}
       <div className="login-right-side">
-        
-        {/* FORMULARIO DE LOGIN*/}
         <div className="login-form-wrapper">
           <Stack align="center" justify="center" style={{ height: '100%', marginTop: '-40px' }}>
             <Title 
-                order={1} 
-                ta="center" 
-                c="white" 
-                style={{ 
-                  marginBottom: '15px',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontWeight: 400,
-                  fontStyle: 'normal',
-                  fontSize: '45px',
-                  lineHeight: '100%',
-                  letterSpacing: '0%',
-                  transform: 'scaleX(0.9)',    
-                  transformOrigin: 'center',   
-                }}
-              >
-                BIENVENIDO
-              </Title>
+              order={1} 
+              ta="center" 
+              c="white" 
+              style={{ 
+                marginBottom: '15px',
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontWeight: 400,
+                fontSize: '45px',
+                lineHeight: '100%',
+                transform: 'scaleX(0.9)',    
+                transformOrigin: 'center',   
+              }}
+            >
+              BIENVENIDO
+            </Title>
+
             <form onSubmit={form.onSubmit(onSubmit)} style={{ width: '100%', maxWidth: 520 }}>
               <Stack gap="lg">
                 <TextInput
@@ -150,9 +150,7 @@ export function LoginForm({ form, onSubmit, loading }) {
             </form>
           </Stack>
         </div>
-
       </div>
-      
     </div>
   );
 }
