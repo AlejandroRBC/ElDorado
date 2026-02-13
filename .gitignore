@@ -1,4 +1,7 @@
 data/eldorado.db
+data/eldorado.db-shm
+data/eldorado.db-wal
 node_modules
 frontend/node_modules
 backend/uploads/perfiles
+
