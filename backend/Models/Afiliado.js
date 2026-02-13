@@ -44,26 +44,70 @@ update: (id, afiliadoData) => {
     });
   });
 },
-  // Obtener todos los afiliados activos
-  findAll: (params = {}) => {
-    return new Promise((resolve, reject) => {
+// Obtener todos los afiliados con filtros mejorados
+findAll: (params = {}) => {
+  return new Promise((resolve, reject) => {
+    
+    // PRIMERO: Obtener IDs de afiliados que cumplen el filtro de cantidad de puestos
+    let getIdsPorCantidadPuestos = () => {
+      return new Promise((resolve, reject) => {
+        if (!params.puestoCount) {
+          resolve(null);
+          return;
+        }
+
+        let sql = `
+          SELECT 
+            a.id_afiliado,
+            COUNT(tp.id_tenencia) as total_puestos
+          FROM afiliado a
+          LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado AND tp.fecha_fin IS NULL
+          WHERE a.es_habilitado = 1
+          GROUP BY a.id_afiliado
+        `;
+
+        const count = parseInt(params.puestoCount);
+        if (count === 5) {
+          sql += ` HAVING total_puestos >= 5`;
+        } else {
+          sql += ` HAVING total_puestos = ?`;
+        }
+
+        db.all(sql, count === 5 ? [] : [count], (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows.map(r => r.id_afiliado));
+        });
+      });
+    };
+
+    // SEGUNDO: Construir query principal
+    let buildMainQuery = (idsFiltrados) => {
       let query = `
         SELECT 
           a.*,
           COUNT(DISTINCT tp.id_tenencia) as total_puestos,
           SUM(CASE WHEN p.tiene_patente = 1 THEN 1 ELSE 0 END) as puestos_con_patente,
-          GROUP_CONCAT(p.nroPuesto || '' || p.fila || ' - ' || p.cuadra) as puestos_codes,
-          GROUP_CONCAT(DISTINCT p.rubro) as rubros,
-          MIN(CASE WHEN tp.fecha_fin IS NULL THEN tp.fecha_ini END) as fecha_primer_puesto
+          GROUP_CONCAT(DISTINCT p.nroPuesto || '-' || p.fila || '-' || p.cuadra) as puestos_codes,
+          GROUP_CONCAT(DISTINCT p.rubro) as rubros
         FROM afiliado a
         LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado AND tp.fecha_fin IS NULL
-        LEFT JOIN puesto p ON tp.id_puesto = p.id_puesto  
+        LEFT JOIN puesto p ON tp.id_puesto = p.id_puesto
         WHERE a.es_habilitado = 1
       `;
-      
+
       const queryParams = [];
-      
-      // 1. FILTRO DE BÚSQUEDA
+
+      // FILTRO POR IDS (cantidad de puestos)
+      if (idsFiltrados && idsFiltrados.length > 0) {
+        query += ` AND a.id_afiliado IN (${idsFiltrados.map(() => '?').join(',')})`;
+        queryParams.push(...idsFiltrados);
+      } else if (params.puestoCount && (!idsFiltrados || idsFiltrados.length === 0)) {
+        // Si hay filtro de puestos pero no hay resultados, retornar vacío
+        resolve([]);
+        return;
+      }
+
+      // FILTRO DE BÚSQUEDA
       if (params.search) {
         query += ` AND (
           a.paterno LIKE ? OR 
@@ -80,11 +124,10 @@ update: (id, afiliadoData) => {
           searchTerm, searchTerm, searchTerm, searchTerm
         );
       }
-      
-      // 2. FILTRO POR PATENTE (con o sin patente)
+
+      // FILTRO POR PATENTE
       if (params.conPatente !== null && params.conPatente !== undefined) {
         const valorPatente = params.conPatente === 'true' || params.conPatente === true ? 1 : 0;
-        // Filtrar afiliados que tengan AL MENOS UN puesto con el estado de patente especificado
         query += ` AND a.id_afiliado IN (
           SELECT DISTINCT tp.id_afiliado 
           FROM tenencia_puesto tp
@@ -93,73 +136,83 @@ update: (id, afiliadoData) => {
         )`;
         queryParams.push(valorPatente);
       }
-      
-      // 3. FILTRO POR NÚMERO DE PUESTOS
-      if (params.puestoCount !== null && params.puestoCount !== undefined) {
-        const count = parseInt(params.puestoCount);
-        query += ` HAVING total_puestos ${count === 5 ? '>=' : '='} ?`;
-        queryParams.push(count);
-      } else {
-        query += ` GROUP BY a.id_afiliado`;
-      }
-      
-      // 4. FILTRO POR RUBRO
+
+      // FILTRO POR RUBRO
       if (params.rubro) {
-        query += ` HAVING rubros LIKE ?`;
-        queryParams.push(`%${params.rubro}%`);
+        query += ` AND a.id_afiliado IN (
+          SELECT DISTINCT tp.id_afiliado
+          FROM tenencia_puesto tp
+          JOIN puesto p ON tp.id_puesto = p.id_puesto
+          WHERE tp.fecha_fin IS NULL AND p.rubro = ?
+        )`;
+        queryParams.push(params.rubro);
       }
-      
-      // 5. ORDENAMIENTO
+
+      query += ` GROUP BY a.id_afiliado`;
+
+      // ORDENAMIENTO
       if (params.orden === 'registro') {
         query += ` ORDER BY a.fecha_afiliacion DESC`;
       } else {
-        // Orden alfabético por defecto
         query += ` ORDER BY a.paterno, a.materno, a.nombre`;
       }
-      
-      db.all(query, queryParams, (err, rows) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+
+      return { query, queryParams };
+    };
+
+    // EJECUTAR TODO
+    getIdsPorCantidadPuestos()
+      .then(idsFiltrados => {
+        const { query, queryParams } = buildMainQuery(idsFiltrados);
         
-        // Transformar datos para frontend
-        const afiliados = rows.map(row => {
-          // Calcular edad
-          let edad = null;
-          if (row.fecNac) {
-            const hoy = new Date();
-            const nacimiento = new Date(row.fecNac);
-            edad = hoy.getFullYear() - nacimiento.getFullYear();
-            const mes = hoy.getMonth() - nacimiento.getMonth();
-            if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-              edad--;
-            }
+        db.all(query, queryParams, (err, rows) => {
+          if (err) {
+            reject(err);
+            return;
           }
-          
-          return {
-            id: row.id_afiliado,
-            nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
-            ci: `${row.ci}-${row.extension}`,
-            ocupacion: row.ocupacion,
-            patentes: row.puestos_codes ? row.puestos_codes.split(',').filter(p => p) : [],
-            total_puestos: row.total_puestos || 0,
-            puestos_con_patente: row.puestos_con_patente || 0,
-            estado: 'Activo',
-            telefono: row.telefono,
-            direccion: row.direccion,
-            fechaRegistro: row.fecha_afiliacion,
-            url_perfil: row.url_perfil || '/assets/perfiles/sinPerfil.png',
-            edad: edad,
-            sexo: row.sexo === 'M' ? 'Masculino' : 'Femenino',
-            fecha_afiliacion: row.fecha_afiliacion
-          };
+
+          // Transformar datos
+          const afiliados = rows.map(row => {
+            let edad = null;
+            if (row.fecNac) {
+              const hoy = new Date();
+              const nacimiento = new Date(row.fecNac);
+              edad = hoy.getFullYear() - nacimiento.getFullYear();
+              const mes = hoy.getMonth() - nacimiento.getMonth();
+              if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+              }
+            }
+
+            const puestosActivos = row.puestos_codes 
+              ? row.puestos_codes.split(',').filter(p => p) 
+              : [];
+
+            return {
+              id: row.id_afiliado,
+              nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
+              ci: `${row.ci}-${row.extension}`,
+              ocupacion: row.ocupacion,
+              patentes: puestosActivos,
+              total_puestos: row.total_puestos || 0,
+              puestos_con_patente: row.puestos_con_patente || 0,
+              estado: 'Activo',
+              telefono: row.telefono,
+              direccion: row.direccion,
+              fechaRegistro: row.fecha_afiliacion,
+              url_perfil: row.url_perfil || '/assets/perfiles/sinPerfil.png',
+              edad: edad,
+              sexo: row.sexo === 'M' ? 'Masculino' : 'Femenino',
+              fecha_afiliacion: row.fecha_afiliacion
+            };
+          });
+
+          resolve(afiliados);
         });
-        
-        resolve(afiliados);
-      });
-    });
-  },
+      })
+      .catch(reject);
+  });
+},
 
   // Obtener rubros únicos de puestos activos
   getRubrosUnicos: () => {
