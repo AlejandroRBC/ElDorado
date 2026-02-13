@@ -55,11 +55,7 @@ function crearTablas() {
       UNIQUE(fila, cuadra, nroPuesto)
     )`,
 
-
-
-  // 3. TENENCIA_PUESTO
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tenencia_puesto (
+    `CREATE TABLE IF NOT EXISTS tenencia_puesto (
       id_tenencia INTEGER PRIMARY KEY AUTOINCREMENT,
       id_afiliado INTEGER,
       id_puesto INTEGER,
