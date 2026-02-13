@@ -1,4 +1,4 @@
-data/
+/data/
 data/elDorado.db-shm
 data/elDorado.db-wal
 node_modules
