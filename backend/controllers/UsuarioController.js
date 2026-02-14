@@ -180,13 +180,13 @@ const crearUsuario = async (req, res) => {
 const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { id_afiliado, rol, nom_usuario, password } = req.body;
+    const { rol, nom_usuario, password } = req.body;
     const master = req.user;
 
-    if (!id_afiliado || !rol || !nom_usuario) {
+    if (!rol || !nom_usuario) {
       return res.status(400).json({
         success: false,
-        message: 'Nombre del afiliado, rol y nombre de usuario son obligatorios'
+        message: 'rol y nombre de usuario son obligatorios'
       });
     }
 

@@ -1,39 +1,38 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../api/axiosConfig';
 
 const LoginContext = createContext();
 
+const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+
 // ============================================
 // PROVIDER DE AUTENTICACIÓN
 // ============================================
-
-/**
- * Proveedor del contexto de autenticación
- * Maneja el estado del usuario y las sesiones
- */
 export function LoginProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+  
+  const inactivityTimer = useRef(null);
 
-  // Verificar sesión al cargar la aplicación
   useEffect(() => {
     const verificarSesion = async () => {
       try {
         const response = await api.get('/auth/verificarSesion');
 
-        if (response.data?.usuario) {
-          setUser(response.data.usuario);
+        if (response.data?.success && response.data?.user) {
+          setUser(response.data.user);
           setIsLogin(true);
-          localStorage.setItem(
-            'user_session',
-            JSON.stringify(response.data.usuario)
-          );
+          localStorage.setItem('user_session', JSON.stringify(response.data.user));
+          iniciarTemporizadorInactividad();
         } else {
           cerrarSesionLocal();
         }
 
       } catch (error) {
+        if (error.response?.status !== 401) {
+          console.error('Error inesperado verificando sesión:', error);
+        }
         cerrarSesionLocal();
       } finally {
         setLoading(false);
@@ -43,18 +42,49 @@ export function LoginProvider({ children }) {
     verificarSesion();
   }, []);
 
-  /**
-   * Guardar sesión del usuario
-   */
+  const iniciarTemporizadorInactividad = () => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+
+    inactivityTimer.current = setTimeout(() => {
+      logout();
+    }, INACTIVITY_TIMEOUT);
+  };
+
+  const reiniciarTemporizador = () => {
+    if (isLogin) {
+      iniciarTemporizadorInactividad();
+    }
+  };
+
+  useEffect(() => {
+    if (!isLogin) return;
+
+    const eventos = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    eventos.forEach(evento => {
+      window.addEventListener(evento, reiniciarTemporizador);
+    });
+
+    return () => {
+      eventos.forEach(evento => {
+        window.removeEventListener(evento, reiniciarTemporizador);
+      });
+      
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
+    };
+  }, [isLogin]);
+
   const login = (userData) => {
     setUser(userData);
     setIsLogin(true);
     localStorage.setItem('user_session', JSON.stringify(userData));
+    iniciarTemporizadorInactividad();
   };
 
-  /**
-   * Cerrar sesión (cliente y servidor)
-   */
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -65,13 +95,14 @@ export function LoginProvider({ children }) {
     cerrarSesionLocal();
   };
 
-  /**
-   * Limpiar datos de sesión local
-   */
   const cerrarSesionLocal = () => {
     setUser(null);
     setIsLogin(false);
     localStorage.removeItem('user_session');
+    
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
   };
 
   return (
@@ -81,9 +112,6 @@ export function LoginProvider({ children }) {
   );
 }
 
-/**
- * Hook para usar el contexto de login
- */
 export function useLogin() {
   const context = useContext(LoginContext);
   if (!context) {

@@ -98,6 +98,17 @@ function crearTablas() {
       motivo TEXT,
       nom_usuario_master TEXT,
       nom_afiliado_master TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS historial_puestos (
+      id_historial_puesto INTEGER PRIMARY KEY AUTOINCREMENT,
+      tipo VARCHAR(50),
+      fecha DATE DEFAULT CURRENT_DATE,
+      hora TIME DEFAULT (time('now','localtime')),
+      afiliado VARCHAR(255),
+      motivo TEXT,
+      usuario VARCHAR(255),
+      id_tenencia INTEGER,
+      id_puesto INTEGER
     )`
   ];
 
@@ -127,6 +138,7 @@ function afterTablesCreated() {
 
   crearIndices();
   require('./triggers/triggers-usuario');
+  require('./triggers/triggers-puestos');
   insertarDatosEjemplo();
 }
 
@@ -139,7 +151,8 @@ function crearIndices() {
     `CREATE INDEX IF NOT EXISTS idx_usuario_es_vigente ON usuario(es_vigente)`,
     `CREATE INDEX IF NOT EXISTS idx_afiliado_ci ON afiliado(ci)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_usuario(fecha)`,
-    `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini, fecha_fin)`
+    `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini, fecha_fin)`,
+    `CREATE INDEX IF NOT EXISTS idx_historial_puestos_fecha ON historial_puestos(fecha)`
   ];
 
   indices.forEach(sql => {
@@ -189,18 +202,16 @@ function insertarDatosEjemplo() {
 // USUARIO ADMIN POR DEFECTO
 // ============================================
 function crearUsuarioAdmin() {
-  db.get(`SELECT COUNT(*) AS count FROM usuario WHERE nom_usuario='admin'`, (err, row) => {
+  db.get(`SELECT COUNT(*) AS count FROM usuario WHERE id_usuario = 1`, (err, row) => {
     if (err) return;
     
     if (row && row.count === 0) {
       const hash = bcrypt.hashSync('123456', 10);
       db.run(`
-        INSERT INTO usuario
-        (id_afiliado, rol, nom_usuario, password, es_vigente)
-        VALUES (1, 'superadmin', 'admin', ?, 1)
-      `, [hash], function(err) {
-        if (err) console.error('❌ Error creando admin:', err.message);
-      });
+        INSERT OR IGNORE INTO usuario
+        (id_usuario, id_afiliado, rol, nom_usuario, password, es_vigente)
+        VALUES (1, 1, 'superadmin', 'admin', ?, 1)
+      `, [hash]);
     }
   });
 }

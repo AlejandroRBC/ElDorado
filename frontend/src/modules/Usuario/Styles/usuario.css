@@ -1,8 +1,69 @@
+/* ============================================
+   FORMULARIO DE USUARIO
+============================================ */
 .usuario-form {
   max-width: 600px;
   margin: 0 auto;
 }
 
+.usuario-form-loader {
+  display: block;
+  margin: 20px auto;
+}
+
+.usuario-form-loader-title {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.usuario-form-afiliado-disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  color: #333;
+  font-weight: 500;
+}
+
+.usuario-form-search-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.usuario-form-clear-button {
+  padding: 0;
+  min-width: auto;
+}
+
+.usuario-form-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  margin-top: 4px;
+  background-color: white;
+}
+
+.usuario-form-result-item {
+  justify-content: flex-start;
+  padding: 10px 12px;
+  height: auto;
+  margin-bottom: 2px;
+  text-align: left;
+  font-weight: normal;
+}
+
+.usuario-form-no-results {
+  text-align: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================
+   LISTA DE USUARIOS
+============================================ */
 .usuario-list {
   background: white;
   padding: 20px;
@@ -14,10 +75,70 @@
   margin-top: 20px;
 }
 
-/* Responsive */
+.usuario-list-loader {
+  display: block;
+  margin: 20px auto;
+}
+
+.usuario-list-header {
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.usuario-list-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.usuario-list-filter {
+  width: 150px;
+}
+
+.usuario-list-filtros-historial {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.usuario-list-filtro-id {
+  width: 120px;
+}
+
+.usuario-list-filtro-fecha {
+  width: 140px;
+}
+
+.usuario-list-empty {
+  text-align: center;
+}
+
+.usuario-list-motivo-cell {
+  max-width: 300px;
+}
+
+.usuario-list-action-buttons {
+  gap: 0.25rem;
+}
+
+/* ============================================
+   RESPONSIVE
+============================================ */
 @media (max-width: 768px) {
   .usuario-list {
     padding: 10px;
     overflow-x: auto;
+  }
+  
+  .usuario-form {
+    max-width: 100%;
+    padding: 10px;
+  }
+  
+  .usuario-list-filtros-historial {
+    flex-wrap: wrap;
+  }
+  
+  .usuario-list-filtro-id,
+  .usuario-list-filtro-fecha {
+    width: 100%;
   }
 }

@@ -15,10 +15,6 @@ const UsuarioList = ({ onEditar }) => {
   // ============================================
   // FUNCIONES AUXILIARES
   // ============================================
-  
-  /**
-   * Obtiene el color del badge según el rol del usuario
-   */
   const getRolColor = (rol) => {
     switch(rol) {
       case 'superadmin': return 'red';
@@ -27,9 +23,6 @@ const UsuarioList = ({ onEditar }) => {
     }
   };
 
-  /**
-   * Obtiene la etiqueta formateada del rol
-   */
   const getRolLabel = (rol) => {
     switch(rol) {
       case 'superadmin': return 'Super Admin';
@@ -40,7 +33,7 @@ const UsuarioList = ({ onEditar }) => {
   };
 
   if (loading) {
-    return <Loader size="lg" style={{ display: 'block', margin: '20px auto' }} />;
+    return <Loader size="lg" className="usuario-list-loader" />;
   }
 
   return (
@@ -59,8 +52,8 @@ const UsuarioList = ({ onEditar }) => {
             PANEL DE USUARIOS
         ============================================ */}
         <Tabs.Panel value="lista" pt="md">
-          <Group justify="space-between" mb="md">
-            <Text size="xl" fw={700}>Usuarios del Sistema</Text>
+          <Group className="usuario-list-header">
+            <Text className="usuario-list-title">Usuarios del Sistema</Text>
             <Select
               placeholder="Filtrar por estado"
               value={filtro}
@@ -70,7 +63,7 @@ const UsuarioList = ({ onEditar }) => {
                 { value: 'activo', label: 'Activos' },
                 { value: 'inactivo', label: 'Inactivos' }
               ]}
-              style={{ width: 150 }}
+              className="usuario-list-filter"
             />
           </Group>
 
@@ -90,7 +83,7 @@ const UsuarioList = ({ onEditar }) => {
             <Table.Tbody>
               {usuarios.length === 0 ? (
                 <Table.Tr>
-                  <Table.Td colSpan={8} style={{ textAlign: 'center' }}>
+                  <Table.Td colSpan={8} className="usuario-list-empty">
                     No hay usuarios registrados
                   </Table.Td>
                 </Table.Tr>
@@ -125,7 +118,7 @@ const UsuarioList = ({ onEditar }) => {
                       )}
                     </Table.Td>
                     <Table.Td>
-                      <Group gap="xs">
+                      <Group className="usuario-list-action-buttons">
                         <Button
                           size="xs"
                           variant="light"
@@ -169,34 +162,34 @@ const UsuarioList = ({ onEditar }) => {
             PANEL DE HISTORIAL
         ============================================ */}
         <Tabs.Panel value="historial" pt="md">
-          <Group justify="space-between" mb="md">
-            <Text size="xl" fw={700}>Historial de Usuarios</Text>
-            <Group>
+          <Group className="usuario-list-header">
+            <Text className="usuario-list-title">Historial de Usuarios</Text>
+            <Group className="usuario-list-filtros-historial">
               <TextInput
                 placeholder="ID Usuario"
                 value={filtroHistorial.id_usuario}
                 onChange={(e) => setFiltroHistorial({...filtroHistorial, id_usuario: e.target.value})}
-                style={{ width: 120 }}
+                className="usuario-list-filtro-id"
               />
               <TextInput
                 placeholder="Desde"
                 type="date"
                 value={filtroHistorial.desde}
                 onChange={(e) => setFiltroHistorial({...filtroHistorial, desde: e.target.value})}
-                style={{ width: 140 }}
+                className="usuario-list-filtro-fecha"
               />
               <TextInput
                 placeholder="Hasta"
                 type="date"
                 value={filtroHistorial.hasta}
                 onChange={(e) => setFiltroHistorial({...filtroHistorial, hasta: e.target.value})}
-                style={{ width: 140 }}
+                className="usuario-list-filtro-fecha"
               />
             </Group>
           </Group>
 
           {loadingHistorial ? (
-            <Loader size="lg" style={{ display: 'block', margin: '20px auto' }} />
+            <Loader size="lg" className="usuario-list-loader" />
           ) : (
             <Table striped highlightOnHover>
               <Table.Thead>
@@ -214,7 +207,7 @@ const UsuarioList = ({ onEditar }) => {
               <Table.Tbody>
                 {historial.length === 0 ? (
                   <Table.Tr>
-                    <Table.Td colSpan={8} style={{ textAlign: 'center' }}>
+                    <Table.Td colSpan={8} className="usuario-list-empty">
                       No hay registros en el historial
                     </Table.Td>
                   </Table.Tr>
@@ -231,7 +224,7 @@ const UsuarioList = ({ onEditar }) => {
                       </Table.Td>
                       <Table.Td>{item.fecha}</Table.Td>
                       <Table.Td>{item.hora}</Table.Td>
-                      <Table.Td style={{ maxWidth: '300px' }}>{item.motivo}</Table.Td>
+                      <Table.Td className="usuario-list-motivo-cell">{item.motivo}</Table.Td>
                       <Table.Td>
                         {item.nom_usuario_master} - {item.nom_afiliado_master}
                       </Table.Td>

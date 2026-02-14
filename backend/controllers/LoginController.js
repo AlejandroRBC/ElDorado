@@ -2,12 +2,11 @@ const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 // ============================================
-// LOGIN - Autenticación de usuarios
+// LOGIN
 // ============================================
 const login = (req, res) => {
     const { usuario, password } = req.body;
 
-    // Validar campos requeridos
     if (!usuario || !password) {
         return res.status(400).json({
             success: false,
@@ -17,7 +16,6 @@ const login = (req, res) => {
 
     const usuarioLimpio = usuario.trim();
 
-    // Validar longitud mínima
     if (usuarioLimpio.length < 3) {
         return res.status(400).json({
             success: false,
@@ -25,7 +23,6 @@ const login = (req, res) => {
         });
     }
 
-    // Consulta a la base de datos
     const query = `
         SELECT 
             u.id_usuario,
@@ -55,7 +52,6 @@ const login = (req, res) => {
             });
         }
 
-        // Validar si el usuario está activo
         if (user.es_vigente !== 1) {
             return res.status(401).json({
                 success: false,
@@ -63,7 +59,6 @@ const login = (req, res) => {
             });
         }
 
-        // Comparar contraseña
         bcrypt.compare(password, user.password, (err, passwordValida) => {
             if (err) {
                 return res.status(500).json({
@@ -79,7 +74,6 @@ const login = (req, res) => {
                 });
             }
 
-            // Guardar en sesión
             req.session.usuario = {
                 id_usuario: user.id_usuario,
                 nom_usuario: user.nom_usuario,
@@ -87,7 +81,6 @@ const login = (req, res) => {
                 rol: user.rol
             };
 
-            // Guardar en tabla usuario_sesion (para triggers)
             db.run(
                 `INSERT OR REPLACE INTO usuario_sesion 
                  (id, id_usuario_master, nom_usuario_master, nom_afiliado_master)
@@ -95,7 +88,6 @@ const login = (req, res) => {
                 [user.id_usuario, user.nom_usuario, user.nom_afiliado || 'SISTEMA']
             );
 
-            // Respuesta exitosa
             return res.json({
                 success: true,
                 message: `Acceso concedido. Bienvenido ${user.nom_usuario}`,
@@ -111,10 +103,10 @@ const login = (req, res) => {
 };
 
 // ============================================
-// VERIFICAR SESIÓN - Valida si hay sesión activa
+// VERIFICAR SESIÓN
 // ============================================
 const verificarSesion = (req, res) => {
-    if (req.session.usuario) {
+    if (req.session && req.session.usuario) {
         return res.json({
             success: true,
             user: req.session.usuario
@@ -128,7 +120,7 @@ const verificarSesion = (req, res) => {
 };
 
 // ============================================
-// LOGOUT - Cerrar sesión
+// LOGOUT
 // ============================================
 const logout = (req, res) => {
     req.session.destroy((err) => {

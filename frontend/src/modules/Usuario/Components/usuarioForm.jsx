@@ -17,10 +17,6 @@ import '../Styles/usuario.css';
 // ============================================
 // COMPONENTE DE FORMULARIO DE USUARIO
 // ============================================
-
-/**
- * Formulario para crear/editar usuarios
- */
 const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
   const {
     formData,
@@ -33,15 +29,13 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
     cambiarPassword,
     setCambiarPassword,
     searchTerm,
-    setSearchTerm,
-    buscarAfiliados
+    setSearchTerm
   } = useUsuarioForm({ onSuccess, usuarioId });
 
   const [showResults, setShowResults] = useState(false);
 
   const afiliadosList = Array.isArray(afiliados) ? afiliados : [];
 
-  // Filtrar resultados de búsqueda
   const resultadosBusqueda = afiliadosList.filter(afiliado => {
     if (!searchTerm || searchTerm.length < 2) return false;
     const searchLower = searchTerm.toLowerCase().trim();
@@ -51,37 +45,29 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
     );
   });
 
-  /**
-   * Seleccionar afiliado del buscador
-   */
   const seleccionarAfiliado = (afiliado) => {
     handleChange('id_afiliado', String(afiliado.value));
     setSearchTerm(afiliado.label);
     setShowResults(false);
   };
 
-  /**
-   * Limpiar selección
-   */
   const limpiarSeleccion = () => {
     handleChange('id_afiliado', '');
     setSearchTerm('');
     setShowResults(false);
   };
 
-  // Cargar nombre del afiliado en edición
   useEffect(() => {
     if (esEdicion && formData.id_afiliado_data?.label) {
       setSearchTerm(formData.id_afiliado_data.label);
     }
   }, [esEdicion, formData.id_afiliado_data]);
 
-  // Mostrar loader mientras carga
   if (loadingAfiliados && !esEdicion && afiliadosList.length === 0) {
     return (
       <Paper shadow="xs" p="lg" className="usuario-form">
-        <Loader size="lg" style={{ display: 'block', margin: '20px auto' }} />
-        <Title order={4} ta="center" c="dimmed" mt="md">
+        <Loader size="lg" className="usuario-form-loader" />
+        <Title order={4} c="dimmed" className="usuario-form-loader-title">
           Cargando afiliados...
         </Title>
       </Paper>
@@ -95,24 +81,16 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
       </Title>
 
       <form onSubmit={handleSubmit}>
-        {/* Campo Afiliado */}
         {esEdicion ? (
           <TextInput
             label="Afiliado"
             value={searchTerm || 'Cargando...'} 
             disabled
             mb="md"
-            styles={{
-              input: { 
-                backgroundColor: '#f5f5f5', 
-                cursor: 'not-allowed',
-                color: '#333',
-                fontWeight: 500
-              }
-            }}
+            classNames={{ input: 'usuario-form-afiliado-disabled' }}
           />
         ) : (
-          <Box mb="md" style={{ position: 'relative' }}>
+          <Box className="usuario-form-search-container">
             <TextInput
               label="Buscar Afiliado"
               placeholder="Escribe nombre o CI para buscar..."
@@ -122,9 +100,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
                 setShowResults(true);
                 if (formData.id_afiliado) {
                   handleChange('id_afiliado', '');
-                }
-                if (e.target.value.length > 1) {
-                  buscarAfiliados(e.target.value);
                 }
               }}
               onFocus={() => setShowResults(true)}
@@ -138,45 +113,22 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
                   variant="subtle" 
                   size="xs" 
                   onClick={limpiarSeleccion}
-                  style={{ padding: 0, minWidth: 'auto' }}
+                  className="usuario-form-clear-button"
                 >
                   ✕
                 </Button> : null
               }
             />
             
-            {/* Resultados de búsqueda */}
             {showResults && searchTerm?.length > 1 && !formData.id_afiliado && (
-              <Paper
-                shadow="md"
-                p="xs"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  zIndex: 1000,
-                  maxHeight: 300,
-                  overflowY: 'auto',
-                  border: '1px solid #e9ecef',
-                  marginTop: 4,
-                  backgroundColor: 'white'
-                }}
-              >
+              <Paper shadow="md" p="xs" className="usuario-form-results-dropdown">
                 {resultadosBusqueda.length > 0 ? (
                   resultadosBusqueda.map((afiliado) => (
                     <Button
                       key={afiliado.value}
                       variant="subtle"
                       fullWidth
-                      style={{
-                        justifyContent: 'flex-start',
-                        padding: '10px 12px',
-                        height: 'auto',
-                        marginBottom: 2,
-                        textAlign: 'left',
-                        fontWeight: 'normal'
-                      }}
+                      className="usuario-form-result-item"
                       onClick={() => seleccionarAfiliado(afiliado)}
                     >
                       <div>
@@ -188,7 +140,7 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
                     </Button>
                   ))
                 ) : (
-                  <Text size="sm" c="dimmed" ta="center" py="xs">
+                  <Text size="sm" c="dimmed" className="usuario-form-no-results">
                     No se encontraron afiliados
                   </Text>
                 )}
@@ -197,7 +149,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
           </Box>
         )}
 
-        {/* Campo Rol */}
         <Select
           label="Rol"
           placeholder="Seleccione un rol"
@@ -213,7 +164,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
           disabled={loading}
         />
 
-        {/* Campo Nombre de Usuario */}
         <TextInput
           label="Nombre de usuario"
           placeholder="ej: juan.perez"
@@ -224,7 +174,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
           disabled={loading}
         />
 
-        {/* Checkbox Cambiar Contraseña (solo edición) */}
         {esEdicion && (
           <Checkbox
             label="Cambiar contraseña"
@@ -236,7 +185,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
           />
         )}
 
-        {/* Campo Contraseña */}
         {(!esEdicion || cambiarPassword) && (
           <TextInput
             label={esEdicion ? "Nueva contraseña" : "Contraseña"}
@@ -250,7 +198,6 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
           />
         )}
 
-        {/* Botones */}
         <Group justify="flex-end" mt="xl">
           {onCancel && (
             <Button variant="light" onClick={onCancel} disabled={loading}>

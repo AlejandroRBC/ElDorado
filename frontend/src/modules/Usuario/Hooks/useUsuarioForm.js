@@ -6,10 +6,6 @@ import { useLogin } from '../../../context/LoginContext';
 // ============================================
 // HOOK DE FORMULARIO DE USUARIO
 // ============================================
-
-/**
- * Maneja la lógica del formulario de usuario (crear/editar)
- */
 const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
   const { isLogin, loading: authLoading } = useLogin();
 
@@ -27,7 +23,6 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
 
   const esEdicion = !!usuarioId;
 
-  // Cargar afiliados (solo en modo creación)
   useEffect(() => {
     if (!authLoading && isLogin && !esEdicion) {
       const cargarAfiliados = async () => {
@@ -50,20 +45,6 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     }
   }, [authLoading, isLogin, esEdicion]);
 
-  /**
-   * Buscar afiliados por término
-   */
-  const buscarAfiliados = async (search) => {
-    try {
-      setLoadingAfiliados(true);
-      const response = await usuarioService.obtenerAfiliadosSelect(search);
-      setAfiliados(response.data.data || []);
-    } finally {
-      setLoadingAfiliados(false);
-    }
-  };
-
-  // Cargar usuario en modo edición
   useEffect(() => {
     if (!authLoading && isLogin && usuarioId) {
       const cargarUsuario = async () => {
@@ -98,18 +79,21 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     }
   }, [usuarioId, authLoading, isLogin]);
 
-  /**
-   * Actualizar campo del formulario
-   */
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  /**
-   * Enviar formulario
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.id_afiliado) {
+      notifications.show({
+        title: 'Error',
+        message: 'Debes seleccionar un afiliado',
+        color: 'red'
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -120,7 +104,6 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
         nom_usuario: formData.nom_usuario
       };
       
-      // Solo agregar password si corresponde
       if (!esEdicion) {
         dataToSend.password = formData.password;
       } else if (esEdicion && cambiarPassword && formData.password) {
@@ -155,9 +138,6 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     }
   };
 
-  /**
-   * Resetear formulario
-   */
   const resetForm = () => {
     setFormData({
       id_afiliado: '',
@@ -181,8 +161,7 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     cambiarPassword,
     setCambiarPassword,
     searchTerm,
-    setSearchTerm,
-    buscarAfiliados
+    setSearchTerm
   };
 };
 
