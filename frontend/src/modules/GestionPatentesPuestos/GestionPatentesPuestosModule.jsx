@@ -52,7 +52,7 @@ function GestionPatentesPuestosModule() {
       <ModalMostrarHistorial 
         opened={historialOpened} 
         close={closeHistorial} 
-        puesto={puestoSeleccionado} 
+        puesto={puestoHistorial} 
       />
       
       <ModalTraspaso
@@ -75,6 +75,7 @@ function GestionPatentesPuestosModule() {
 
       <FiltrosPuestos
         {...filtros}
+        puestos={filtros.puestosFiltrados}
         onTraspaso={() => {
           setPuestoParaTraspaso(null);
           openTraspaso()}}

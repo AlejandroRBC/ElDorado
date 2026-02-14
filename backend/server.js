@@ -8,6 +8,7 @@ const UsuarioRoutes = require('./routes/UsuarioRoutes');
 const LoginRoutes = require('./routes/LoginRoutes');
 const puestosRoutes = require('./routes/puestosRoutes');
 const afiliadosRoutes = require('./routes/afiliadosRoutes');
+const historialRoutes = require('./routes/historialRoutes');
 
 
 const app = express();
@@ -73,6 +74,8 @@ app.use('/api/puestos', puestosRoutes);
 
 app.use('/api/usuario', UsuarioRoutes);
 
+app.use('/api', historialRoutes);
+
 app.get('/', (req, res) => {
     res.json({
         mensaje: 'API de ELDORADO',
@@ -91,6 +94,10 @@ app.use((req, res) => {
         ruta: req.url
     });
 });
+
+
+
+
 
 // ============================================
 // INICIAR SERVIDOR

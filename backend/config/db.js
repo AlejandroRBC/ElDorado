@@ -137,6 +137,8 @@ function afterTablesCreated() {
   );
 
   crearIndices();
+  const { crearTriggersPuestos } = require('./triggers/triggers-puestos');
+  crearTriggersPuestos();
   require('./triggers/triggers-usuario');
   require('./triggers/triggers-puestos');
   insertarDatosEjemplo();
@@ -185,11 +187,13 @@ function insertarDatosEjemplo() {
         `, a, function(err) {
           if (!err) insertados++;
           if (insertados === afiliados.length) {
+            insertarPuestosEjemplo();
+            insertarTenenciasEjemplo();
             crearUsuarioAdmin();
           }
         });
       });
-      crearUsuarioAdmin();
+      
 
     } else {
       crearUsuarioAdmin();
@@ -197,6 +201,73 @@ function insertarDatosEjemplo() {
     
   });
 }
+
+// ============================================
+// DATOS DE EJEMPLO PARA PUESTOS Y TENENCIAS
+// ============================================
+function insertarPuestosEjemplo() {
+  db.get(`SELECT COUNT(*) AS count FROM puesto`, (err, row) => {
+    if (err) return;
+
+    if (row && row.count === 0) {
+      const puestos = [
+        ['A','1',1,3,3,1,'Frutas y Verduras',1],
+        ['A','1',2,3,3,0,'Carnicería',1],
+        ['B','2',3,4,4,1,'Ropa',1],
+        ['C','3',4,2,2,0,'Electrodomésticos',1]
+      ];
+
+      let insertados = 0;
+      puestos.forEach((p, index) => {
+        db.run(`
+          INSERT INTO puesto
+          (fila, cuadra, nroPuesto, ancho, largo, tiene_patente, rubro, disponible)
+          VALUES (?,?,?,?,?,?,?,?)
+        `, p, function(err) {
+          if (!err) insertados++;
+
+          // Cuando se inserten todos los puestos, agregamos las tenencias
+          if (insertados === puestos.length) {
+            insertarTenenciasEjemplo();
+          }
+        });
+      });
+    } else {
+      insertarTenenciasEjemplo();
+    }
+  });
+}
+
+// ============================================
+// DATOS DE EJEMPLO PARA TENENCIAS
+// ============================================
+function insertarTenenciasEjemplo() {
+  db.get(`SELECT COUNT(*) AS count FROM tenencia_puesto`, (err, row) => {
+    if (err) return;
+
+    if (row && row.count === 0) {
+      const tenencias = [
+        [1, 1, null, null, 'ASIGNADO'], // Juan → Puesto 1
+        [2, 2, null, null, 'ASIGNADO'], // María → Puesto 2
+        [3, 3, null, null, 'ASIGNADO']  // Carlos → Puesto 3
+      ];
+
+      tenencias.forEach(t => {
+        const [id_afiliado, id_puesto, fecha_ini, fecha_fin, razon] = t;
+        db.run(`
+          INSERT INTO tenencia_puesto
+          (id_afiliado, id_puesto, fecha_ini, fecha_fin, razon)
+          VALUES (?, ?, COALESCE(?, CURRENT_DATE), ?, ?)
+        `, [id_afiliado, id_puesto, fecha_ini, fecha_fin, razon]);
+      });
+    }
+  });
+}
+
+
+
+
+
 
 // ============================================
 // USUARIO ADMIN POR DEFECTO

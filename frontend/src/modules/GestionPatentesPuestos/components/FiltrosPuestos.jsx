@@ -1,7 +1,10 @@
 import { TextInput, Select, Button, Group, Stack, Paper } from "@mantine/core";
 import { IconSearch, IconX, IconArrowsExchange, IconFileExport } from "@tabler/icons-react";
+import { exportarPuestosExcel } from "../exports/puestosExport";
+import { TablaPuestos } from "./TablaPuestos";
 
 export function FiltrosPuestos({
+  puestos,
   search, setSearch,
   filtroPatente, setFiltroPatente,
   filtroFila, setFiltroFila,
@@ -38,14 +41,14 @@ export function FiltrosPuestos({
 
           <Select
             placeholder="Fila"
-            data={['Todo','A','B','C']}
+            data={['Todo','A','B']}
             value={filtroFila}
             onChange={setFiltroFila}
           />
 
           <Select
             placeholder="Cuadra"
-            data={['Todo','1','2','3']}
+            data={['Todo','1','2','3','4','Callejon']}
             value={filtroCuadra}
             onChange={setFiltroCuadra}
           />
@@ -70,6 +73,7 @@ export function FiltrosPuestos({
               leftSection={<IconFileExport size={18}/>}
               radius="xl"
               style={{ backgroundColor:'#EDBE3C', color:'black' }}
+              onClick={() => exportarPuestosExcel(puestos)}
             >
               Generar Reporte General
             </Button>

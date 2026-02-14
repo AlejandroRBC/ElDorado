@@ -64,35 +64,42 @@ export const exportToExcel = async ({
 
     // 3. Datos
     data.forEach((item, rowIndex) => {
-        const row = worksheet.getRow(5 + rowIndex); // Empieza en fila 5
-        
+        const row = worksheet.getRow(5 + rowIndex);
+
         columns.forEach((col, colIndex) => {
             const value = col.format ? col.format(item) : item[col.key];
             const cell = row.getCell(colIndex + 1);
-            
+
             cell.value = value;
-            
-            // ✅ TODAS LAS CELDAS CENTRADAS
+
+            // ⭐ SI NO TIENE PATENTE → FILA AMARILLA
+            if (item.tiene_patente === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFFFF59D' } // Amarillo suave PRO
+                };
+            }
+
             cell.alignment = {
                 horizontal: 'center',
                 vertical: 'middle',
                 wrapText: true
             };
-            
-            // Bordes ligeros para datos
+
             cell.border = {
                 top: { style: 'thin', color: { argb: 'CCCCCC' } },
                 left: { style: 'thin', color: { argb: 'CCCCCC' } },
                 bottom: { style: 'thin', color: { argb: 'CCCCCC' } },
                 right: { style: 'thin', color: { argb: 'CCCCCC' } }
             };
-            
-            // Formato numérico si es necesario
+
             if (col.numeric) {
                 cell.numFmt = col.numFmt || '#,##0.00';
             }
         });
     });
+
 
     // 4. Ajustar ancho de columnas automáticamente
     columns.forEach((col, index) => {

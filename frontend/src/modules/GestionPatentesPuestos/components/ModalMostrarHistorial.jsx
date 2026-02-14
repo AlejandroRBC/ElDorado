@@ -1,31 +1,44 @@
 import { Modal, Table, Loader, Text, Stack, Group, Box, Button, Badge } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { obtenerHistorialPuesto } from '../service/historialService';
+import { exportarHistorialExcel } from "../exports/historialExport";
 
 export function ModalMostrarHistorial({ opened, close, puesto }) {
   const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (opened && puesto) {
-      cargarHistorial();
-    }
-  }, [opened, puesto]);
-
+  
+  const id = puesto?.id_puesto ?? puesto?.id;
   const cargarHistorial = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await obtenerHistorialPuesto(puesto.id_puesto || puesto.id);
+      
+      console.log("ID enviado al historial: ", id);
+      const data = await obtenerHistorialPuesto(id);
+
+      console.log("TIPO DATA:", typeof data);
+      console.log("DATA COMPLETA:", data);
+      console.log("ES ARRAY:", Array.isArray(data));
+
+
+      console.log("Hitorial Recibido: ", data);
       setHistorial(data);
     } catch (err) {
+      console.error(err);
       setError('No se pudo cargar el historial.');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (id && opened) {
+      cargarHistorial();
+    }
+  }, [id, opened]);
+console.log("HISTORIAL STATE:", historial);
   return (
     <Modal 
       opened={opened} 
@@ -63,7 +76,7 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
             <Table verticalSpacing="md" horizontalSpacing="sm" variant="unstyled">
               <Table.Thead>
                 <Table.Tr>
-                  {['Adquisición', 'Finalización', 'Hora', 'Motivo', 'Afiliado', 'Detalles', 'Usuario'].map((h) => (
+                  {['Fecha', 'Hora', 'Tipo', 'Afiliado', 'Motivo', 'Usuario'].map((h) => (
                     <Table.Th key={h}>
                       <Badge variant="light" color="gray" size="lg" radius="sm" fullWidth style={{ backgroundColor: '#f1f3f5', color: '#495057' }}>
                         {h}
@@ -73,24 +86,28 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
+                {historial.length === 0 && (
+                  <Table.Tr>
+                    <Table.Td colSpan={7}>
+                      <Text align="center">No hay historial para este puesto</Text>
+                    </Table.Td>
+                  </Table.Tr>
+                )}
+
                 {historial.map((reg, i) => (
                   <Table.Tr key={i} style={{ textAlign: 'center' }}>
                     <Table.Td><Text size="xs">{reg.fecha_ini || '00/00/0000'}</Text></Table.Td>
-                    <Table.Td>
-                      <Text size="xs" fw={reg.fecha_fin ? 400 : 700}>
-                        {reg.fecha_fin ? reg.fecha_fin : '(Aún Vigente)'}
-                      </Text>
-                    </Table.Td>
+                    
                     <Table.Td><Text size="xs">{reg.hora_accion || '00:00:00 am'}</Text></Table.Td>
                     <Table.Td><Text size="xs">{reg.razon || 'Traspaso'}</Text></Table.Td>
                     <Table.Td style={{ maxWidth: '250px' }}>
-                      <Text size="xs" fw={500}>{`${reg.nombre} ${reg.paterno} ${reg.materno || ''}`}</Text>
+                      <Text size="xs" fw={500}>{reg.afiliado}</Text>
                     </Table.Td>
                     <Table.Td style={{ maxWidth: '200px' }}>
-                      <Text size="xs" c="dimmed">{reg.detalles || 'Sin detalles'}</Text>
+                      <Text size="xs" c="dimmed">{reg.motivo || 'Sin detalles'}</Text>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="xs">{reg.usuario_accion || 'Administrador'}</Text>
+                      <Text size="xs">{reg.usuario || 'Administrador'}</Text>
                     </Table.Td>
                   </Table.Tr>
                 ))}
@@ -108,6 +125,7 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
             size="md" 
             px={30}
             style={{ backgroundColor: '#0f0f0f' }}
+            onClick={() => exportarHistorialExcel(historial)}
           >
             Hacer un Reporte Individual
           </Button>
