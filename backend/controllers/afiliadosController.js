@@ -182,6 +182,7 @@ exports.buscar = (req, res) => {
 };
 
 // Obtener puestos activos de un afiliado
+
 exports.obtenerPuestos = (req, res) => {
   const id = req.params.id;
 
@@ -192,7 +193,8 @@ exports.obtenerPuestos = (req, res) => {
       p.cuadra,
       p.nroPuesto,
       p.rubro,
-      p.tiene_patente
+      p.tiene_patente,
+      t.fecha_ini
     FROM puesto p
     JOIN tenencia_puesto t 
       ON t.id_puesto = p.id_puesto

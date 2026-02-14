@@ -358,8 +358,11 @@ const DetallesAfiliado = () => {
               </Group>
 
               {/* Tabla de puestos */}
-              <TablaPuestos puestos={afiliado.puestos || []} />
-            </Box>
+              
+              
+              
+              <TablaPuestos afiliadoId={afiliado.id} />
+              </Box>
           </>
         )}
       </Paper>
