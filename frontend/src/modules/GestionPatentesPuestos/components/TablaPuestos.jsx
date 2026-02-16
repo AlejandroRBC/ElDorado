@@ -1,6 +1,7 @@
 import { Table, Text, Badge, ActionIcon, Menu, Box, Stack, Loader } from "@mantine/core";
 import { IconDotsVertical, IconEye, IconArrowsExchange, IconHistory, IconEdit } from "@tabler/icons-react";
 
+
 export function TablaPuestos({
   puestos,
   loading,

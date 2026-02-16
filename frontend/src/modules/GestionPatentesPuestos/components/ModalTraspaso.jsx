@@ -140,7 +140,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
       desde: afiliadoDesde.id_afiliado,
       para: afiliadoA.id_afiliado,
       puestos: puestosSeleccionadosIds,
-      motivoDetallado: "Traspaso de puesto(s) solicitado por el usuario."
+      motivoDetallado: "TRASPASO"
     });
   };
 

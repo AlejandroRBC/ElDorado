@@ -1,3 +1,4 @@
+//config/triggers/triggers-puestos.js
 const db = require('../db');
 
 // ============================================
@@ -171,7 +172,7 @@ function crearTriggersPuestos() {
            JOIN tenencia_puesto t ON a.id_afiliado = t.id_afiliado
            WHERE t.id_puesto = NEW.id_puesto 
            AND t.id_tenencia != NEW.id_tenencia
-           AND t.fecha_fin IS NULL
+           AND t.fecha_fin IS NOT NULL
            ORDER BY t.fecha_ini DESC
            LIMIT 1),
           'ANTERIOR PROPIETARIO'
