@@ -41,19 +41,18 @@ const ModalConfirmarAccion = ({ opened, onClose, puesto, razon, onConfirmar, loa
         >
           {esDespojo ? (
             <Stack gap="xs">
-              <Text fw={600}>⚠️ Acción irreversible</Text>
+              <Text fw={600}>Acción irreversible</Text>
               <Text size="sm">
                 Vas a DESPOJAR al afiliado de este puesto. Esto:
               </Text>
               <ul style={{ margin: 0, paddingLeft: '20px' }}>
                 <li>Registrará el puesto como DESPOJADO en el historial</li>
                 <li>El puesto quedará disponible para otros afiliados</li>
-                <li>Se ejecutará el trigger de despojo automático</li>
               </ul>
             </Stack>
           ) : (
             <Stack gap="xs">
-              <Text fw={600}>ℹ️ Confirmar liberación</Text>
+              <Text fw={600}>Confirmar liberación</Text>
               <Text size="sm">
                 Vas a LIBERAR el puesto. El afiliado cede voluntariamente el puesto a la asociación.
                 El puesto quedará disponible para futuras asignaciones.

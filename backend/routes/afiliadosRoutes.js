@@ -183,6 +183,38 @@ router.get('/estadisticas', async (req, res) => {
 });
 
 
+router.put('/:id/deshabilitar', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { es_habilitado } = req.body;
+    
+    // Actualizar solo el estado de habilitación
+    db.run(
+      'UPDATE afiliado SET es_habilitado = ? WHERE id_afiliado = ?',
+      [es_habilitado, id],
+      function(err) {
+        if (err) {
+          console.error('Error actualizando estado:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'Afiliado no encontrado' });
+        }
+        
+        res.json({
+          success: true,
+          message: es_habilitado === 0 ? 'Afiliado deshabilitado' : 'Afiliado habilitado',
+          id: id
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Rutas existentes
 router.get('/test', afiliadosController.test);
 router.get('/', afiliadosController.getAll);

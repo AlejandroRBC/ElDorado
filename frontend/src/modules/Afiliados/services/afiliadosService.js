@@ -1,6 +1,50 @@
 const API_URL = 'http://localhost:3000/api';
 
 export const afiliadosService = {
+  deshabilitarAfiliado: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/${id}/deshabilitar`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ es_habilitado: 0 }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al deshabilitar afiliado');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error('Error en deshabilitarAfiliado:', error);
+      throw error;
+    }
+  },
+  
+  // rehabilitar
+  habilitarAfiliado: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/afiliados/${id}/habilitar`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ es_habilitado: 1 }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al habilitar afiliado');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error('Error en habilitarAfiliado:', error);
+      throw error;
+    }
+  },
   obtenerTodos: async (filtros = {}) => {
     try {
       const params = new URLSearchParams();

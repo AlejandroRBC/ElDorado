@@ -1,11 +1,15 @@
 import { Paper, Container, Title, Text, Button, Group, Stack, Box, Badge, LoadingOverlay, Alert } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle } from '@tabler/icons-react';
+import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck  } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+
 import { useAfiliado } from '../hooks/useAfiliado';
+import { useState, useCallback } from 'react';
+
+import {getPerfilUrl} from '../../../utils/imageHelper';
 import TablaPuestos from './TablaPuestos';
 import ModalAsignarPuesto from './ModalAsignarPuesto';
-import { useState, useCallback } from 'react';
-import { getPerfilUrl } from '../../../utils/imageHelper';
+import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 
 
 const DetallesAfiliado = () => {
@@ -24,6 +28,49 @@ const DetallesAfiliado = () => {
     setModalPuestoAbierto(false);
   }, [cargarAfiliado]);
 
+  const [modalDesafiliarAbierto, setModalDesafiliarAbierto] = useState(false);
+  const [cargandoDesafiliar, setCargandoDesafiliar] = useState(false);
+
+
+  const handleDesafiliar = async () => {
+    try {
+      setCargandoDesafiliar(true);
+      
+      const response = await fetch(`http://localhost:3000/api/afiliados/${id}/deshabilitar`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ es_habilitado: 0 }),
+      });
+  
+      const result = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al desafiliar');
+      }
+  
+      notifications.show({
+        title: '✅ Afiliado Desafiliado',
+        message: 'El afiliado ha sido deshabilitado y sus puestos han sido despojados',
+        color: 'green',
+        autoClose: 5000
+      });
+  
+      setModalDesafiliarAbierto(false);
+      cargarAfiliado(); // Recargar datos para reflejar el cambio
+      
+    } catch (err) {
+      notifications.show({
+        title: '❌ Error',
+        message: err.message,
+        color: 'red'
+      });
+    } finally {
+      setCargandoDesafiliar(false);
+    }
+  };
+  
 
   // Si no hay afiliado y no está cargando, mostrar mensaje
   if (!cargando && !afiliado && !error) {
@@ -151,6 +198,40 @@ const DetallesAfiliado = () => {
             >
               Editar Perfil de Afiliado
             </Button>
+            {/* Botón de desafiliar - solo mostrar si está habilitado */}
+            {afiliado?.es_habilitado === 1 && (
+              <Button
+                leftSection={<IconUserOff size={18} />}
+                onClick={() => setModalDesafiliarAbierto(true)}
+                style={{
+                  backgroundColor: '#F44336',
+                  color: 'white',
+                  borderRadius: '100px',
+                  fontWeight: 500,
+                  padding: '10px 20px',
+                  border: '2px solid #F44336'
+                }}
+              >
+                Desafiliar Afiliado
+              </Button>
+            )}
+
+            {/* Si está deshabilitado, mostrar botón para rehabilitar (opcional) */}
+            {afiliado?.es_habilitado === 0 && (
+              <Button
+                leftSection={<IconUserCheck size={18} />}
+                onClick={() => {/* implementar rehabilitación */}}
+                style={{
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  borderRadius: '100px',
+                  fontWeight: 500,
+                  padding: '10px 20px',
+                }}
+              >
+                Rehabilitar Afiliado
+              </Button>
+            )}
           </Group>
         </Group>
 
@@ -366,11 +447,17 @@ const DetallesAfiliado = () => {
               </Group>
 
               {/* Tabla de puestos */}
-              
-              
-              
               <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}  />
               </Box>
+
+              
+              <ModalDesafiliarAfiliado
+                opened={modalDesafiliarAbierto}
+                onClose={() => setModalDesafiliarAbierto(false)}
+                afiliado={afiliado}
+                onConfirmar={handleDesafiliar}
+                loading={cargandoDesafiliar}
+              />
           </>
         )}
       </Paper>

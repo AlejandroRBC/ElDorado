@@ -24,7 +24,7 @@ const FormularioEditarAfiliado = ({
     es_habilitado: true,
     foto: null,
     fotoPreview: null,
-    fotoActual: null // 👈 Guardar la URL actual
+    fotoActual: null 
   });
 
   const [isDragging, setIsDragging] = useState(false);

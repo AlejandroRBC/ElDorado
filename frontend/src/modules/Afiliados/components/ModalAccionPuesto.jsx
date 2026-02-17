@@ -13,7 +13,7 @@ const ModalAccionPuesto = ({ opened, onClose, puesto, onConfirm }) => {
           <Text fw={700} size="xl">Acción sobre el Puesto</Text>
         </Group>
       }
-      size="md"
+      size="lg"
       centered
     >
       <Stack gap="xl" p="md">
@@ -36,54 +36,58 @@ const ModalAccionPuesto = ({ opened, onClose, puesto, onConfirm }) => {
           ¿Qué acción deseas realizar con este puesto?
         </Text>
 
-        {/* Botón LIBERAR */}
-        <Button
-          fullWidth
-          size="lg"
-          leftSection={<IconDoorExit size={20} />}
-          onClick={() => onConfirm('LIBERADO')}
-          style={{
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            borderRadius: '8px',
-            height: '60px',
-            fontSize: '16px',
-            fontWeight: 600
-          }}
-        >
-          LIBERAR PUESTO
-        </Button>
+        {/* Botones en la misma fila */}
+        <Group grow gap="md">
+          {/* Botón LIBERAR */}
+          <Button
+            size="lg"
+            leftSection={<IconDoorExit size={20} />}
+            onClick={() => onConfirm('LIBERADO')}
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              borderRadius: '8px',
+              height: '60px',
+              fontSize: '16px',
+              fontWeight: 600
+            }}
+          >
+            LIBERAR
+          </Button>
 
-        <Text size="xs" c="dimmed" ta="center" style={{ marginTop: '-10px' }}>
-          El afiliado cede voluntariamente el puesto a la asociación
-        </Text>
+          {/* Botón DESPOJAR */}
+          <Button
+            size="lg"
+            leftSection={<IconFlag size={20} />}
+            onClick={() => onConfirm('DESPOJADO')}
+            style={{
+              backgroundColor: '#F44336',
+              color: 'white',
+              borderRadius: '8px',
+              height: '60px',
+              fontSize: '16px',
+              fontWeight: 600
+            }}
+          >
+            DESPOJAR
+          </Button>
+        </Group>
 
-        {/* Botón DESPOJAR */}
-        <Button
-          fullWidth
-          size="lg"
-          leftSection={<IconFlag size={20} />}
-          onClick={() => onConfirm('DESPOJADO')}
-          style={{
-            backgroundColor: '#F44336',
-            color: 'white',
-            borderRadius: '8px',
-            height: '60px',
-            fontSize: '16px',
-            fontWeight: 600
-          }}
-        >
-          DESPOJAR PUESTO
-        </Button>
-
-        <Text size="xs" c="dimmed" ta="center" style={{ marginTop: '-10px' }}>
-          La asociación QUITA el puesto al afiliado (por incumplimiento, etc.)
-        </Text>
+        {/* Descripciones debajo de los botones */}
+        <Group grow gap="md">
+          <Text size="xs" c="dimmed" ta="center">
+            El afiliado cede voluntariamente<br />el puesto a la asociación
+          </Text>
+          <Text size="xs" c="dimmed" ta="center">
+            La asociación QUITA el puesto<br />(por incumplimiento, etc.)
+          </Text>
+        </Group>
 
         {/* Botón cancelar */}
         <Button
           variant="outline"
           onClick={onClose}
+          leftSection={<IconX size={16} />}
           style={{
             borderColor: '#0f0f0f',
             color: '#0f0f0f',
