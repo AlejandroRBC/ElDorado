@@ -158,7 +158,7 @@ router.post('/:id/asignar-puesto', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
+router.post('/despojar-puesto', afiliadosController.despojarPuesto);
 
 
 

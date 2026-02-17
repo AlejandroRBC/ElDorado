@@ -245,7 +245,7 @@ const Afiliado = {
         resolve(nuevoAfiliado);
       });
     });
-  }
+  },
 
   // Obtener todos los afiliados con filtros mejorados
   findAll: (params = {}) => {

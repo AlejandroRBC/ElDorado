@@ -182,7 +182,6 @@ exports.buscar = (req, res) => {
 };
 
 // Obtener puestos activos de un afiliado
-
 exports.obtenerPuestos = (req, res) => {
   const id = req.params.id;
 
@@ -210,5 +209,72 @@ exports.obtenerPuestos = (req, res) => {
     }
 
     res.json(rows);
+  });
+};
+
+// Despojar o liberar puesto de un afiliado
+exports.despojarPuesto = (req, res) => {
+  const { idAfiliado, idPuesto, razon } = req.body;
+  
+  if (!idAfiliado || !idPuesto || !razon) {
+    return res.status(400).json({ 
+      error: 'Faltan datos: idAfiliado, idPuesto y razon son requeridos' 
+    });
+  }
+
+  if (!['DESPOJADO', 'LIBERADO'].includes(razon)) {
+    return res.status(400).json({ 
+      error: 'La razón debe ser DESPOJADO o LIBERADO' 
+    });
+  }
+
+  // Iniciar transacción
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+
+    // 1. Actualizar la tenencia activa del puesto para este afiliado
+    db.run(
+      `UPDATE tenencia_puesto 
+       SET fecha_fin = CURRENT_DATE, razon = ?
+       WHERE id_afiliado = ? AND id_puesto = ? AND fecha_fin IS NULL`,
+      [razon, idAfiliado, idPuesto],
+      function(err) {
+        if (err) {
+          db.run('ROLLBACK');
+          console.error('Error actualizando tenencia:', err);
+          return res.status(500).json({ error: err.message });
+        }
+
+        if (this.changes === 0) {
+          db.run('ROLLBACK');
+          return res.status(404).json({ 
+            error: 'No se encontró una tenencia activa para este puesto y afiliado' 
+          });
+        }
+
+        // 2. Marcar el puesto como disponible
+        db.run(
+          `UPDATE puesto SET disponible = 1 WHERE id_puesto = ?`,
+          [idPuesto],
+          function(err) {
+            if (err) {
+              db.run('ROLLBACK');
+              console.error('Error actualizando disponibilidad:', err);
+              return res.status(500).json({ error: err.message });
+            }
+
+            db.run('COMMIT');
+            
+            res.json({
+              success: true,
+              message: `Puesto ${razon === 'DESPOJADO' ? 'despojado' : 'liberado'} correctamente`,
+              razon: razon,
+              id_puesto: idPuesto,
+              id_afiliado: idAfiliado
+            });
+          }
+        );
+      }
+    );
   });
 };

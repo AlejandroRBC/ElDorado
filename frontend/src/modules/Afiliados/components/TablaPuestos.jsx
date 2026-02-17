@@ -2,9 +2,12 @@
 import { useEffect, useState } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconEye, IconMapPin } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+
 import ModalEditarPuesto from './ModalEditarPuesto';
 import ModalDetallePuesto from './ModalDetallePuesto';
-import { notifications } from '@mantine/notifications';
+import ModalAccionPuesto from './ModalAccionPuesto';
+import ModalConfirmarAccion from './ModalConfirmarAccion';
 
 
 const API_URL = 'http://localhost:3000/api';
@@ -17,6 +20,10 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
   const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
   const [puestoParaDetalle, setPuestoParaDetalle] = useState(null);
+  const [modalAccionAbierto, setModalAccionAbierto] = useState(false);
+  const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
+  const [accionSeleccionada, setAccionSeleccionada] = useState(null);
+  const [cargandoAccion, setCargandoAccion] = useState(false);
 
   const cargarPuestos = async () => {
     if (!afiliadoId) return;
@@ -53,45 +60,64 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
     setModalDetalleAbierto(true);
   };
 
-  // Función para eliminar puesto (desasignar)
+  // Función para eliminar puesto (DESPOJO o LIBERADO)
   const handleEliminar = async (puesto) => {
-    if (!confirm(`¿Estás seguro de desasignar el puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}?`)) {
-      return;
-    }
+    setPuestoSeleccionado(puesto);
+    setModalAccionAbierto(true);
+  };
 
+  // Función para cuando se selecciona una acción en el primer modal
+  const handleSeleccionarAccion = (razon) => {
+    setAccionSeleccionada(razon);
+    setModalAccionAbierto(false);
+    setModalConfirmacionAbierto(true); 
+  };
+  const handleEjecutarAccion = async () => {
     try {
-      const response = await fetch(`${API_URL}/puestos/${puesto.id_puesto}/desasignar`, {
+      setCargandoAccion(true);
+      
+      const response = await fetch(`${API_URL}/afiliados/despojar-puesto`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id_afiliado: afiliadoId,
-          razon: 'LIBERADO'
+          idAfiliado: afiliadoId,
+          idPuesto: puestoSeleccionado.id_puesto,
+          razon: accionSeleccionada
         }),
       });
-
+  
+      const result = await response.json();
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al desasignar puesto');
+        throw new Error(result.error || 'Error al procesar la acción');
       }
-
+  
       notifications.show({
         title: '✅ Éxito',
-        message: 'Puesto desasignado correctamente',
+        message: result.message,
         color: 'green'
       });
-
-      cargarPuestos(); // Recargar la lista
-      if (onRefresh) onRefresh();
+  
+      
+      setModalConfirmacionAbierto(false);
+      setPuestoSeleccionado(null);
+      setAccionSeleccionada(null);
+      cargarPuestos();
+      
     } catch (err) {
+      console.error('Error:', err);
       notifications.show({
         title: '❌ Error',
         message: err.message,
         color: 'red'
       });
+    } finally {
+      setCargandoAccion(false);
     }
   };
+
 
   // Estados de carga / error / vacío
   if (cargando) {
@@ -253,6 +279,28 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
           setPuestoParaDetalle(null);
         }}
         puesto={puestoParaDetalle}
+      />
+      <ModalAccionPuesto
+        opened={modalAccionAbierto}
+        onClose={() => {
+          setModalAccionAbierto(false);
+          setPuestoSeleccionado(null);
+        }}
+        puesto={puestoSeleccionado}
+        onConfirm={handleSeleccionarAccion}
+      />
+
+      <ModalConfirmarAccion
+        opened={modalConfirmacionAbierto}
+        onClose={() => {
+          setModalConfirmacionAbierto(false);
+          setPuestoSeleccionado(null);
+          setAccionSeleccionada(null);
+        }}
+        puesto={puestoSeleccionado}
+        razon={accionSeleccionada}
+        onConfirmar={handleEjecutarAccion}
+        loading={cargandoAccion}
       />
     </>
   );
