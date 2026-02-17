@@ -141,6 +141,7 @@ function afterTablesCreated() {
   crearTriggersPuestos();
   require('./triggers/triggers-usuario');
   require('./triggers/triggers-puestos');
+
   insertarDatosEjemplo();
 }
 
@@ -173,9 +174,9 @@ function insertarDatosEjemplo() {
     
     if (row && row.count === 0) {
       const afiliados = [
-        ['1234567','LP','Juan','Pérez','García','M','1985-05-15','76543210','Comerciante','Av Principal'],
-        ['7654321','LP','María','García','Rodríguez','F','1990-08-22','71234567','Servicios','Calle Secundaria'],
-        ['9876543','LP','Carlos','López','Mendoza','M','1978-03-10','70123456','Industrial','Av Industrial']
+        ['1234567','LP','Juan','Pérez','dummy','M','1985-05-15','76543210','Comerciante','Av Principal'],
+        ['7654321','LP','María','García','dummy','F','1990-08-22','71234567','Servicios','Calle Secundaria'],
+        ['9876543','LP','Carlos','López','dummy','M','1978-03-10','70123456','Industrial','Av Industrial']
       ];
 
       let insertados = 0;
@@ -188,13 +189,12 @@ function insertarDatosEjemplo() {
           if (!err) insertados++;
           if (insertados === afiliados.length) {
             insertarPuestosEjemplo();
-            insertarTenenciasEjemplo();
+            //insertarTenenciasEjemplo();
             crearUsuarioAdmin();
           }
         });
       });
       
-
     } else {
       crearUsuarioAdmin();
     }
@@ -203,37 +203,71 @@ function insertarDatosEjemplo() {
 }
 
 // ============================================
-// DATOS DE EJEMPLO PARA PUESTOS Y TENENCIAS
+// DATOS DE EJEMPLO PARA PUESTOS 
 // ============================================
 function insertarPuestosEjemplo() {
   db.get(`SELECT COUNT(*) AS count FROM puesto`, (err, row) => {
+    
     if (err) return;
-
+      
     if (row && row.count === 0) {
-      const puestos = [
-        ['A','1',1,3,3,1,'Frutas y Verduras',1],
-        ['A','1',2,3,3,0,'Carnicería',1],
-        ['B','2',3,4,4,1,'Ropa',1],
-        ['C','3',4,2,2,0,'Electrodomésticos',1]
-      ];
+      // --- DATOS DE CONFIGURACIÓN ---
+      const pasosA = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 169, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298];
+      const pasosB = [20, 32, 37, 41, 73, 79, 83, 90, 97, 128, 139, 151, 157, 161, 164, 167, 170, 173, 178, 186, 214, 215, 216, 217, 221, 225, 234, 239, 240];
 
-      let insertados = 0;
-      puestos.forEach((p, index) => {
-        db.run(`
-          INSERT INTO puesto
-          (fila, cuadra, nroPuesto, ancho, largo, tiene_patente, rubro, disponible)
-          VALUES (?,?,?,?,?,?,?,?)
-        `, p, function(err) {
-          if (!err) insertados++;
+      // Lógica para determinar la cuadra en Fila A
+      function obtenerCuadraA(n) {
+          if (n >= 1 && n <= 68) return "Cuadra 1";
+          if (n >= 69 && n <= 118) return "Callejón";
+          if (n >= 119 && n <= 170) return "Cuadra 2";
+          if (n >= 171 && n <= 234) return "Cuadra 3";
+          if (n >= 235 && n <= 299) return "Cuadra 4";
+          return "Desconocido";
+      }
 
-          // Cuando se inserten todos los puestos, agregamos las tenencias
-          if (insertados === puestos.length) {
-            insertarTenenciasEjemplo();
+      // Lógica para determinar la cuadra en Fila B
+      function obtenerCuadraB(n) {
+          if (n >= 1 && n <= 52) return "Cuadra 1";
+          if (n >= 53 && n <= 119) return "Cuadra 2";
+          if (n >= 120 && n <= 185) return "Cuadra 3";
+          if (n >= 186 && n <= 247) return "Cuadra 4";
+          return "Desconocido";
+      }
+
+      // Ejecución serializada para mantener el orden de los IDs
+      db.serialize(() => {
+          const stmt = db.prepare("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)");
+
+          // --- PROCESAR FILA A ---
+          for (let n = 1; n <= 299; n++) {
+              let cuadra = obtenerCuadraA(n);
+              stmt.run('A', cuadra, n);
+              // Si hay un paso después de este puesto
+              if (pasosA.includes(n)) {
+                  // Usamos 10000 + n para evitar el error de UNIQUE
+                  stmt.run('A', cuadra, 10000 + n);
+              }
           }
-        });
+          // --- PROCESAR FILA B ---
+          for (let n = 1; n <= 247; n++) {
+              let cuadra = obtenerCuadraB(n);
+              stmt.run('B', cuadra, n);   
+              if (pasosB.includes(n)) {
+                  stmt.run('B', cuadra, 10000 + n);
+              }
+          }
+          stmt.finalize((err) => {
+              if (err) {
+                  console.error("no se pudo crear puestos", err.message);
+              } else {
+                  console.log("Puestos Creados correctamente");
+              }
+              db.close();
+          });
       });
+
     } else {
-      insertarTenenciasEjemplo();
+      //insertarTenenciasEjemplo();
     }
   });
 }

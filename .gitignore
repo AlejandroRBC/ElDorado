@@ -1,9 +1,9 @@
-/data/
-data/elDorado.db-shm
-data/elDorado.db-wal
+
+
 node_modules
 frontend/node_modules
 backend/uploads/perfiles
 
 data/elDorado.db-shm
 data/elDorado.db-wal
+data/elDorado.db

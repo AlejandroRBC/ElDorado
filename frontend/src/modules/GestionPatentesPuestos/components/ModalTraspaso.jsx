@@ -7,6 +7,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
 import { afiliadosService } from "../service/afiliadosService";
 import { puestosService } from "../service/puestosService";
+import { getPerfilUrl } from '../../../utils/imageHelper';
 
 export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso }) {
   const [loadingData, setLoadingData] = useState(false);
@@ -188,7 +189,8 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
               <Stack align="center" gap="xs" style={{ width: '180px' }}>
                 <Text fw={800} size="xs" c="gray.6">EMISOR (DESDE):</Text>
                 <Paper shadow="xl" radius="md" style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee' }}>
-                  <Image src={afiliadoDesde?.url_perfil || avatarPlaceholder} height={200} fit="cover" />
+                  <Image src={getPerfilUrl(afiliadoDesde) || avatarPlaceholder} height={200} fit="cover" />
+                  
                 </Paper>
                 
                 {!puestoSeleccionado ? (
@@ -249,7 +251,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
               <Stack align="center" gap="xs" style={{ width: '180px' }}>
                 <Text fw={800} size="xs" c="gray.6">RECEPTOR (NUEVO):</Text>
                 <Paper shadow="xl" radius="md" style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee' }}>
-                   <Image src={afiliadoA?.url_perfil || avatarPlaceholder} height={200} fit="cover" />
+                   <Image src={getPerfilUrl(afiliadoA)  || avatarPlaceholder} height={200} fit="cover" />
                 </Paper>
                 <TextInput
                   placeholder="Nombre o CI del nuevo dueño"
