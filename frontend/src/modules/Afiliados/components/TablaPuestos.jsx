@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconEye, IconMapPin } from '@tabler/icons-react';
 import ModalEditarPuesto from './ModalEditarPuesto';
+import ModalDetallePuesto from './ModalDetallePuesto';
 import { notifications } from '@mantine/notifications';
+
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -13,6 +15,8 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
   const [error, setError] = useState(null);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
+  const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
+  const [puestoParaDetalle, setPuestoParaDetalle] = useState(null);
 
   const cargarPuestos = async () => {
     if (!afiliadoId) return;
@@ -45,11 +49,8 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
 
   // Función para ver detalle del puesto (placeholder)
   const handleVerDetalle = (puesto) => {
-    notifications.show({
-      title: 'ℹ️ Información',
-      message: `Detalles del puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`,
-      color: 'blue'
-    });
+    setPuestoParaDetalle(puesto);
+    setModalDetalleAbierto(true);
   };
 
   // Función para eliminar puesto (desasignar)
@@ -232,7 +233,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         </Table>
       </ScrollArea>
 
-      {/* Modal de edición */}
+      {/* Modales */}
       <ModalEditarPuesto
         opened={modalEditarAbierto}
         onClose={() => {
@@ -244,6 +245,14 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
           cargarPuestos(); // Recargar después de editar
           if (onRefresh) onRefresh();
         }}
+      />
+      <ModalDetallePuesto
+        opened={modalDetalleAbierto}
+        onClose={() => {
+          setModalDetalleAbierto(false);
+          setPuestoParaDetalle(null);
+        }}
+        puesto={puestoParaDetalle}
       />
     </>
   );
