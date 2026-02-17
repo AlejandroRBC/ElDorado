@@ -22,7 +22,8 @@ router.post('/traspasar', ctrl.traspasar);
 // 4. RUTAS DE ACTUALIZACIÓN Y ELIMINACIÓN (PUT/DELETE)
 // ==========================================
 
-// Actualizar datos del puesto (se unifican los nombres del controlador)
+// Actualizar datos del puesto (se unifican los nombres del controlador) 
+// tambien lo ando usando en afiliados, cuidado XD
 router.put('/:id', ctrl.actualizarPuesto || ctrl.actualizar);
 
 module.exports = router;

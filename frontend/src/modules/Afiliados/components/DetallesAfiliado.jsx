@@ -4,7 +4,7 @@ import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAl
 import { useAfiliado } from '../hooks/useAfiliado';
 import TablaPuestos from './TablaPuestos';
 import ModalAsignarPuesto from './ModalAsignarPuesto';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { getPerfilUrl } from '../../../utils/imageHelper';
 
 
@@ -14,8 +14,16 @@ const DetallesAfiliado = () => {
   
   // Usar hook para obtener datos reales del afiliado
   const { afiliado, cargando, error, cargarAfiliado } = useAfiliado(id);
-
   const [modalPuestoAbierto, setModalPuestoAbierto] = useState(false);
+
+  // para refrescar los puestos
+  const [refreshPuestos, setRefreshPuestos] = useState(0);
+  const handlePuestoAsignado = useCallback(() => {
+    cargarAfiliado();
+    setRefreshPuestos(prev => prev + 1);
+    setModalPuestoAbierto(false);
+  }, [cargarAfiliado]);
+
 
   // Si no hay afiliado y no está cargando, mostrar mensaje
   if (!cargando && !afiliado && !error) {
@@ -338,7 +346,7 @@ const DetallesAfiliado = () => {
                   onPuestoAsignado={() => {
                     cargarAfiliado(); // Recargar datos del afiliado
                     setModalPuestoAbierto(false);
-                  }}
+                  }, handlePuestoAsignado}
                 />
                   <Button
                     leftSection={<IconTransfer size={18} />}
@@ -361,7 +369,7 @@ const DetallesAfiliado = () => {
               
               
               
-              <TablaPuestos afiliadoId={afiliado.id} />
+              <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}  />
               </Box>
           </>
         )}

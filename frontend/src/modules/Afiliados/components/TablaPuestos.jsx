@@ -1,21 +1,18 @@
+// frontend/src/modules/Afiliados/components/TablaPuestos.jsx (versión actualizada)
 import { useEffect, useState } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack } from '@mantine/core';
 import { IconEdit, IconTrash, IconEye, IconMapPin } from '@tabler/icons-react';
+import ModalEditarPuesto from './ModalEditarPuesto';
+import { notifications } from '@mantine/notifications';
 
-// ─── Constante de API (igual que en afiliadosService.js) ───────────────────
 const API_URL = 'http://localhost:3000/api';
 
-/**
- * TablaPuestos
- *
- * Antes: recibía un prop `puestos` con datos ya procesados (y con campos erróneos).
- * Ahora: recibe `afiliadoId` y consulta directamente GET /api/afiliados/:id/puestos
- *        que devuelve los puestos activos (fecha_fin IS NULL) con los campos reales de la BD.
- */
 const TablaPuestos = ({ afiliadoId, onRefresh }) => {
-  const [puestos, setPuestos]     = useState([]);
-  const [cargando, setCargando]   = useState(true);
-  const [error, setError]         = useState(null);
+  const [puestos, setPuestos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
 
   const cargarPuestos = async () => {
     if (!afiliadoId) return;
@@ -40,12 +37,62 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
     cargarPuestos();
   }, [afiliadoId]);
 
-  // Permite que el padre fuerce un re-fetch (e.g. tras asignar un nuevo puesto)
-  useEffect(() => {
-    if (onRefresh) cargarPuestos();
-  }, [onRefresh]);
+  // Función para abrir modal de edición
+  const handleEditar = (puesto) => {
+    setPuestoSeleccionado(puesto);
+    setModalEditarAbierto(true);
+  };
 
-  // ── Estados de carga / error / vacío ─────────────────────────────────────
+  // Función para ver detalle del puesto (placeholder)
+  const handleVerDetalle = (puesto) => {
+    notifications.show({
+      title: 'ℹ️ Información',
+      message: `Detalles del puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`,
+      color: 'blue'
+    });
+  };
+
+  // Función para eliminar puesto (desasignar)
+  const handleEliminar = async (puesto) => {
+    if (!confirm(`¿Estás seguro de desasignar el puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/puestos/${puesto.id_puesto}/desasignar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id_afiliado: afiliadoId,
+          razon: 'LIBERADO'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al desasignar puesto');
+      }
+
+      notifications.show({
+        title: '✅ Éxito',
+        message: 'Puesto desasignado correctamente',
+        color: 'green'
+      });
+
+      cargarPuestos(); // Recargar la lista
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      notifications.show({
+        title: '❌ Error',
+        message: err.message,
+        color: 'red'
+      });
+    }
+  };
+
+  // Estados de carga / error / vacío
   if (cargando) {
     return (
       <Center py="xl">
@@ -82,30 +129,19 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
     );
   }
 
-  // ── Tabla con los campos reales que devuelve el backend ───────────────────
-  // El endpoint GET /api/afiliados/:id/puestos devuelve:
-  //   id_puesto, fila, cuadra, nroPuesto, rubro, tiene_patente, fecha_ini
   const rows = puestos.map((puesto) => (
     <Table.Tr key={puesto.id_puesto} style={{ borderBottom: '1px solid #eee' }}>
-
-      {/* Nro de puesto — campo real: nroPuesto */}
       <Table.Td>
         <Text fw={600} style={{ color: '#0f0f0f' }}>
           {puesto.nroPuesto}
         </Text>
       </Table.Td>
-
-      {/* Fila */}
       <Table.Td>
         <Text size="sm" style={{ color: '#666' }}>{puesto.fila}</Text>
       </Table.Td>
-
-      {/* Cuadra */}
       <Table.Td>
         <Text size="sm" style={{ color: '#666' }}>{puesto.cuadra}</Text>
       </Table.Td>
-
-      {/* Fecha de obtención — campo real: fecha_ini */}
       <Table.Td>
         <Text size="sm" style={{ color: '#666' }}>
           {puesto.fecha_ini
@@ -113,15 +149,11 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
             : '—'}
         </Text>
       </Table.Td>
-
-      {/* Rubro */}
       <Table.Td>
         <Text size="sm" style={{ color: '#666' }}>
           {puesto.rubro || <span style={{ color: '#999', fontStyle: 'italic' }}>Sin rubro</span>}
         </Text>
       </Table.Td>
-
-      {/* Patente */}
       <Table.Td>
         <Badge
           color={puesto.tiene_patente ? 'green' : 'gray'}
@@ -130,9 +162,12 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         >
           {puesto.tiene_patente ? 'Con patente' : 'Sin patente'}
         </Badge>
+        {puesto.ancho && puesto.largo && (
+          <Text size="xs" c="dimmed" mt={4}>
+            {puesto.ancho}m x {puesto.largo}m
+          </Text>
+        )}
       </Table.Td>
-
-      {/* Acciones (placeholders — ampliar según necesidad) */}
       <Table.Td>
         <Group gap={4}>
           <ActionIcon
@@ -140,6 +175,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
             size="sm"
             title="Ver detalle"
             style={{ color: '#0f0f0f' }}
+            onClick={() => handleVerDetalle(puesto)}
           >
             <IconEye size={16} />
           </ActionIcon>
@@ -148,14 +184,16 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
             size="sm"
             title="Editar"
             style={{ color: '#edbe3c' }}
+            onClick={() => handleEditar(puesto)}
           >
             <IconEdit size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
             size="sm"
-            title="Eliminar"
+            title="Desasignar"
             style={{ color: '#F44336' }}
+            onClick={() => handleEliminar(puesto)}
           >
             <IconTrash size={16} />
           </ActionIcon>
@@ -165,33 +203,49 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
   ));
 
   return (
-    <ScrollArea>
-      <Table
-        striped
-        highlightOnHover
-        verticalSpacing="md"
-        horizontalSpacing="lg"
-        style={{
-          border: '1px solid #eee',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          minWidth: '800px',
+    <>
+      <ScrollArea>
+        <Table
+          striped
+          highlightOnHover
+          verticalSpacing="md"
+          horizontalSpacing="lg"
+          style={{
+            border: '1px solid #eee',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            minWidth: '900px',
+          }}
+        >
+          <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
+            <Table.Tr>
+              <Table.Th>Nro</Table.Th>
+              <Table.Th>Fila</Table.Th>
+              <Table.Th>Cuadra</Table.Th>
+              <Table.Th>Fecha Obtención</Table.Th>
+              <Table.Th>Rubro</Table.Th>
+              <Table.Th>Patente / Dimensiones</Table.Th>
+              <Table.Th>Opciones</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      </ScrollArea>
+
+      {/* Modal de edición */}
+      <ModalEditarPuesto
+        opened={modalEditarAbierto}
+        onClose={() => {
+          setModalEditarAbierto(false);
+          setPuestoSeleccionado(null);
         }}
-      >
-        <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
-          <Table.Tr>
-            <Table.Th>Nro</Table.Th>
-            <Table.Th>Fila</Table.Th>
-            <Table.Th>Cuadra</Table.Th>
-            <Table.Th>Fecha Obtención</Table.Th>
-            <Table.Th>Rubro</Table.Th>
-            <Table.Th>Patente</Table.Th>
-            <Table.Th>Opciones</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </ScrollArea>
+        puesto={puestoSeleccionado}
+        onPuestoActualizado={() => {
+          cargarPuestos(); // Recargar después de editar
+          if (onRefresh) onRefresh();
+        }}
+      />
+    </>
   );
 };
 
