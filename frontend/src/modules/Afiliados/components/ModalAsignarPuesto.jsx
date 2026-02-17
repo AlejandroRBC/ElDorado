@@ -1,14 +1,19 @@
-import { Paper, Modal, Box, Group, Stack, Text, Button, Select, TextInput, Checkbox, LoadingOverlay, Badge, Table, ScrollArea, Pagination, CloseButton, Alert } from '@mantine/core';
-import { IconSearch, IconX, IconAlertCircle, IconCheck, IconMapPin } from '@tabler/icons-react';
+// frontend/src/modules/Afiliados/components/ModalAsignarPuesto.jsx
+import { Paper, Modal, Box, Group, Stack, Text, Button, Select, TextInput, Checkbox, LoadingOverlay, Badge, Table, ScrollArea, Pagination, CloseButton, Alert, SimpleGrid, NumberInput } from '@mantine/core';
+import { IconSearch, IconX, IconAlertCircle, IconCheck, IconMapPin, IconFilter, IconFilterOff } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 import { useAsignarPuesto } from '../hooks/useAsignarPuesto';
 
 const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) => {
   const { 
-    puestosDisponibles, 
+    puestosFiltrados,
     puestosCargando, 
     loading, 
+    filtros,
+    opcionesFiltros,
     cargarPuestosDisponibles, 
+    aplicarFiltros,
+    limpiarFiltros,
     asignarPuesto 
   } = useAsignarPuesto(idAfiliado);
 
@@ -16,11 +21,10 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
   const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
   const [rubro, setRubro] = useState('');
   const [tienePatente, setTienePatente] = useState(false);
-  const [busqueda, setBusqueda] = useState('');
   const [error, setError] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
   
-  const itemsPorPagina = 15;
+  const itemsPorPagina = 10;
 
   // Cargar puestos al abrir el modal
   useEffect(() => {
@@ -30,24 +34,10 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
       setPuestoSeleccionado(null);
       setRubro('');
       setTienePatente(false);
-      setBusqueda('');
       setError('');
       setPaginaActual(1);
     }
   }, [opened]);
-
-  // Filtrar puestos por búsqueda
-  const puestosFiltrados = puestosDisponibles.filter(puesto => {
-    if (!busqueda) return true;
-    
-    const searchTerm = busqueda.toLowerCase();
-    return (
-      puesto.nroPuesto.toString().includes(searchTerm) ||
-      puesto.fila.toLowerCase().includes(searchTerm) ||
-      puesto.cuadra.toLowerCase().includes(searchTerm) ||
-      `${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`.toLowerCase().includes(searchTerm)
-    );
-  });
 
   // Paginación
   const totalPaginas = Math.ceil(puestosFiltrados.length / itemsPorPagina);
@@ -80,18 +70,25 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
     });
 
     if (resultado.exito) {
+      if (onPuestoAsignado) {
+        onPuestoAsignado();
+      }
       setTimeout(() => {
         onClose();
-        if (onPuestoAsignado) onPuestoAsignado();
       }, 1000);
     }
+  };
+
+  // Verificar si hay filtros activos
+  const hayFiltrosActivos = () => {
+    return filtros.fila || filtros.cuadra || filtros.nroPuesto || filtros.rubro;
   };
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      size="90%"
+      size="95%"
       title={
         <Group align="center" gap="xs">
           <IconMapPin size={24} color="#edbe3c" />
@@ -115,27 +112,98 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
         <Group align="flex-start" gap={0} style={{ minHeight: '600px' }}>
           
           {/* ===== LADO IZQUIERDO - LISTA DE PUESTOS ===== */}
-          <Box style={{ flex: 1.5, borderRight: '1px solid #eee', padding: '20px' }}>
+          <Box style={{ flex: 1.8, borderRight: '1px solid #eee', padding: '20px' }}>
             <Stack gap="md">
-              {/* Buscador */}
-              <TextInput
-                placeholder="Buscar por número, fila o cuadra..."
-                leftSection={<IconSearch size={16} />}
-                value={busqueda}
-                onChange={(e) => {
-                  setBusqueda(e.target.value);
-                  setPaginaActual(1);
-                }}
-                rightSection={busqueda && <CloseButton onClick={() => setBusqueda('')} />}
-                size="md"
-                styles={{
-                  input: {
-                    backgroundColor: '#f6f8fe',
-                    border: '1px solid #f6f8fe',
-                    borderRadius: '8px',
-                  }
-                }}
-              />
+              
+              {/* Panel de filtros */}
+              <Paper p="md" withBorder style={{ backgroundColor: '#f8f9fa' }}>
+                <Group justify="space-between" mb="xs">
+                  <Group gap="xs">
+                    <IconFilter size={18} color="#666" />
+                    <Text fw={600}>Filtros</Text>
+                  </Group>
+                  {hayFiltrosActivos() && (
+                    <Button 
+                      variant="subtle" 
+                      size="xs" 
+                      leftSection={<IconFilterOff size={14} />}
+                      onClick={() => {
+                        limpiarFiltros();
+                        setPaginaActual(1);
+                      }}
+                    >
+                      Limpiar filtros
+                    </Button>
+                  )}
+                </Group>
+
+                <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="xs">
+                  <Select
+                    placeholder="Fila"
+                    data={[
+                      { value: '', label: 'Todas las filas' },
+                      ...opcionesFiltros.filas.map(f => ({ value: f, label: `Fila ${f}` }))
+                    ]}
+                    value={filtros.fila}
+                    onChange={(val) => {
+                      aplicarFiltros({ fila: val });
+                      setPaginaActual(1);
+                    }}
+                    clearable
+                    size="sm"
+                    styles={{
+                      input: { backgroundColor: 'white' }
+                    }}
+                  />
+                  
+                  <Select
+                    placeholder="Cuadra"
+                    data={[
+                      { value: '', label: 'Todas las cuadras' },
+                      ...opcionesFiltros.cuadras.map(c => ({ value: c, label: c }))
+                    ]}
+                    value={filtros.cuadra}
+                    onChange={(val) => {
+                      aplicarFiltros({ cuadra: val });
+                      setPaginaActual(1);
+                    }}
+                    clearable
+                    size="sm"
+                    searchable
+                    styles={{
+                      input: { backgroundColor: 'white' }
+                    }}
+                  />
+                  
+                  <NumberInput
+                    placeholder="N° de puesto"
+                    value={filtros.nroPuesto}
+                    onChange={(val) => {
+                      aplicarFiltros({ nroPuesto: val?.toString() || '' });
+                      setPaginaActual(1);
+                    }}
+                    min={opcionesFiltros.rango_numeros.min}
+                    max={opcionesFiltros.rango_numeros.max}
+                    size="sm"
+                    styles={{
+                      input: { backgroundColor: 'white' }
+                    }}
+                  />
+                  
+                  <TextInput
+                    placeholder="Buscar por rubro"
+                    value={filtros.rubro}
+                    onChange={(e) => {
+                      aplicarFiltros({ rubro: e.target.value });
+                      setPaginaActual(1);
+                    }}
+                    size="sm"
+                    styles={{
+                      input: { backgroundColor: 'white' }
+                    }}
+                  />
+                </SimpleGrid>
+              </Paper>
 
               {/* Contador de resultados */}
               <Group justify="space-between">
@@ -148,9 +216,21 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                   </Badge>
                 )}
               </Group>
-
+                {/* Paginación */}
+                {totalPaginas > 1 && (
+                    <Group justify="center" mt="md">
+                      <Pagination
+                        total={totalPaginas}
+                        value={paginaActual}
+                        onChange={setPaginaActual}
+                        color="dark"
+                        size="sm"
+                        radius="xl"
+                      />
+                    </Group>
+                  )}
               {/* Tabla de puestos */}
-              <ScrollArea style={{ height: '450px' }} offsetScrollbars>
+              <ScrollArea style={{ height: '400px' }} offsetScrollbars>
                 <Table striped highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
                   <Table.Thead style={{ backgroundColor: '#f1f3f5', position: 'sticky', top: 0, zIndex: 10 }}>
                     <Table.Tr>
@@ -158,14 +238,15 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                       <Table.Th>N° Puesto</Table.Th>
                       <Table.Th>Fila</Table.Th>
                       <Table.Th>Cuadra</Table.Th>
-                      <Table.Th>Estado</Table.Th>
+                      <Table.Th>Rubro</Table.Th>
+                      <Table.Th>Patente</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
+                    
                     {puestosPaginados.length > 0 ? (
                       puestosPaginados.map((puesto) => {
                         const isSelected = puestoSeleccionado?.id_puesto === puesto.id_puesto;
-                        const codigoPuesto = `${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`;
                         
                         return (
                           <Table.Tr
@@ -191,12 +272,17 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                             <Table.Td>{puesto.fila}</Table.Td>
                             <Table.Td>{puesto.cuadra}</Table.Td>
                             <Table.Td>
+                              <Text size="sm" lineClamp={1}>
+                                {puesto.rubro || '-'}
+                              </Text>
+                            </Table.Td>
+                            <Table.Td>
                               <Badge 
-                                color={puesto.disponible ? "green" : "red"} 
+                                color={puesto.tiene_patente ? "green" : "gray"} 
                                 variant="light"
                                 size="sm"
                               >
-                                {puesto.disponible ? 'Disponible' : 'Ocupado'}
+                                {puesto.tiene_patente ? 'Sí' : 'No'}
                               </Badge>
                             </Table.Td>
                           </Table.Tr>
@@ -204,10 +290,22 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                       })
                     ) : (
                       <Table.Tr>
-                        <Table.Td colSpan={5}>
+                        <Table.Td colSpan={6}>
                           <Stack align="center" py="xl">
                             <IconSearch size={40} style={{ color: '#ccc' }} />
                             <Text c="dimmed">No se encontraron puestos disponibles</Text>
+                            {hayFiltrosActivos() && (
+                              <Button 
+                                variant="subtle" 
+                                size="xs"
+                                onClick={() => {
+                                  limpiarFiltros();
+                                  setPaginaActual(1);
+                                }}
+                              >
+                                Limpiar filtros
+                              </Button>
+                            )}
                           </Stack>
                         </Table.Td>
                       </Table.Tr>
@@ -216,19 +314,7 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                 </Table>
               </ScrollArea>
 
-              {/* Paginación */}
-              {totalPaginas > 1 && (
-                <Group justify="center" mt="md">
-                  <Pagination
-                    total={totalPaginas}
-                    value={paginaActual}
-                    onChange={setPaginaActual}
-                    color="dark"
-                    size="sm"
-                    radius="xl"
-                  />
-                </Group>
-              )}
+              
             </Stack>
           </Box>
 
@@ -353,10 +439,13 @@ const ModalAsignarPuesto = ({ opened, onClose, idAfiliado, onPuestoAsignado }) =
                 </>
               ) : (
                 // Mensaje cuando no hay puesto seleccionado
-                <Stack align="center" justify="center" style={{ height: '300px' }}>
+                <Stack align="center" justify="center" style={{ height: '400px' }}>
                   <IconMapPin size={48} style={{ color: '#ccc' }} />
                   <Text size="lg" fw={500} c="dimmed" ta="center">
                     Seleccione un puesto<br />de la lista para continuar
+                  </Text>
+                  <Text size="sm" c="dimmed" ta="center" mt="md">
+                    Use los filtros para encontrar<br />el puesto más fácilmente
                   </Text>
                 </Stack>
               )}

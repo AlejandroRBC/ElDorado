@@ -15,6 +15,9 @@ router.get('/listar', ctrl.listar);
 // Obtener información específica para un traspaso
 router.get('/info-traspaso/:id', ctrl.infoTraspaso);
 
+// filtros para el modulo de afiliados
+router.get('/filtros', ctrl.obtenerFiltros);
+
 // Realizar el proceso de traspaso de un puesto
 router.post('/traspasar', ctrl.traspasar);
 

@@ -48,6 +48,43 @@ const listarPuestosDisponibles = (req, res) => {
     res.json(rows);
   });
 };
+// ===============================
+// FILTRAR PUESTOS DISPONIBLES (PARA MÓDULO AFILIADOS)
+// ===============================
+const obtenerFiltros = (req, res) => {
+  const sql = `
+    SELECT 
+      COUNT(*) as total,
+      GROUP_CONCAT(DISTINCT fila) as filas,
+      GROUP_CONCAT(DISTINCT cuadra) as cuadras,
+      MIN(nroPuesto) as min_nro,
+      MAX(nroPuesto) as max_nro
+    FROM puesto
+    WHERE disponible = 1
+  `;
+
+  db.get(sql, [], (err, row) => {
+    if (err) {
+      console.error('Error obteniendo filtros:', err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    const filas = row.filas ? row.filas.split(',').sort() : [];
+    const cuadras = row.cuadras ? row.cuadras.split(',').sort() : [];
+
+    res.json({
+      total: row.total || 0,
+      filas: filas,
+      cuadras: cuadras,
+      rango_numeros: {
+        min: row.min_nro || 1,
+        max: row.max_nro || 100
+      }
+    });
+  });
+};
+
+
 
 // ===============================
 // LISTAR PUESTOS PARA GESTIÓN (CON APODERADO)
@@ -266,6 +303,7 @@ module.exports = {
   
   // Función para módulo de afiliados
   listarPuestosDisponibles,
+  obtenerFiltros,
   
   // Funciones para gestión de puestos/traspasos
   listar,

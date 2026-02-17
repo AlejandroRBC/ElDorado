@@ -1,3 +1,5 @@
+// frontend/src/modules/Afiliados/hooks/useAsignarPuesto.js
+
 import { useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { afiliadosService } from '../services/afiliadosService';
@@ -5,7 +7,24 @@ import { afiliadosService } from '../services/afiliadosService';
 export const useAsignarPuesto = (idAfiliado) => {
   const [loading, setLoading] = useState(false);
   const [puestosDisponibles, setPuestosDisponibles] = useState([]);
+  const [puestosFiltrados, setPuestosFiltrados] = useState([]);
   const [puestosCargando, setPuestosCargando] = useState(false);
+  
+  // Estados para filtros
+  const [filtros, setFiltros] = useState({
+    fila: '',
+    cuadra: '',
+    nroPuesto: '',
+    rubro: ''
+  });
+  
+  // Opciones disponibles para filtros
+  const [opcionesFiltros, setOpcionesFiltros] = useState({
+    filas: [],
+    cuadras: [],
+    total: 0,
+    rango_numeros: { min: 1, max: 100 }
+  });
 
   const cargarPuestosDisponibles = async () => {
     try {
@@ -16,15 +35,24 @@ export const useAsignarPuesto = (idAfiliado) => {
       
       console.log('✅ Puestos recibidos del backend:', puestos?.length || 0);
       
-      // 👇 VERIFICAR QUÉ FILAS LLEGAN
-      const filas = [...new Set(puestos.map(p => p.fila))].sort();
-      console.log('📊 Filas disponibles:', filas);
-      
-      // 👇 VERIFICAR CUÁNTOS DE FILA B
-      const filaB = puestos.filter(p => p.fila === 'B');
-      console.log('📍 Puestos fila B:', filaB.length);
-      
       setPuestosDisponibles(puestos || []);
+      setPuestosFiltrados(puestos || []);
+      
+      // Extraer opciones únicas para filtros
+      const filas = [...new Set(puestos.map(p => p.fila))].sort();
+      const cuadras = [...new Set(puestos.map(p => p.cuadra))].sort();
+      const numeros = puestos.map(p => p.nroPuesto);
+      
+      setOpcionesFiltros({
+        filas,
+        cuadras,
+        total: puestos.length,
+        rango_numeros: {
+          min: Math.min(...numeros) || 1,
+          max: Math.max(...numeros) || 100
+        }
+      });
+      
       return puestos;
     } catch (error) {
       console.error('❌ Error cargando puestos disponibles:', error);
@@ -37,6 +65,53 @@ export const useAsignarPuesto = (idAfiliado) => {
     } finally {
       setPuestosCargando(false);
     }
+  };
+
+  // Función para aplicar filtros
+  const aplicarFiltros = (nuevosFiltros) => {
+    const filtrosActualizados = { ...filtros, ...nuevosFiltros };
+    setFiltros(filtrosActualizados);
+
+    let resultados = [...puestosDisponibles];
+
+    // Filtrar por fila
+    if (filtrosActualizados.fila) {
+      resultados = resultados.filter(p => p.fila === filtrosActualizados.fila);
+    }
+
+    // Filtrar por cuadra
+    if (filtrosActualizados.cuadra) {
+      resultados = resultados.filter(p => p.cuadra === filtrosActualizados.cuadra);
+    }
+
+    // Filtrar por número de puesto
+    if (filtrosActualizados.nroPuesto) {
+      const numBuscado = parseInt(filtrosActualizados.nroPuesto);
+      if (!isNaN(numBuscado)) {
+        resultados = resultados.filter(p => p.nroPuesto === numBuscado);
+      }
+    }
+
+    // Filtrar por rubro (búsqueda parcial)
+    if (filtrosActualizados.rubro) {
+      const termino = filtrosActualizados.rubro.toLowerCase();
+      resultados = resultados.filter(p => 
+        p.rubro && p.rubro.toLowerCase().includes(termino)
+      );
+    }
+
+    setPuestosFiltrados(resultados);
+  };
+
+  // Limpiar todos los filtros
+  const limpiarFiltros = () => {
+    setFiltros({
+      fila: '',
+      cuadra: '',
+      nroPuesto: '',
+      rubro: ''
+    });
+    setPuestosFiltrados(puestosDisponibles);
   };
 
   const asignarPuesto = async (puestoData) => {
@@ -65,7 +140,6 @@ export const useAsignarPuesto = (idAfiliado) => {
     } catch (error) {
       console.error('❌ Error asignando puesto:', error);
       
-      // 👇 SI EL ERROR ES PORQUE YA ESTÁ OCUPADO
       if (error.message?.includes('ocupado') || error.message?.includes('disponible')) {
         notifications.show({
           title: '⚠️ Puesto no disponible',
@@ -88,9 +162,14 @@ export const useAsignarPuesto = (idAfiliado) => {
 
   return {
     puestosDisponibles,
+    puestosFiltrados,
     puestosCargando,
     loading,
+    filtros,
+    opcionesFiltros,
     cargarPuestosDisponibles,
+    aplicarFiltros,
+    limpiarFiltros,
     asignarPuesto
   };
 };
