@@ -223,8 +223,58 @@ router.get('/buscar', afiliadosController.buscar);
 
 router.get('/:id/puestos', afiliadosController.obtenerPuestos);
 
+
+// ============================================
+// RUTAS PARA AFILIADOS DESHABILITADOS
+// ============================================
+
+// Obtener solo afiliados deshabilitados
+router.get('/deshabilitados', afiliadosController.getDeshabilitados);
+
+// Contar afiliados deshabilitados
+router.get('/deshabilitados/count', afiliadosController.countDeshabilitados);
+
+// Rehabilitar afiliado (cambiar es_habilitado a 1 y actualizar fecha_afiliacion)
+router.put('/:id/rehabilitar', afiliadosController.rehabilitar);
+
+// Mantener la ruta de deshabilitar existente
+router.put('/:id/deshabilitar', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { es_habilitado } = req.body;
+    
+    db.run(
+      'UPDATE afiliado SET es_habilitado = ? WHERE id_afiliado = ?',
+      [es_habilitado, id],
+      function(err) {
+        if (err) {
+          console.error('Error actualizando estado:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'Afiliado no encontrado' });
+        }
+        
+        res.json({
+          success: true,
+          message: es_habilitado === 0 ? 'Afiliado deshabilitado' : 'Afiliado habilitado',
+          id: id
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 router.get('/:id', afiliadosController.getById);
 router.post('/', afiliadosController.create);
+
+
+
+
 
 
 module.exports = router;

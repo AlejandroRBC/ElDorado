@@ -278,3 +278,86 @@ exports.despojarPuesto = (req, res) => {
     );
   });
 };
+
+exports.getDeshabilitados = async (req, res) => {
+  try {
+    const { 
+      search, 
+      orden = 'alfabetico'
+    } = req.query;
+    
+    const afiliados = await Afiliado.findAllDeshabilitados({ 
+      search, 
+      orden
+    });
+    
+    res.json(afiliados);
+  } catch (error) {
+    console.error('Error en getDeshabilitados:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener afiliados deshabilitados',
+      detalles: error.message 
+    });
+  }
+};
+
+// ============================================
+// REHABILITAR AFILIADO (fecha de afiliación = hoy)
+// ============================================
+exports.rehabilitar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Actualizar afiliado: habilitado y nueva fecha de afiliación
+    db.run(
+      `UPDATE afiliado 
+       SET es_habilitado = 1,
+           fecha_afiliacion = CURRENT_DATE
+       WHERE id_afiliado = ?`,
+      [id],
+      function(err) {
+        if (err) {
+          console.error('Error rehabilitando afiliado:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'Afiliado no encontrado' });
+        }
+        
+        res.json({
+          success: true,
+          message: 'Afiliado rehabilitado exitosamente',
+          id: id,
+          fecha_rehabilitacion: new Date().toISOString().split('T')[0]
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Error en rehabilitar:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ============================================
+// CONTAR AFILIADOS DESHABILITADOS
+// ============================================
+exports.countDeshabilitados = async (req, res) => {
+  try {
+    db.get(
+      `SELECT COUNT(*) as total FROM afiliado WHERE es_habilitado = 0`,
+      [],
+      (err, row) => {
+        if (err) {
+          console.error('Error contando deshabilitados:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        
+        res.json({ total: row?.total || 0 });
+      }
+    );
+  } catch (error) {
+    console.error('Error en countDeshabilitados:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

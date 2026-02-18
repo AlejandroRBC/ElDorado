@@ -247,6 +247,100 @@ const Afiliado = {
     });
   },
 
+
+
+  // ============================================
+// OBTENER TODOS LOS AFILIADOS DESHABILITADOS
+// ============================================
+findAllDeshabilitados: (params = {}) => {
+  return new Promise((resolve, reject) => {
+    let query = `
+      SELECT 
+        a.*,
+        COUNT(DISTINCT tp.id_tenencia) as total_puestos,
+        SUM(CASE WHEN p.tiene_patente = 1 THEN 1 ELSE 0 END) as puestos_con_patente,
+        GROUP_CONCAT(DISTINCT p.nroPuesto || '-' || p.fila || '-' || p.cuadra) as puestos_codes
+      FROM afiliado a
+      LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado AND tp.fecha_fin IS NULL
+      LEFT JOIN puesto p ON tp.id_puesto = p.id_puesto
+      WHERE a.es_habilitado = 0
+    `;
+
+    const queryParams = [];
+
+    // FILTRO DE BÚSQUEDA
+    if (params.search) {
+      query += ` AND (
+        a.paterno LIKE ? OR 
+        a.nombre LIKE ? OR 
+        a.materno LIKE ? OR
+        a.ci LIKE ? OR
+        a.ocupacion LIKE ?
+      )`;
+      const searchTerm = `%${params.search}%`;
+      queryParams.push(
+        searchTerm, searchTerm, searchTerm, 
+        searchTerm, searchTerm
+      );
+    }
+
+    query += ` GROUP BY a.id_afiliado`;
+
+    // ORDENAMIENTO
+    if (params.orden === 'registro') {
+      query += ` ORDER BY a.fecha_afiliacion DESC`;
+    } else {
+      query += ` ORDER BY a.paterno, a.materno, a.nombre`;
+    }
+
+    db.all(query, queryParams, (err, rows) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      // Transformar datos
+      const afiliados = rows.map(row => {
+        let edad = null;
+        if (row.fecNac) {
+          const hoy = new Date();
+          const nacimiento = new Date(row.fecNac);
+          edad = hoy.getFullYear() - nacimiento.getFullYear();
+          const mes = hoy.getMonth() - nacimiento.getMonth();
+          if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+          }
+        }
+
+        const puestosActivos = row.puestos_codes 
+          ? row.puestos_codes.split(',').filter(p => p) 
+          : [];
+
+        return {
+          id: row.id_afiliado,
+          nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
+          ci: `${row.ci}-${row.extension}`,
+          ocupacion: row.ocupacion,
+          patentes: puestosActivos,
+          total_puestos: row.total_puestos || 0,
+          puestos_con_patente: row.puestos_con_patente || 0,
+          estado: 'Deshabilitado',
+          telefono: row.telefono,
+          direccion: row.direccion,
+          fechaRegistro: row.fecha_afiliacion,
+          url_perfil: row.url_perfil || '/assets/perfiles/sinPerfil.png',
+          edad: edad,
+          sexo: row.sexo === 'M' ? 'Masculino' : 'Femenino',
+          fecha_afiliacion: row.fecha_afiliacion,
+          es_habilitado: 0
+        };
+      });
+
+      resolve(afiliados);
+    });
+  });
+},
+
   // Obtener todos los afiliados con filtros mejorados
   findAll: (params = {}) => {
     return new Promise((resolve, reject) => {

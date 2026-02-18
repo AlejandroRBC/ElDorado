@@ -236,4 +236,66 @@ obtenerPuestosDisponibles: async () => {
       throw error;
     }
   },
+  // ============================================
+// MÉTODOS PARA AFILIADOS DESHABILITADOS
+// ============================================
+
+// Obtener afiliados deshabilitados
+obtenerDeshabilitados: async (filtros = {}) => {
+  try {
+    const params = new URLSearchParams();
+    
+    if (filtros.search) params.append('search', filtros.search);
+    if (filtros.orden) params.append('orden', filtros.orden);
+    
+    const queryString = params.toString();
+    const url = queryString ? `${API_URL}/afiliados/deshabilitados?${queryString}` : `${API_URL}/afiliados/deshabilitados`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en obtenerDeshabilitados:', error);
+    throw error;
+  }
+},
+
+// Contar afiliados deshabilitados
+contarDeshabilitados: async () => {
+  try {
+    const response = await fetch(`${API_URL}/afiliados/deshabilitados/count`);
+    if (!response.ok) throw new Error('Error al contar deshabilitados');
+    const data = await response.json();
+    return data.total || 0;
+  } catch (error) {
+    console.error('Error en contarDeshabilitados:', error);
+    return 0;
+  }
+},
+
+// Rehabilitar afiliado
+rehabilitarAfiliado: async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/afiliados/${id}/rehabilitar`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Error al rehabilitar afiliado');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error en rehabilitarAfiliado:', error);
+    throw error;
+  }
+},
 };

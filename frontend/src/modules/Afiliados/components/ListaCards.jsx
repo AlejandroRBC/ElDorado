@@ -1,7 +1,7 @@
 import { Grid } from '@mantine/core';
 import Card from './Card';
 
-const ListaCards = ({ afiliados = [] }) => {
+const ListaCards = ({ afiliados = [], esDeshabilitados = false, onRehabilitar }) => {
   return (
     <Grid gutter="lg">
       {afiliados.map((afiliado) => (
@@ -15,7 +15,11 @@ const ListaCards = ({ afiliados = [] }) => {
             lg: 4,
           }}
         >
-          <Card afiliado={afiliado} />
+          <Card 
+            afiliado={afiliado} 
+            esDeshabilitado={esDeshabilitados}
+            onRehabilitar={onRehabilitar}
+          />
         </Grid.Col>
       ))}
     </Grid>

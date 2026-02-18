@@ -6,6 +6,8 @@ import ListaCards from './components/ListaCards';
 import TablaAfiliados from './components/TablaAfiliados';
 import { useAfiliados } from './hooks/useAfiliados';
 import ModalAfiliado from './components/ModalAfiliado';
+import ToggleViewDeshabilitados from './components/ToggleViewDeshabilitados';
+import { useAfiliadosDeshabilitados } from './hooks/useAfiliadosDeshabilitados';
 import { useDebouncedValue } from '@mantine/hooks';
 
 const AfiliadosModule = () => {
@@ -21,6 +23,31 @@ const AfiliadosModule = () => {
   
   // Debounce para búsqueda automática (300ms)
   const [debouncedSearch] = useDebouncedValue(searchValue, 100);
+
+
+  const [mostrarDeshabilitados, setMostrarDeshabilitados] = useState(false);
+  // Hook para deshabilitados
+  const { 
+    afiliados: afiliadosDeshabilitados,
+    cargando: cargandoDeshabilitados,
+    total: totalDeshabilitados,
+    cargarDeshabilitados,
+    rehabilitarAfiliado,
+    buscarPorTexto: buscarDeshabilitados,
+    ordenarPor: ordenarDeshabilitados,
+    limpiarFiltros: limpiarFiltrosDeshabilitados
+  } = useAfiliadosDeshabilitados();
+
+  // Función para cambiar vista
+  const handleCambiarVistaDeshabilitados = async (checked) => {
+    setMostrarDeshabilitados(checked);
+    if (checked) {
+      await cargarDeshabilitados();
+    } else {
+      await cargarAfiliados(); // Recargar activos
+    }
+  };
+
   
   // Usar nuestro hook personalizado
   const { 
@@ -398,52 +425,74 @@ const AfiliadosModule = () => {
             )}
           </Group>
 
-          {/* Toggle Switch para cambiar vista */}
-          <Group gap="md" align="center">
-            <Group gap="xs" align="center">
-              <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#999' }} />
-              <Switch
-                checked={vistaTabla}
-                onChange={(event) => setVistaTabla(event.currentTarget.checked)}
-                size="lg"
-                styles={{
-                  track: {
-                    backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
-                    borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
-                    width: '50px',
-                    height: '26px',
-                  },
-                  thumb: {
-                    backgroundColor: 'white',
-                    borderColor: '#0f0f0f',
-                    width: '22px',
-                    height: '22px',
-                  }
-                }}
-              />
-              <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#999' }} />
-            </Group>
-            
-            <Group gap="xs">
-              <Text size="sm" style={{ color: !vistaTabla ? '#0f0f0f' : '#999', fontWeight: !vistaTabla ? 600 : 400 }}>
-                Cards
-              </Text>
-              <Text size="sm" style={{ color: '#999' }}>/</Text>
-              <Text size="sm" style={{ color: vistaTabla ? '#0f0f0f' : '#999', fontWeight: vistaTabla ? 600 : 400 }}>
-                Tabla
-              </Text>
-            </Group>
-          </Group>
+            {/* Toggles de vista */}
+<Group gap="md" align="center">
+  {/* Toggle Activos/Deshabilitados */}
+  <ToggleViewDeshabilitados
+    mostrarDeshabilitados={mostrarDeshabilitados}
+    onChange={handleCambiarVistaDeshabilitados}
+    totalDeshabilitados={totalDeshabilitados}
+  />
+  
+  {/* Separador */}
+  <div style={{ width: '1px', height: '30px', backgroundColor: '#eee' }} />
+  
+  {/* Toggle Cards/Tabla (existente) */}
+  <Group gap="md" align="center">
+    <Group gap="xs" align="center">
+      <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#999' }} />
+      <Switch
+        checked={vistaTabla}
+        onChange={(event) => setVistaTabla(event.currentTarget.checked)}
+        size="lg"
+        styles={{
+          track: {
+            backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+            borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+            width: '50px',
+            height: '26px',
+          },
+          thumb: {
+            backgroundColor: 'white',
+            borderColor: '#0f0f0f',
+            width: '22px',
+            height: '22px',
+          }
+        }}
+      />
+      <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#999' }} />
+    </Group>
+    
+    <Group gap="xs">
+      <Text size="sm" style={{ color: !vistaTabla ? '#0f0f0f' : '#999', fontWeight: !vistaTabla ? 600 : 400 }}>
+        Cards
+      </Text>
+      <Text size="sm" style={{ color: '#999' }}>/</Text>
+      <Text size="sm" style={{ color: vistaTabla ? '#0f0f0f' : '#999', fontWeight: vistaTabla ? 600 : 400 }}>
+        Tabla
+      </Text>
+    </Group>
+  </Group>
+</Group>
+        
         </Group>
 
         {/* Renderizar la vista seleccionada */}
-        {!cargando && !error && (
-          vistaTabla ? (
-            <TablaAfiliados afiliados={afiliados} />
-          ) : (
-            <ListaCards afiliados={afiliados} />
-          )
-        )}
+{!cargando && !cargandoDeshabilitados && !error && (
+  mostrarDeshabilitados ? (
+    vistaTabla ? (
+      <TablaAfiliados afiliados={afiliadosDeshabilitados} esDeshabilitados={true} />
+    ) : (
+      <ListaCards afiliados={afiliadosDeshabilitados} esDeshabilitados={true} onRehabilitar={rehabilitarAfiliado} />
+    )
+  ) : (
+    vistaTabla ? (
+      <TablaAfiliados afiliados={afiliados} />
+    ) : (
+      <ListaCards afiliados={afiliados} />
+    )
+  )
+)}
 
         {/* Mensaje cuando no hay resultados */}
         {!cargando && !error && afiliados.length === 0 && (
