@@ -138,98 +138,72 @@ function crearTriggersPuestos() {
   `);
 
   // Trigger: Traspaso - quien ENTREGA el puesto
-  db.run(`
-    CREATE TRIGGER IF NOT EXISTS trg_puesto_traspaso_salida
-    AFTER UPDATE ON tenencia_puesto
-    WHEN NEW.razon = 'TRASPASO' AND OLD.razon != 'TRASPASO'
-    BEGIN
-      INSERT INTO historial_puestos (
-        tipo,
-        afiliado,
-        motivo,
-        usuario,
-        id_tenencia,
-        id_puesto
-      )
-      VALUES (
-        NEW.razon,
-        COALESCE(
-          (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
-           FROM afiliado WHERE id_afiliado = OLD.id_afiliado),
-          'SIN AFILIADO'
-        ),
-        'Traspasa su puesto: ' || 
-        COALESCE(
-          (SELECT 'Fila ' || fila || ' - Cuadra ' || cuadra || ' - N° ' || nroPuesto 
-           FROM puesto WHERE id_puesto = NEW.id_puesto),
-          'DESCONOCIDO'
-        ) || 
-        ' a ' ||
-        COALESCE(
-          (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
-           FROM afiliado WHERE id_afiliado = NEW.id_afiliado),
-          'SIN AFILIADO'
-        ),
-        COALESCE(
-          (SELECT nom_usuario_master || ' - ' || nom_afiliado_master 
-           FROM usuario_sesion WHERE id = 1),
-          'sistema - sistema'
-        ),
-        NEW.id_tenencia,
-        NEW.id_puesto
-      );
-    END;
-  `);
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS trg_puesto_traspaso_salida
+      AFTER UPDATE ON tenencia_puesto
+      WHEN NEW.razon = 'TRASPASO' AND OLD.razon != 'TRASPASO'
+      BEGIN
+        INSERT INTO historial_puestos (
+          tipo,
+          afiliado,
+          motivo,
+          usuario,
+          id_tenencia,
+          id_puesto
+        )
+        VALUES (
+          NEW.razon,
+          COALESCE(
+            (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
+            FROM afiliado WHERE id_afiliado = OLD.id_afiliado),
+            'SIN AFILIADO'
+          ),
+          'TRASPASA su puesto',
+          COALESCE(
+            (SELECT nom_usuario_master || ' - ' || nom_afiliado_master 
+            FROM usuario_sesion WHERE id = 1),
+            'sistema - sistema'
+          ),
+          NEW.id_tenencia,
+          NEW.id_puesto
+        );
+      END;
+    `);
+
 
   // Trigger: Traspaso - quien RECIBE el puesto (INSERT)
-  db.run(`
-    CREATE TRIGGER IF NOT EXISTS trg_puesto_traspaso_entrada
-    AFTER INSERT ON tenencia_puesto
-    WHEN NEW.razon = 'TRASPASO'
-    BEGIN
-      INSERT INTO historial_puestos (
-        tipo,
-        afiliado,
-        motivo,
-        usuario,
-        id_tenencia,
-        id_puesto
-      )
-      VALUES (
-        NEW.razon,
-        COALESCE(
-          (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
-           FROM afiliado WHERE id_afiliado = NEW.id_afiliado),
-          'SIN AFILIADO'
-        ),
-        'Recibe el puesto: ' || 
-        COALESCE(
-          (SELECT 'Fila ' || fila || ' - Cuadra ' || cuadra || ' - N° ' || nroPuesto 
-           FROM puesto WHERE id_puesto = NEW.id_puesto),
-          'DESCONOCIDO'
-        ) || 
-        ' de ' ||
-        COALESCE(
-          (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
-           FROM afiliado a
-           JOIN tenencia_puesto t ON a.id_afiliado = t.id_afiliado
-           WHERE t.id_puesto = NEW.id_puesto 
-           AND t.id_tenencia != NEW.id_tenencia
-           AND t.fecha_fin IS NOT NULL
-           ORDER BY t.fecha_ini DESC
-           LIMIT 1),
-          'ANTERIOR PROPIETARIO'
-        ),
-        COALESCE(
-          (SELECT nom_usuario_master || ' - ' || nom_afiliado_master 
-           FROM usuario_sesion WHERE id = 1),
-          'sistema - sistema'
-        ),
-        NEW.id_tenencia,
-        NEW.id_puesto
-      );
-    END;
-  `);
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS trg_puesto_traspaso_entrada
+      AFTER INSERT ON tenencia_puesto
+      WHEN NEW.razon = 'TRASPASO'
+      BEGIN
+        INSERT INTO historial_puestos (
+          tipo,
+          afiliado,
+          motivo,
+          usuario,
+          id_tenencia,
+          id_puesto
+        )
+        VALUES (
+          NEW.razon,
+          COALESCE(
+            (SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') 
+            FROM afiliado WHERE id_afiliado = NEW.id_afiliado),
+            'SIN AFILIADO'
+          ),
+          'Recibe su puesto mediante TRASPASO',
+          COALESCE(
+            (SELECT nom_usuario_master || ' - ' || nom_afiliado_master 
+            FROM usuario_sesion WHERE id = 1),
+            'sistema - sistema'
+          ),
+          NEW.id_tenencia,
+          NEW.id_puesto
+        );
+      END;
+    `);
+
 
   // Trigger: Despojo por deshabilitación de afiliado
   db.run(`

@@ -1,0 +1,83 @@
+/* src/modules/Mapa/Styles/mapaInteractivo.css */
+
+/* Animación popup */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Card overlay (fondo oscuro) */
+.card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayFadeIn 0.15s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Card modal container */
+.card-modal {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  width: 340px;
+  max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: cardSlideIn 0.18s ease;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Botón cerrar card */
+.card-cerrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.12);
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.card-cerrar:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+/* Buscador focus style */
+.buscador-input-wrapper:focus-within {
+  border-color: #EDBE3C !important;
+  box-shadow: 0 0 0 2px rgba(237, 190, 60, 0.15);
+}
