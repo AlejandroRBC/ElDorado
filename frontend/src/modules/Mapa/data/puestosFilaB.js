@@ -249,7 +249,7 @@ const puestosFilaB = [
   { nroPuesto: 244, fila: 'B', x: 57+1511, y: 371, width: 5, height: 11 },
   { nroPuesto: 245, fila: 'B', x: 57+1516, y: 371, width: 5, height: 11 },
   { nroPuesto: 246, fila: 'B', x: 57.8+1521, y: 371, width: 5, height: 11 },
-  //{ nroPuesto: 247, fila: 'B', x: 57.8+1521, y: 371, width: 5, height: 11 },
+  { nroPuesto: 247, fila: 'B', x: 1584, y: 471, width: 5, height: 11 },
   // falta el ultimo puesto
 ];
 
