@@ -119,7 +119,7 @@ const MapaSVG = forwardRef(({ onEstadoChange, children }, ref) => {
 
     const factorZoom = e.deltaY > 0 ? 0.9 : 1.1;
     let nuevoZoom = zoom * factorZoom;
-    nuevoZoom = Math.max(zoomBase, Math.min(10 * zoomBase, nuevoZoom));
+    nuevoZoom = Math.max(zoomBase, Math.min(30 * zoomBase, nuevoZoom));
 
     if (nuevoZoom === zoom) return;
 
