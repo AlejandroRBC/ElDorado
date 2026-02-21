@@ -1,6 +1,6 @@
 // src/modules/Mapa/hooks/useMapa.js
 import { useState, useCallback } from 'react';
-import { TODOS_LOS_PUESTOS, SVG_WIDTH, SVG_HEIGHT } from '../data/puestosFilaB';
+import { TODOS_LOS_PUESTOS, SVG_WIDTH, SVG_HEIGHT } from '../data/puestos';
 
 const ZOOM_AL_PUESTO = 6; // nivel de zoom cuando se navega a un puesto
 

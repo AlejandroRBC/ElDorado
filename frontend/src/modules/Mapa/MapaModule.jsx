@@ -74,7 +74,7 @@ const MapaModule = () => {
     if (!puestoSeleccionado) return;
     cerrarPopup();
     setPuestoHistorial({
-      id_puesto: puestoSeleccionado.nroPuesto,
+      id_puesto: puestoSeleccionado.id,
       nroPuesto: puestoSeleccionado.nroPuesto,
       fila: puestoSeleccionado.fila,
       cuadra: puestoSeleccionado.cuadra || '—',
