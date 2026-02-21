@@ -208,13 +208,13 @@ function insertarDatosEjemplo() {
 function insertarPuestosEjemplo() {
   db.get(`SELECT COUNT(*) AS count FROM puesto`, (err, row) => {
     if (err) return;
-
+//toque esta parte dejalo porfis
     if (row && row.count === 0) {
       const puestos = [
-        ['A','1',1,3,3,1,'Frutas y Verduras',1],
-        ['A','1',2,3,3,0,'Carnicería',1],
-        ['B','2',3,4,4,1,'Ropa',1],
-        ['C','3',4,2,2,0,'Electrodomésticos',1]
+        ['A','Cuadra 1',1,3,3,1,'Frutas y Verduras',1],
+        ['A','Cuadra 2',2,3,3,0,'Carnicería',1],
+        ['B','Cuadra 3',3,4,4,1,'Ropa',1],
+        ['B','Callejón',4,2,2,0,'Electrodomésticos',1]
       ];
 
       let insertados = 0;

@@ -61,23 +61,38 @@ export const exportToExcel = async ({
             right: { style: 'thin' }
         };
     });
-
+//toque esta parte dejalo porfis 
     // 3. Datos
     data.forEach((item, rowIndex) => {
         const row = worksheet.getRow(5 + rowIndex);
 
+        const esMayorA10000 = Number(item.nroPuesto) > 10000;
+
         columns.forEach((col, colIndex) => {
-            const value = col.format ? col.format(item) : item[col.key];
             const cell = row.getCell(colIndex + 1);
 
-            cell.value = value;
+            // 🚫 Si es mayor a 10000 → celda vacía
+            if (esMayorA10000) {
+                cell.value = "";
+            } else {
+                const value = col.format ? col.format(item) : item[col.key];
+                cell.value = value;
+            }
 
-            // ⭐ SI NO TIENE PATENTE → FILA AMARILLA
-            if (item.tiene_patente === 0) {
+            // 🎨 PRIORIDAD 1: Si es mayor a 10000 → pintar toda la fila #F6F9FF
+            if (esMayorA10000) {
                 cell.fill = {
                     type: 'pattern',
                     pattern: 'solid',
-                    fgColor: { argb: 'FFFFF59D' } // Amarillo suave PRO
+                    fgColor: { argb: 'FFF6F9FF' } // tu color
+                };
+            }
+            // ⭐ PRIORIDAD 2: Si no tiene patente
+            else if (item.tiene_patente === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFFFF59D' }
                 };
             }
 
@@ -99,7 +114,6 @@ export const exportToExcel = async ({
             }
         });
     });
-
 
     // 4. Ajustar ancho de columnas automáticamente
     columns.forEach((col, index) => {

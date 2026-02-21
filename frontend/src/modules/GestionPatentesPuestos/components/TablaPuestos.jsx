@@ -53,74 +53,86 @@ export function TablaPuestos({
 
 
         <Table.Tbody>
+{/**toque esta parte dejalo porfis ***/}
+          {puestos.map((puesto) => {
+          const nro = Number(puesto.nroPuesto);
+          const esMayor10000 = nro > 10000;
+          return (
+            <Table.Tr
+              key={puesto.id_puesto}
+              style={{ 
+                textAlign: "center", 
+                backgroundColor: esMayor10000
+                ? "#F6F9FF"
+                : undefined,
+              }}
+            >
+              {esMayor10000 ? (
+                <Table.Td colSpan={9}></Table.Td>
+              ) : (
+                <>
+                  <Table.Td fw={700}>{puesto.nroPuesto}</Table.Td>
+                  <Table.Td>{puesto.fila} - {puesto.cuadra}</Table.Td>
 
-          {puestos.map((puesto) => (
-
-            <Table.Tr key={puesto.id_puesto} style={{ textAlign:'center' }}>
-
-                <Table.Td fw={700}>{puesto.nroPuesto}</Table.Td>
-                <Table.Td>{puesto.fila} - {puesto.cuadra}</Table.Td>
-                <Table.Td>
-                    <Badge color={puesto.tiene_patente ? "green" : "yellow"} variant="dot">
-                    {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
+                  <Table.Td>
+                    <Badge
+                      color={puesto.tiene_patente ? "green" : "yellow"}
+                      variant="dot"
+                    >
+                      {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
                     </Badge>
-                </Table.Td>
-                <Table.Td>{puesto.ancho}m - {puesto.largo}m</Table.Td>
-                <Table.Td>{puesto.apoderado || "VACANTE"}</Table.Td>
-                <Table.Td>{puesto.ci || "-"}</Table.Td>
-                <Table.Td>{puesto.fecha_adquisicion || "-"}</Table.Td>
-                <Table.Td>{puesto.rubro || "-"}</Table.Td>
+                  </Table.Td>
 
-              <Table.Td>
+                  <Table.Td>{puesto.ancho}m - {puesto.largo}m</Table.Td>
+                  <Table.Td>{puesto.apoderado || "VACANTE"}</Table.Td>
+                  <Table.Td>{puesto.ci || "-"}</Table.Td>
+                  <Table.Td>{puesto.fecha_adquisicion || "-"}</Table.Td>
+                  <Table.Td>{puesto.rubro || "-"}</Table.Td>
 
-                <Menu shadow="md" width={200} position="left-start">
+                  <Table.Td>
+                    <Menu shadow="md" width={200} position="left-start">
+                      <Menu.Target>
+                        <ActionIcon
+                          variant="filled"
+                          color="yellow"
+                          radius="xl"
+                        >
+                          <IconDotsVertical size={18} />
+                        </ActionIcon>
+                      </Menu.Target>
 
-                  <Menu.Target>
-                    <ActionIcon 
-                        variant="filled"
-                        color="yellow"
-                        radius="xl"
-                    >
-                    <IconDotsVertical size={18}/>
-                    </ActionIcon>
-                  </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<IconEye size={14} />}
+                          onClick={() => onVerHistorial(puesto)}
+                        >
+                          Ver Historial
+                        </Menu.Item>
 
-                  <Menu.Dropdown>
-
-                    <Menu.Item
-                      leftSection={<IconEye size={14}/>}
-                      onClick={() => onVerHistorial(puesto)}
-                    >
-                      Ver Historial
-                    </Menu.Item>
-
-                    <Menu.Item
-                      leftSection={<IconArrowsExchange size={14}/>}
-                      
-                        onClick={() => {
+                        <Menu.Item
+                          leftSection={<IconArrowsExchange size={14} />}
+                          onClick={() => {
                             console.log("PUESTO TRASPASO:", puesto);
-                            onTraspaso(puesto)
-                        }}
-                    >
-                      Hacer Traspaso
-                    </Menu.Item>
+                            onTraspaso(puesto);
+                          }}
+                        >
+                          Hacer Traspaso
+                        </Menu.Item>
 
-                    <Menu.Item
-                      leftSection={<IconEdit size={14}/>}
-                      onClick={() => onEditar(puesto)}
-                    >
-                      Editar
-                    </Menu.Item>
-
-                  </Menu.Dropdown>
-
-                </Menu>
-
-              </Table.Td>
-
+                        <Menu.Item
+                          leftSection={<IconEdit size={14} />}
+                          onClick={() => onEditar(puesto)}
+                        >
+                          Editar
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Table.Td>
+                </>
+              )}
             </Table.Tr>
-
-          ))}
+          );
+        })}
 
         </Table.Tbody>
       </Table>
