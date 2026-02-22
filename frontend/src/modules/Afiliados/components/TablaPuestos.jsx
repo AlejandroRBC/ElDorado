@@ -182,12 +182,10 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge
-          color={puesto.tiene_patente ? 'green' : 'gray'}
-          variant="light"
-          size="sm"
-        >
-          {puesto.tiene_patente ? 'Con patente' : 'Sin patente'}
+        <Badge 
+          color={puesto.tiene_patente ? "green" : "yellow"} 
+          variant="dot">
+                    {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
         </Badge>
         {puesto.ancho && puesto.largo && (
           <Text size="xs" c="dimmed" mt={4}>

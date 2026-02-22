@@ -16,10 +16,11 @@ const ToggleViewDeshabilitados = ({
         <Switch
           checked={mostrarDeshabilitados}
           onChange={(event) => onChange(event.currentTarget.checked)}
+          
           size="lg"
           styles={{
             track: {
-              backgroundColor: mostrarDeshabilitados ? '#F44336' : '#e0e0e0',
+              backgroundColor: mostrarDeshabilitados ? '#0F0F0F' : '#e0e0e0',
               borderColor: mostrarDeshabilitados ? '#F44336' : '#e0e0e0',
               width: '50px',
               height: '26px',
@@ -39,41 +40,13 @@ const ToggleViewDeshabilitados = ({
           />
           {totalDeshabilitados > 0 && (
             <Tooltip label={`${totalDeshabilitados} afiliado${totalDeshabilitados !== 1 ? 's' : ''} deshabilitado${totalDeshabilitados !== 1 ? 's' : ''}`}>
-              <Badge 
-                size="sm" 
-                color="red" 
-                variant="filled"
-                style={{ cursor: 'pointer' }}
-                onClick={() => onChange(true)}
-              >
-                {totalDeshabilitados}
-              </Badge>
+              
             </Tooltip>
           )}
         </Group>
       </Group>
       
-      <Group gap="xs">
-        <Text 
-          size="sm" 
-          style={{ 
-            color: !mostrarDeshabilitados ? '#0f0f0f' : '#999', 
-            fontWeight: !mostrarDeshabilitados ? 600 : 400 
-          }}
-        >
-          Activos
-        </Text>
-        <Text size="sm" style={{ color: '#999' }}>/</Text>
-        <Text 
-          size="sm" 
-          style={{ 
-            color: mostrarDeshabilitados ? '#F44336' : '#999', 
-            fontWeight: mostrarDeshabilitados ? 600 : 400 
-          }}
-        >
-          Deshabilitados
-        </Text>
-      </Group>
+      
     </Group>
   );
 };

@@ -46,7 +46,6 @@ const ModalDesafiliarAfiliado = ({ opened, onClose, afiliado, onConfirmar, loadi
               Vas a DESAFILIAR a este miembro. Esta acción:
             </Text>
             <ul style={{ margin: 0, paddingLeft: '20px' }}>
-              <li>Deshabilitará al afiliado permanentemente</li>
               <li><strong>TODOS sus puestos serán DESPOJADOS automáticamente</strong></li>
               <li>Los puestos quedarán disponibles para otros afiliados</li>
               <li>Se registrará en el historial como DESPOJADO por deshabilitación</li>
@@ -54,21 +53,6 @@ const ModalDesafiliarAfiliado = ({ opened, onClose, afiliado, onConfirmar, loadi
             </ul>
           </Stack>
         </Alert>
-
-        {/* Información de puestos a despojar */}
-        {afiliado?.puestos?.length > 0 && (
-          <Paper p="md" withBorder>
-            <Text fw={600} mb="xs">Puestos que serán despojados:</Text>
-            <Group gap="xs">
-              {afiliado.puestos.map((puesto, idx) => (
-                <Badge key={idx} color="red" variant="outline" size="lg">
-                  {puesto.nro}-{puesto.fila}-{puesto.cuadra}
-                </Badge>
-              ))}
-            </Group>
-          </Paper>
-        )}
-
         {/* Botones de confirmación */}
         <Group justify="space-between" mt="xl">
           <Button
