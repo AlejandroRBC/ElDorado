@@ -449,19 +449,7 @@ const FormularioEditarAfiliado = ({
                 />
               </SimpleGrid>
 
-              {/* Estado del afiliado */}
-              {modo === 'editar' && (
-                <Box mt="md">
-                  <Divider my="md" />
-                  <Checkbox
-                    label="Afiliado habilitado"
-                    description="Desmarca esta opción para deshabilitar el afiliado"
-                    checked={formData.es_habilitado}
-                    onChange={(e) => handleChange('es_habilitado', e.target.checked)}
-                    disabled={loading}
-                  />
-                </Box>
-              )}
+              
             </Box>
           </Group>
         </Paper>
