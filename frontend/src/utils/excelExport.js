@@ -104,7 +104,7 @@ export const exportToExcel = async ({
             right: { style: 'thin' }
         };
     });
-//toque esta parte dejalo porfis 
+
     // 3. Datos
     data.forEach((item, rowIndex) => {
         const row = worksheet.getRow(6 + rowIndex);
@@ -191,8 +191,29 @@ export const exportToExcel = async ({
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
 
+    // ===============================
+    // 🕒 FUNCIÓN PARA GENERAR TIMESTAMP COMPLETO
+    // ===============================
+    const obtenerTimestampCompleto = () => {
+        const ahora = new Date();
+        
+        const año = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+        const dia = String(ahora.getDate()).padStart(2, '0');
+        
+        const hora = String(ahora.getHours()).padStart(2, '0');
+        const minutos = String(ahora.getMinutes()).padStart(2, '0');
+        const segundos = String(ahora.getSeconds()).padStart(2, '0');
+        
+        return `${año}-${mes}-${dia}-${hora}-${minutos}-${segundos}`;
+    };
+   
+    // Usar timestamp completo (incluye hora, minutos y segundos)
+    const timestamp = obtenerTimestampCompleto();
+
+
     link.href = url;
-    link.download = `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.download = `${fileName}_${timestamp}.xlsx`;
 
     document.body.appendChild(link);
     link.click();

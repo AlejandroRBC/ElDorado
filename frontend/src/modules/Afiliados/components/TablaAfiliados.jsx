@@ -51,7 +51,9 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
     >
       <Table.Td>
         <Text fw={500} style={{ color: '#0f0f0f' }}>
-          {afiliado.nombre}
+          {afiliado.nombre+" "}
+          {afiliado.paterno+" "}
+          {afiliado.materno}
         </Text>
       </Table.Td>
       <Table.Td>

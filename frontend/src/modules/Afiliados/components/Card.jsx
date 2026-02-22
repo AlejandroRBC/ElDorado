@@ -128,7 +128,10 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
         {/* Información del afiliado */}
         <Stack gap={8} style={{ flex: 1 }}>
           <Text fw={700} size="sm" style={{ color: '#0f0f0f' }}>
-            {afiliado.nombre}
+            {afiliado.nombre+" "} 
+            {afiliado.paterno+" "} 
+            {afiliado.materno} 
+
           </Text>
           
           <Text size="sm" style={{ color: '#666' }}>

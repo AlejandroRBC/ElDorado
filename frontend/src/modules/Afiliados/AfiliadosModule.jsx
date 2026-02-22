@@ -1,3 +1,4 @@
+// frontend/src/modules/Afiliados/AfiliadosModule.jsx
 import { Text, Paper, Container, TextInput, Button, Group, Stack, Title, Switch, LoadingOverlay, Alert, Select, Badge, Box, Affix, Transition } from '@mantine/core';
 import ModuleHeader from '../Navegacion/components/ModuleHeader';
 import { IconSearch, IconPlus, IconFileExport, IconLayoutGrid, IconTable, IconAlertCircle, IconX, IconArrowUp } from '@tabler/icons-react';
@@ -9,6 +10,7 @@ import ModalAfiliado from './components/ModalAfiliado';
 import ToggleViewDeshabilitados from './components/ToggleViewDeshabilitados';
 import { useAfiliadosDeshabilitados } from './hooks/useAfiliadosDeshabilitados';
 import { useDebouncedValue } from '@mantine/hooks';
+import { exportToExcel } from '../../utils/excelExport';
 
 const AfiliadosModule = () => {
   const [vistaTabla, setVistaTabla] = useState(false);
@@ -23,7 +25,6 @@ const AfiliadosModule = () => {
   
   // Debounce para búsqueda automática (300ms)
   const [debouncedSearch] = useDebouncedValue(searchValue, 100);
-
 
   const [mostrarDeshabilitados, setMostrarDeshabilitados] = useState(false);
   // Hook para deshabilitados
@@ -163,6 +164,129 @@ const AfiliadosModule = () => {
       label: ` ${rubro}` 
     }))
   ];
+
+  // ============ FUNCIÓN PARA EXPORTAR A EXCEL ============
+  const handleExportarExcel = async () => {
+    try {
+      // Determinar qué lista exportar
+      const listaAExportar = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
+      
+      if (!listaAExportar || listaAExportar.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+      }
+
+      // Ordenar alfabéticamente por nombre completo
+      const datosOrdenados = [...listaAExportar].sort((a, b) => {
+        const nombreA = a.nombre || '';
+        const nombreB = b.nombre || '';
+        return nombreA.localeCompare(nombreB);
+      });
+
+      // Agregar número de lista a cada registro
+      const datosConNumeroLista = datosOrdenados.map((item, index) => ({
+        ...item,
+        nro_lista: index + 1,
+        // Extraer CI y expedido para facilitar el acceso
+        ci_numero: item.ci ? item.ci.split('-')[0] : '',
+        ci_expedido: item.ci && item.ci.includes('-') ? item.ci.split('-')[1] : 'LP',
+        // Extraer nombre y apellidos (si ya vienen separados en el objeto original)
+        nombre_solo: item.nombre || '',
+        ap_paterno: item.paterno || '',
+        ap_materno: item.materno || ''
+      }));
+
+      // Definir columnas para Excel
+      const columns = [
+        { 
+          header: 'N°', 
+          key: 'nro_lista',
+          format: (row) => row.nro_lista,
+          numeric: true,
+          numFmt: '0'
+        },
+        { 
+          header: 'NOMBRE', 
+          key: 'nombre_solo',
+          format: (row) => row.nombre_solo || ''
+        },
+        { 
+          header: 'AP. PATERNO', 
+          key: 'ap_paterno',
+          format: (row) => row.ap_paterno || ''
+        },
+        { 
+          header: 'AP. MATERNO', 
+          key: 'ap_materno',
+          format: (row) => row.ap_materno || ''
+        },
+        { 
+          header: 'CI', 
+          key: 'ci_numero',
+          format: (row) => row.ci_numero || '',
+          numeric: true,
+          numFmt: '0'
+        },
+        { 
+          header: 'EXPEDIDO', 
+          key: 'ci_expedido',
+          format: (row) => row.ci_expedido || 'LP'
+        },
+        { 
+          header: 'PUESTOS', 
+          key: 'puestos',
+          format: (row) => {
+            if (!row.patentes || row.patentes.length === 0) return 'Sin puestos';
+            // Apilar puestos uno encima del otro con saltos de línea
+            // Eliminar espacios adicionales alrededor de cada puesto
+            return row.patentes.map(p => p.trim()).join('\n');
+          },
+          // Estilo para mejor espaciado
+          style: {
+            alignment: {
+              vertical: 'top',
+              wrapText: true
+            }
+          }
+        },
+        { 
+          header: 'TOTAL PUESTOS', 
+          key: 'total_puestos',
+          format: (row) => row.total_puestos || 0,
+          numeric: true,
+          numFmt: '0' // Sin decimales
+        },
+        { 
+          header: 'PUESTOS CON PATENTE', 
+          key: 'puestos_con_patente',
+          format: (row) => row.puestos_con_patente || 0,
+          numeric: true,
+          numFmt: '0' // Sin decimales
+        },
+        { 
+          header: 'TELÉFONO', 
+          key: 'telefono',
+          format: (row) => row.telefono || '—'
+        }
+      ];
+
+      // Nombre del archivo según la vista
+      const nombreArchivo = mostrarDeshabilitados 
+        ? 'afiliados_deshabilitados' 
+        : 'afiliados_activos';
+
+      await exportToExcel({
+        data: datosConNumeroLista,
+        columns,
+        sheetName: 'Afiliados',
+        fileName: nombreArchivo
+      });
+
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      alert('Error al exportar a Excel');
+    }
+  };
 
   return (
     <Container fluid p="md">
@@ -406,7 +530,7 @@ const AfiliadosModule = () => {
                 fontWeight: 300,
                 padding: '0 25px',
               }}
-              onClick={() => alert('Funcionalidad en desarrollo')}
+              onClick={handleExportarExcel}
             >
               Exportar lista actual
             </Button>
@@ -425,74 +549,73 @@ const AfiliadosModule = () => {
             )}
           </Group>
 
-            {/* Toggles de vista */}
-<Group gap="md" align="center">
-  {/* Toggle Activos/Deshabilitados */}
-  <ToggleViewDeshabilitados
-    mostrarDeshabilitados={mostrarDeshabilitados}
-    onChange={handleCambiarVistaDeshabilitados}
-    totalDeshabilitados={totalDeshabilitados}
-  />
-  
-  {/* Separador */}
-  <div style={{ width: '1px', height: '30px', backgroundColor: '#eee' }} />
-  
-  {/* Toggle Cards/Tabla (existente) */}
-  <Group gap="md" align="center">
-    <Group gap="xs" align="center">
-      <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#999' }} />
-      <Switch
-        checked={vistaTabla}
-        onChange={(event) => setVistaTabla(event.currentTarget.checked)}
-        size="lg"
-        styles={{
-          track: {
-            backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
-            borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
-            width: '50px',
-            height: '26px',
-          },
-          thumb: {
-            backgroundColor: 'white',
-            borderColor: '#0f0f0f',
-            width: '22px',
-            height: '22px',
-          }
-        }}
-      />
-      <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#999' }} />
-    </Group>
-    
-    <Group gap="xs">
-      <Text size="sm" style={{ color: !vistaTabla ? '#0f0f0f' : '#999', fontWeight: !vistaTabla ? 600 : 400 }}>
-        Cards
-      </Text>
-      <Text size="sm" style={{ color: '#999' }}>/</Text>
-      <Text size="sm" style={{ color: vistaTabla ? '#0f0f0f' : '#999', fontWeight: vistaTabla ? 600 : 400 }}>
-        Tabla
-      </Text>
-    </Group>
-  </Group>
-</Group>
-        
+          {/* Toggles de vista */}
+          <Group gap="md" align="center">
+            {/* Toggle Activos/Deshabilitados */}
+            <ToggleViewDeshabilitados
+              mostrarDeshabilitados={mostrarDeshabilitados}
+              onChange={handleCambiarVistaDeshabilitados}
+              totalDeshabilitados={totalDeshabilitados}
+            />
+            
+            {/* Separador */}
+            <div style={{ width: '1px', height: '30px', backgroundColor: '#eee' }} />
+            
+            {/* Toggle Cards/Tabla (existente) */}
+            <Group gap="md" align="center">
+              <Group gap="xs" align="center">
+                <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#999' }} />
+                <Switch
+                  checked={vistaTabla}
+                  onChange={(event) => setVistaTabla(event.currentTarget.checked)}
+                  size="lg"
+                  styles={{
+                    track: {
+                      backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+                      borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0',
+                      width: '50px',
+                      height: '26px',
+                    },
+                    thumb: {
+                      backgroundColor: 'white',
+                      borderColor: '#0f0f0f',
+                      width: '22px',
+                      height: '22px',
+                    }
+                  }}
+                />
+                <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#999' }} />
+              </Group>
+              
+              <Group gap="xs">
+                <Text size="sm" style={{ color: !vistaTabla ? '#0f0f0f' : '#999', fontWeight: !vistaTabla ? 600 : 400 }}>
+                  Cards
+                </Text>
+                <Text size="sm" style={{ color: '#999' }}>/</Text>
+                <Text size="sm" style={{ color: vistaTabla ? '#0f0f0f' : '#999', fontWeight: vistaTabla ? 600 : 400 }}>
+                  Tabla
+                </Text>
+              </Group>
+            </Group>
+          </Group>
         </Group>
 
         {/* Renderizar la vista seleccionada */}
-{!cargando && !cargandoDeshabilitados && !error && (
-  mostrarDeshabilitados ? (
-    vistaTabla ? (
-      <TablaAfiliados afiliados={afiliadosDeshabilitados} esDeshabilitados={true} />
-    ) : (
-      <ListaCards afiliados={afiliadosDeshabilitados} esDeshabilitados={true} onRehabilitar={rehabilitarAfiliado} />
-    )
-  ) : (
-    vistaTabla ? (
-      <TablaAfiliados afiliados={afiliados} />
-    ) : (
-      <ListaCards afiliados={afiliados} />
-    )
-  )
-)}
+        {!cargando && !cargandoDeshabilitados && !error && (
+          mostrarDeshabilitados ? (
+            vistaTabla ? (
+              <TablaAfiliados afiliados={afiliadosDeshabilitados} esDeshabilitados={true} />
+            ) : (
+              <ListaCards afiliados={afiliadosDeshabilitados} esDeshabilitados={true} onRehabilitar={rehabilitarAfiliado} />
+            )
+          ) : (
+            vistaTabla ? (
+              <TablaAfiliados afiliados={afiliados} />
+            ) : (
+              <ListaCards afiliados={afiliados} />
+            )
+          )
+        )}
 
         {/* Mensaje cuando no hay resultados */}
         {!cargando && !error && afiliados.length === 0 && (

@@ -487,7 +487,9 @@ findAllDeshabilitados: (params = {}) => {
 
               return {
                 id: row.id_afiliado,
-                nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
+                nombre: `${row.nombre}`.trim(),
+                paterno: row.paterno,
+                materno: row.materno,
                 ci: `${row.ci}-${row.extension}`,
                 ocupacion: row.ocupacion,
                 patentes: puestosActivos,
