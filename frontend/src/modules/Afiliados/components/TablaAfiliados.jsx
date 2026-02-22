@@ -47,7 +47,7 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
           backgroundColor: '#f9f9f9'
         }
       }}
-      onClick={() => !esDeshabilitados && verDetalles(afiliado.id)}
+      
     >
       <Table.Td>
         <Text fw={500} style={{ color: '#0f0f0f' }}>
@@ -67,7 +67,7 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
       <Table.Td>
         <Group gap={4} wrap="wrap">
           {afiliado.patentes && afiliado.patentes.length > 0 ? (
-            afiliado.patentes.slice(0, 2).map((patente, index) => (
+            afiliado.patentes.slice(0, 10).map((patente, index) => (
               <Badge
                 key={index}
                 size="xs"
@@ -86,19 +86,14 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
               Sin puestos
             </Text>
           )}
-          {afiliado.patentes && afiliado.patentes.length > 2 && (
-            <Badge size="xs" color="gray">
-              +{afiliado.patentes.length - 2}
-            </Badge>
-          )}
         </Group>
       </Table.Td>
       
       <Table.Td>
+      
         <Badge 
-          size="sm" 
           color={afiliado.puestos_con_patente > 0 ? "green" : "yellow"}
-          variant="light"
+          variant="dot"
         >
           {afiliado.total_puestos || 0} puestos
           {afiliado.puestos_con_patente > 0 && ` (${afiliado.puestos_con_patente} con patente)`}
@@ -111,62 +106,7 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
         </Text>
       </Table.Td>
       
-      <Table.Td>
-        <Group gap={4}>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            style={{
-              color: '#0f0f0f',
-              '&:hover': {
-                backgroundColor: 'rgba(15, 15, 15, 0.1)',
-              },
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              verDetalles(afiliado.id);
-            }}
-          >
-            <IconEye size={16} />
-          </ActionIcon>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            style={{
-              color: '#edbe3c',
-              '&:hover': {
-                backgroundColor: 'rgba(237, 190, 60, 0.1)',
-              },
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              editarAfiliado(afiliado.id);
-            }}
-          >
-            <IconEdit size={16} />
-          </ActionIcon>
-          {/* 🚫 BOTÓN ELIMINAR COMENTADO
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            style={{
-              color: '#F44336',
-              '&:hover': {
-                backgroundColor: 'rgba(244, 67, 54, 0.1)',
-              },
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm(`¿Estás seguro de eliminar a ${afiliado.nombre}?`)) {
-                alert(`Eliminar afiliado ${afiliado.id} (en desarrollo)`);
-              }
-            }}
-          >
-            <IconTrash size={16} />
-          </ActionIcon>
-          */}
-        </Group>
-      </Table.Td>
+      
 
       <Table.Td>
         <Group gap={4}>
@@ -227,7 +167,7 @@ const TablaAfiliados = ({ afiliados = [], esDeshabilitados = false, onRehabilita
   ));
 
   const columns = esDeshabilitados 
-    ? ['Nombre', 'CI', 'Ocupación', 'Puestos', '# Puestos', 'Teléfono', 'Estado', 'Acciones']
+    ? ['Nombre', 'CI', 'Ocupación', 'Puestos', '# Puestos', 'Teléfono', 'Acciones']
     : ['Nombre', 'CI', 'Ocupación', 'Puestos', '# Puestos', 'Teléfono', 'Acciones'];
 
     return (
