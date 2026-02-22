@@ -104,12 +104,12 @@ export const exportToExcel = async ({
             right: { style: 'thin' }
         };
     });
-
-    // ===============================
-    // 📊 DATOS (desde fila 6)
-    // ===============================
+//toque esta parte dejalo porfis 
+    // 3. Datos
     data.forEach((item, rowIndex) => {
         const row = worksheet.getRow(6 + rowIndex);
+
+        const esMayorA10000 = Number(item.nroPuesto) > 10000;
 
         columns.forEach((col, colIndex) => {
             const value = col.format
@@ -118,7 +118,30 @@ export const exportToExcel = async ({
 
             const cell = row.getCell(colIndex + 1);
 
-            cell.value = value;
+            // 🚫 Si es mayor a 10000 → celda vacía
+            if (esMayorA10000) {
+                cell.value = "";
+            } else {
+                const value = col.format ? col.format(item) : item[col.key];
+                cell.value = value;
+            }
+
+            // 🎨 PRIORIDAD 1: Si es mayor a 10000 → pintar toda la fila #F6F9FF
+            if (esMayorA10000) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF6F9FF' } // tu color
+                };
+            }
+            // ⭐ PRIORIDAD 2: Si no tiene patente
+            else if (item.tiene_patente === 0) {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFFFF59D' }
+                };
+            }
 
             cell.alignment = {
                 horizontal: 'center',
@@ -139,9 +162,7 @@ export const exportToExcel = async ({
         });
     });
 
-    // ===============================
-    // 📏 Ajustar ancho columnas
-    // ===============================
+    // 4. Ajustar ancho de columnas automáticamente
     columns.forEach((col, index) => {
         let maxLength = col.header.length;
 

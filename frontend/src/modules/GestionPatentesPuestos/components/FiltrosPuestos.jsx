@@ -38,7 +38,7 @@ export function FiltrosPuestos({
             value={filtroPatente}
             onChange={setFiltroPatente}
           />
-
+{/**toque esta parte dejalo porfis **/}
           <Select
             placeholder="Fila"
             data={['Todo','A','B']}
@@ -48,7 +48,7 @@ export function FiltrosPuestos({
 
           <Select
             placeholder="Cuadra"
-            data={['Todo','1','2','3','4','Callejon']}
+            data={['Todo','Cuadra 1','Cuadra 2','Cuadra 3','Cuadra 4','Callejón']}
             value={filtroCuadra}
             onChange={setFiltroCuadra}
           />

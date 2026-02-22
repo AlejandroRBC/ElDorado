@@ -1,4 +1,4 @@
-import { Modal, TextInput, Select, Button, Stack, Group } from "@mantine/core";
+import { Modal,Text, TextInput, Select, Button, Stack, Group } from "@mantine/core";
 import { useEffect, useState } from "react";
 
 export function ModalEditarPuesto({ opened, close, puesto, onGuardar }) {
@@ -12,40 +12,35 @@ export function ModalEditarPuesto({ opened, close, puesto, onGuardar }) {
   if (!puesto) return null;
 
   const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
+{/**toque esta parte dejalo porfis **/}
   return (
-    <Modal opened={opened} onClose={close} title="Editar Puesto" size="md">
+    <Modal 
+      opened={opened} 
+      onClose={close}  
+      size="md"
+      centered withCloseButton={false}
+      radius={"lg"}
+      title={
+        <Text
+        fw={900}
+        size="xl"
+        style={{
+          letteSpacing: '2px',
+          textTransform: 'uppercase'
+        }}>
+          EDITAR PUESTO
+        </Text>
+      }
+      >
+      
 
       <Stack>
-
-        <TextInput
-          label="Nro Puesto"
-          value={form.nroPuesto || ""}
-          onChange={e => handle("nroPuesto", e.target.value)}
-        />
 
         <TextInput
           label="Rubros"
           value={form.rubro || ""}
           onChange={e => handle("rubro", e.target.value)}
         />
-
-        <Group grow>
-          <Select
-            label="Fila"
-            data={['A','B','C']}
-            value={form.fila}
-            onChange={v => handle("fila", v)}
-          />
-
-          <Select
-            label="Cuadra"
-            data={['1','2','3']}
-            value={form.cuadra}
-            onChange={v => handle("cuadra", v)}
-          />
-        </Group>
-
         <Group grow>
           <TextInput
             label="Ancho"
@@ -70,10 +65,19 @@ export function ModalEditarPuesto({ opened, close, puesto, onGuardar }) {
           onChange={v => handle("tiene_patente", v === '1')}
         />
 
-        <Button onClick={() => onGuardar(form)}>
+        <Group>
+          <Button 
+            radius={"xl"}
+            onClick={() => onGuardar(form)}>
           Guardar Cambios
         </Button>
-
+        <Button 
+          color="black"
+          radius={"xl"}
+          onClick={() => close()}>
+          Cancelar
+        </Button>  
+        </Group>
       </Stack>
     </Modal>
   );

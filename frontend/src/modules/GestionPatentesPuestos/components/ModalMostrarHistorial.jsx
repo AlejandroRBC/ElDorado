@@ -15,15 +15,13 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
       setLoading(true);
       setError(null);
       
-      console.log("ID enviado al historial: ", id);
+      
       const data = await obtenerHistorialPuesto(id);
 
-      console.log("TIPO DATA:", typeof data);
-      console.log("DATA COMPLETA:", data);
-      console.log("ES ARRAY:", Array.isArray(data));
+      
 
 
-      console.log("Hitorial Recibido: ", data);
+      
       setHistorial(data);
     } catch (err) {
       console.error(err);
@@ -38,7 +36,7 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
       cargarHistorial();
     }
   }, [id, opened]);
-console.log("HISTORIAL STATE:", historial);
+
   return (
     <Modal 
       opened={opened} 

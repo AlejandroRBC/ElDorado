@@ -14,7 +14,6 @@ export function usePuestos(closeEditar, closeTraspaso) {
       setLoading(true);
       setError(null);
       const data = await puestosService.listar();
-      console.log("Todos los datos que llegan del servidor:", data);
       setPuestos(data);
     } catch (e) {
       console.error(e);
