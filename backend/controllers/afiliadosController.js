@@ -361,3 +361,46 @@ exports.countDeshabilitados = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+exports.getPdfData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Usar el mismo método findById pero podrías optimizarlo
+    // para traer solo lo necesario para el PDF
+    const afiliado = await Afiliado.findById(id);
+    
+    if (!afiliado) {
+      return res.status(404).json({ error: 'Afiliado no encontrado' });
+    }
+    
+    // Puedes estructurar los datos específicamente para el PDF
+    const pdfData = {
+      id: afiliado.id,
+      nombreCompleto: afiliado.nombreCompleto,
+      nombre: afiliado.nombre,
+      paterno: afiliado.paterno,
+      materno: afiliado.materno,
+      ci: afiliado.ci,
+      ci_numero: afiliado.ci_numero,
+      extension: afiliado.extension,
+      fecNac: afiliado.fecNac,
+      edad: afiliado.edad,
+      sexo: afiliado.sexo,
+      telefono: afiliado.telefono,
+      ocupacion: afiliado.ocupacion,
+      direccion: afiliado.direccion,
+      fecha_afiliacion: afiliado.fecha_afiliacion,
+      es_habilitado: afiliado.es_habilitado,
+      url_perfil: afiliado.url_perfil,
+      puestos: afiliado.puestos, // Esto ya incluye historial
+      fechaGeneracion: new Date().toISOString()
+    };
+    
+    res.json(pdfData);
+  } catch (error) {
+    console.error('Error en getPdfData:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

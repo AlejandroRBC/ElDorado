@@ -161,6 +161,7 @@ router.post('/:id/asignar-puesto', (req, res) => {
 router.post('/despojar-puesto', afiliadosController.despojarPuesto);
 
 
+router.get('/:id/pdf-data', afiliadosController.getPdfData);
 
 router.get('/rubros', async (req, res) => {
   try {

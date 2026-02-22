@@ -1,6 +1,6 @@
 import { Paper, Container, Title, Text, Button, Group, Stack, Box, Badge, LoadingOverlay, Alert } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck  } from '@tabler/icons-react';
+import { IconFilePencil ,IconArrowLeft, IconFileReport, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck  } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 
 import { useAfiliado } from '../hooks/useAfiliado';
@@ -12,6 +12,10 @@ import ModalAsignarPuesto from './ModalAsignarPuesto';
 import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 
 
+import { usePDFExport } from '../hooks/usePDFExport';
+
+
+
 const DetallesAfiliado = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,6 +23,12 @@ const DetallesAfiliado = () => {
   // Usar hook para obtener datos reales del afiliado
   const { afiliado, cargando, error, cargarAfiliado } = useAfiliado(id);
   const [modalPuestoAbierto, setModalPuestoAbierto] = useState(false);
+
+
+  const { exportando, exportarDetalleAfiliado } = usePDFExport();
+  const handleGenerarPDF = () => {
+    exportarDetalleAfiliado(id);
+  };
 
   // para refrescar los puestos
   const [refreshPuestos, setRefreshPuestos] = useState(0);
@@ -169,19 +179,20 @@ const DetallesAfiliado = () => {
         {/* Botones de acción superiores */}
         <Group justify="flex-start" mb="xl">
           <Group gap="md">
-            <Button
-              leftSection={<IconFileReport size={18} />}
-              style={{
-                backgroundColor: '#0f0f0f',
-                color: 'white',
-                borderRadius: '100px',
-                fontWeight: 500,
-                padding: '10px 20px',
-              }}
-              onClick={() => alert('Funcionalidad en desarrollo')}
-            >
-              Generar Reporte Total del Afiliado
-            </Button>
+          <Button
+        leftSection={<IconFilePencil size={18} />}
+        loading={exportando}
+        onClick={handleGenerarPDF}
+        style={{
+          backgroundColor: '#0f0f0f',
+          color: 'white',
+          borderRadius: '100px',
+          fontWeight: 500,
+          padding: '10px 20px',
+        }}
+      >
+        {exportando ? 'Generando PDF...' : 'Generar Reporte PDF'}
+      </Button>
             
             <Button
               leftSection={<IconEdit size={18} />}
