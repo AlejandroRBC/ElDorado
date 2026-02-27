@@ -16,7 +16,7 @@ export const puestosFilaB = [
   { id:348, nroPuesto: 15,  cuadra:"1ra cuadra", fila: 'B', x: 10+183, y: 371, width: 5,  height: 11 },
   { id:349, nroPuesto: 16,  cuadra:"1ra cuadra", fila: 'B', x: 10+188, y: 371, width: 5.7,  height: 11 },
   { id:350, nroPuesto: 17,  cuadra:"1ra cuadra", fila: 'B', x: 9.8+194, y: 371, width: 5,  height: 11 },
-  { id:351, nroPuesto: 18,  cuadra:"1ra cuadra", fila: 'B', x: 7+199, y: 371, width: 4,  height: 11 },
+  { id:351, nroPuesto: 18,  cuadra:"1ra cuadra", fila: 'B', x: 10.2+199, y: 371, width: 4,  height: 11 },
   { id:352, nroPuesto: 19,  cuadra:"1ra cuadra", fila: 'B', x: 11+203, y: 371, width: 4,  height: 11 },
   { id:353, nroPuesto: 20,  cuadra:"1ra cuadra", fila: 'B', x: 10.5+208, y: 371, width: 5,  height: 11 },
   // paso id: 354

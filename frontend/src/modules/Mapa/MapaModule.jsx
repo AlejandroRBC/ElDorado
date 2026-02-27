@@ -5,6 +5,7 @@ import PuestosOverlay from './components/PuestosOverlay';
 import PopupPuesto from './components/PopupPuesto';
 import BuscadorMapa from './components/BuscadorMapa';
 import { useMapa } from './hooks/useMapa';
+import { useMapaData } from './hooks/useMapaData';
 import { ModalMostrarHistorial } from '../GestionPatentesPuestos/components/ModalMostrarHistorial';
 import Card from '../Afiliados/Components/Card';
 import './Styles/mapa-zoom.css';
@@ -12,6 +13,8 @@ import './Styles/mapaInteractivo.css';
 
 const MapaModule = () => {
   const mapaSVGRef = useRef(null);
+  const puestoParaHistorialRef = useRef(null);
+
   const [estadoMapa, setEstadoMapa] = useState({
     zoom: 1,
     posicion: { x: 0, y: 0 },
@@ -20,13 +23,13 @@ const MapaModule = () => {
     contenedorRef: { current: null },
   });
 
-  // Modal historial
   const [historialAbierto, setHistorialAbierto] = useState(false);
   const [puestoHistorial, setPuestoHistorial] = useState(null);
-
-  // Card afiliado
   const [cardAbierta, setCardAbierta] = useState(false);
   const [afiliadoCard, setAfiliadoCard] = useState(null);
+
+  // Datos reales del backend cruzados con coordenadas SVG
+  const { puestosEnriquecidos, loading } = useMapaData();
 
   const handleEstadoChange = useCallback((nuevoEstado) => {
     setEstadoMapa(nuevoEstado);
@@ -54,39 +57,54 @@ const MapaModule = () => {
     setPosicion: (p) => mapaSVGRef.current?.setPosicion(p),
     dimensiones: estadoMapa.dimensiones,
     contenedorRef: estadoMapa.contenedorRef,
+    // Pasamos los puestos enriquecidos para búsqueda y filtros
+    puestosData: puestosEnriquecidos,
+  });
+
+  const buildPuestoHistorial = (puesto) => ({
+    id_puesto: puesto.id,
+    nroPuesto: puesto.nroPuesto,
+    fila: puesto.fila,
+    cuadra: puesto.cuadra || '—',
   });
 
   const handleVerAfiliado = () => {
     if (!puestoSeleccionado) return;
+    puestoParaHistorialRef.current = puestoSeleccionado;
     cerrarPopup();
-
-    // Si tiene afiliado asignado, abrir card
     if (puestoSeleccionado.afiliado) {
       setAfiliadoCard(puestoSeleccionado.afiliado);
       setCardAbierta(true);
-    } else {
-      // Sin afiliado asignado - puedes mostrar un toast o mensaje
-      // Por ahora solo cerramos el popup
     }
   };
 
   const handleVerHistorial = () => {
     if (!puestoSeleccionado) return;
+    puestoParaHistorialRef.current = puestoSeleccionado;
     cerrarPopup();
-    setPuestoHistorial({
-      id_puesto: puestoSeleccionado.id,
-      nroPuesto: puestoSeleccionado.nroPuesto,
-      fila: puestoSeleccionado.fila,
-      cuadra: puestoSeleccionado.cuadra || '—',
-    });
+    setPuestoHistorial(buildPuestoHistorial(puestoSeleccionado));
     setHistorialAbierto(true);
+  };
+
+  const handleHistorialDesdeCard = () => {
+    setCardAbierta(false);
+    setAfiliadoCard(null);
+    const puesto = puestoParaHistorialRef.current;
+    if (puesto) {
+      setPuestoHistorial(buildPuestoHistorial(puesto));
+      setHistorialAbierto(true);
+    }
+  };
+
+  const handleCerrarCard = () => {
+    setCardAbierta(false);
+    setAfiliadoCard(null);
   };
 
   return (
     <div className="mapa-module">
       <h1>Mapa del Sistema</h1>
 
-      {/* Buscador + filtros */}
       <BuscadorMapa
         busqueda={busqueda}
         onBuscar={buscar}
@@ -96,12 +114,11 @@ const MapaModule = () => {
         onCerrarResultados={() => setMostrarResultados(false)}
         filtroFila={filtroFila}
         onFiltroChange={setFiltroFila}
+        cargando={loading}
       />
 
-      {/* Mapa con overlay */}
       <div style={{ position: 'relative' }}>
         <MapaSVG ref={mapaSVGRef} onEstadoChange={handleEstadoChange}>
-          {/* Overlay de puestos interactivos */}
           <PuestosOverlay
             puestos={puestosFiltrados}
             zoom={estadoMapa.zoom}
@@ -109,8 +126,6 @@ const MapaModule = () => {
             onClickPuesto={handleClickPuesto}
             puestoSeleccionado={puestoSeleccionado}
           />
-
-          {/* Popup al hacer click */}
           <PopupPuesto
             puesto={puestoSeleccionado}
             opened={popupAbierto}
@@ -123,58 +138,43 @@ const MapaModule = () => {
         </MapaSVG>
       </div>
 
-      {/* Modal Historial */}
       <ModalMostrarHistorial
         opened={historialAbierto}
         close={() => setHistorialAbierto(false)}
         puesto={puestoHistorial}
       />
 
-      {/* Card Afiliado (Modal) */}
       {cardAbierta && afiliadoCard && (
-        <div
-          className="card-overlay"
-          onClick={() => setCardAbierta(false)}
-        >
-          <div
-            className="card-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="card-cerrar"
-              onClick={() => setCardAbierta(false)}
-            >
-              ✕
-            </button>
+        <div className="card-overlay" onClick={handleCerrarCard}>
+          <div className="card-modal" onClick={(e) => e.stopPropagation()}>
+
+            <div className="card-modal-header">
+              <div className="card-modal-puesto-info">
+                {puestoParaHistorialRef.current && (
+                  <>
+                    <span className="card-modal-puesto-badge">
+                      Puesto {puestoParaHistorialRef.current.nroPuesto}
+                    </span>
+                    <span className="card-modal-fila-badge">
+                      Fila {puestoParaHistorialRef.current.fila}
+                    </span>
+                    <span className="card-modal-cuadra">
+                      {puestoParaHistorialRef.current.cuadra}
+                    </span>
+                  </>
+                )}
+              </div>
+              <button className="card-cerrar" onClick={handleCerrarCard}>✕</button>
+            </div>
+
             <Card afiliado={afiliadoCard} />
-            <div style={{ padding: '0 16px 16px' }}>
-              <button
-                onClick={() => {
-                  setCardAbierta(false);
-                  setPuestoHistorial({
-                    id_puesto: puestoSeleccionado?.nroPuesto,
-                    nroPuesto: puestoSeleccionado?.nroPuesto,
-                    fila: puestoSeleccionado?.fila,
-                    cuadra: puestoSeleccionado?.cuadra || '—',
-                  });
-                  setHistorialAbierto(true);
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: '#EDBE3C',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  color: '#0f0f0f',
-                  fontFamily: 'Arial, sans-serif',
-                }}
-              >
+
+            <div style={{ padding: '8px 16px 16px' }}>
+              <button onClick={handleHistorialDesdeCard} className="card-historial-btn">
                 Ver Historial del Puesto
               </button>
             </div>
+
           </div>
         </div>
       )}

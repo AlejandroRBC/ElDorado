@@ -81,3 +81,68 @@
   border-color: #EDBE3C !important;
   box-shadow: 0 0 0 2px rgba(237, 190, 60, 0.15);
 }
+
+/* Header del modal card */
+.card-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 10px 16px;
+  background: linear-gradient(135deg, #1a1f2e, #252d42);
+  border-bottom: 1px solid rgba(237, 190, 60, 0.2);
+}
+
+.card-modal-puesto-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-modal-puesto-badge {
+  background: #EDBE3C;
+  color: #0f0f0f;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.card-modal-fila-badge {
+  background: rgba(108, 154, 255, 0.2);
+  color: #a8c0ff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-family: Arial, sans-serif;
+  border: 1px solid rgba(108, 154, 255, 0.3);
+}
+
+.card-modal-cuadra {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-family: Arial, sans-serif;
+}
+
+/* Botón historial desde card */
+.card-historial-btn {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #EDBE3C, #d4a82e);
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  color: #0f0f0f;
+  font-family: Arial, sans-serif;
+  transition: opacity 0.15s ease;
+  letter-spacing: 0.3px;
+}
+
+.card-historial-btn:hover {
+  opacity: 0.88;
+}

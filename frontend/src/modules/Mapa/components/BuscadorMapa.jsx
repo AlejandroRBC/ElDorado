@@ -29,6 +29,7 @@ const BuscadorMapa = ({
     { value: 'todos', label: 'Todas' },
     { value: 'A', label: 'Fila A' },
     { value: 'B', label: 'Fila B' },
+    { value: 'Callejon', label: 'Callejón' },
   ];
 
   return (
@@ -145,7 +146,7 @@ const BuscadorMapa = ({
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, color: '#0f0f0f', fontSize: '12px' }}>
-                    Puesto {puesto.nroPuesto} — Fila {puesto.fila}
+                    Puesto {puesto.nroPuesto} — {puesto.cuadra === 'Callejón' ? 'Fila A - Callejón' : `Fila ${puesto.fila}`}
                   </div>
                   {puesto.afiliado ? (
                     <div style={{ color: '#666', fontSize: '11px' }}>

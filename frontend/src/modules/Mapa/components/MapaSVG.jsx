@@ -1,6 +1,4 @@
-// src/modules/Mapa/components/MapaSVG.jsx
-// NOTA: Este archivo reemplaza el original. Se agregaron props para exponer
-// el estado de zoom/posicion al padre y soportar el overlay interactivo.
+
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import mapaImg from '../Mapa.svg';
 import '../Styles/mapa-zoom.css';
