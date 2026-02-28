@@ -54,7 +54,7 @@ const InicioModule = () => {
           marginTop: '90px',
         }}>
           <Text
-            size="2rem"
+            size="1.8rem"
             fw={700}
             style={{
               color: '#0f0f0f',
@@ -62,8 +62,8 @@ const InicioModule = () => {
               lineHeight: 1.3,
             }}
           >
-            Trabajando juntos por un mejor mañana para todos los <br />
-            miembros de nuestra comunidad
+            "Trabajando juntos por un mejor mañana para todos los <br />
+            miembros de nuestra comunidad"
           </Text>
         </Box>
 

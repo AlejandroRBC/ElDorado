@@ -88,7 +88,7 @@ const Topbar = () => {
           {user && (
             <>
               <Text size="sm" style={{ color: '#0f0f0f' }}>
-                {user.usuario} s
+                {user.nom_usuario}
               </Text>
               
               <Menu shadow="md" width={200} position="bottom-end">
@@ -103,12 +103,12 @@ const Topbar = () => {
                       fontWeight: 'bold'
                     }}
                   >
-                    {user.usuario?.charAt(0).toUpperCase() || 'U'}
+                    {user.nom_usuario?.charAt(0).toUpperCase() || 'U'}
                   </Avatar>
                 </Menu.Target>
 
                 <Menu.Dropdown>
-                  <Menu.Label>Usuario: {user.usuario}</Menu.Label>
+                  <Menu.Label>Usuario: {user.nom_usuario}</Menu.Label>
                   <Menu.Label>Rol: {user.rol}</Menu.Label>
                   <Menu.Divider />
                   

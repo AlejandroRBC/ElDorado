@@ -52,7 +52,7 @@ const SidebarItem = ({ module, isActive, onMouseEnter, onMouseLeave }) => {
     >
       <Group p="md">
         <module.icon
-          size={24}
+          size={20}
           style={{
             color: iconColor,
             transition: 'color 0.2s ease',
