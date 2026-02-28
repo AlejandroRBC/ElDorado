@@ -1,4 +1,6 @@
 // frontend/src/modules/Afiliados/AfiliadosModule.jsx
+
+import "./estilo.css";
 import { Text, Paper, Container, TextInput, Button, Group, Stack, Title, Switch, LoadingOverlay, Alert, Select, Badge, Box, Affix, Transition } from '@mantine/core';
 import ModuleHeader from '../Navegacion/components/ModuleHeader';
 import { IconSearch, IconPlus, IconFileExport, IconLayoutGrid, IconTable, IconAlertCircle, IconX, IconArrowUp } from '@tabler/icons-react';
@@ -289,8 +291,9 @@ const AfiliadosModule = () => {
   };
 
   return (
-    <Container fluid p="md">
+    <Container fluid p="md" >
       <ModuleHeader title="Afiliados" />
+
       
       {/* Estado de conexión */}
       {conexion?.error && (

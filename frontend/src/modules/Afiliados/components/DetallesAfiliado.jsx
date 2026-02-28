@@ -136,7 +136,7 @@ const DetallesAfiliado = () => {
     <Container fluid p="md">
       {/* Header con botón de volver */}
       <Group justify="space-between" mb="xl">
-        <Title order={1} style={{ color: '#0f0f0f' }}>
+        <Title order={1} fw={800} style={{ color: '#0f0f0f' }}>
           Detalle Afiliado
         </Title>
         <Button

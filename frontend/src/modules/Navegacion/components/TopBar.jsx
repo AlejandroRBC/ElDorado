@@ -88,7 +88,7 @@ const Topbar = () => {
           {user && (
             <>
               <Text size="sm" style={{ color: '#0f0f0f' }}>
-                {user.usuario}
+                {user.usuario} s
               </Text>
               
               <Menu shadow="md" width={200} position="bottom-end">
