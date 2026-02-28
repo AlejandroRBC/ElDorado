@@ -134,6 +134,7 @@ export const puestosFilaA = [
     { id:186, nroPuesto: 167,   cuadra:"2da cuadra", fila: 'A', x: 805.7, y: 340.5, width: 5,  height: 10.5 },
     // paso id: 187
     { id:188, nroPuesto: 168,   cuadra:"2da cuadra", fila: 'A', x: 814.7, y: 340.5, width: 5,  height: 10.5 },
+    { id:'paso_a_168_169', nroPuesto: null, cuadra:"2da cuadra", fila: 'A', x: 819.7, y: 340.5, width: 0.3, height: 10.5, esPaso: true },
     { id:189, nroPuesto: 169,   cuadra:"2da cuadra", fila: 'A', x: 820, y: 340.5, width: 5,  height: 10.5 },
     // paso id: 190
     //CAMBIO DE CUADRA

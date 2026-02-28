@@ -1,18 +1,25 @@
 // src/modules/Mapa/hooks/useMapa.js
-import { useState, useCallback } from 'react';
-import { TODOS_LOS_PUESTOS, SVG_WIDTH, SVG_HEIGHT } from '../data/puestos';
+import { useState, useCallback, useMemo } from 'react';
+import { TODOS_LOS_PUESTOS } from '../data/puestos';
 
-const ZOOM_AL_PUESTO = 6; // nivel de zoom cuando se navega a un puesto
+const ZOOM_AL_PUESTO = 6;
 
-export const useMapa = ({ zoom, zoomBase, posicion, setZoom, setPosicion, dimensiones, contenedorRef }) => {
+export const useMapa = ({
+  zoom, zoomBase, posicion, setZoom, setPosicion,
+  dimensiones, contenedorRef,
+  puestosData, // puestos enriquecidos desde useMapaData (opcional)
+}) => {
   const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
   const [popupAbierto, setPopupAbierto] = useState(false);
-  const [filtroFila, setFiltroFila] = useState('todos'); // 'todos' | 'A' | 'B'
+  const [filtroFila, setFiltroFila] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState([]);
   const [mostrarResultados, setMostrarResultados] = useState(false);
 
-  // Navegar y hacer zoom a un puesto específico
+  // Usar puestos enriquecidos si están disponibles, si no los base
+  const puestosBase = puestosData || TODOS_LOS_PUESTOS;
+
+  // Zoom a un puesto específico
   const irAPuesto = useCallback((puesto, hacerZoom = true) => {
     if (!contenedorRef?.current || !dimensiones.width) return;
 
@@ -24,15 +31,12 @@ export const useMapa = ({ zoom, zoomBase, posicion, setZoom, setPosicion, dimens
       const targetZoom = ZOOM_AL_PUESTO * zoomBase;
       const clampedZoom = Math.min(10 * zoomBase, targetZoom);
 
-      // Centro del puesto en coordenadas SVG
       const puestoCentroX = puesto.x + puesto.width / 2;
       const puestoCentroY = puesto.y + puesto.height / 2;
 
-      // Calcular posición para centrar el puesto en pantalla
       const nuevaX = containerWidth / 2 - puestoCentroX * clampedZoom;
       const nuevaY = containerHeight / 2 - puestoCentroY * clampedZoom;
 
-      // Aplicar límites
       const imgWidth = dimensiones.width * clampedZoom;
       const imgHeight = dimensiones.height * clampedZoom;
       const minX = containerWidth - imgWidth;
@@ -49,18 +53,12 @@ export const useMapa = ({ zoom, zoomBase, posicion, setZoom, setPosicion, dimens
     setPopupAbierto(true);
   }, [contenedorRef, dimensiones, zoomBase, setZoom, setPosicion]);
 
-  // Abrir popup sin zoom (para múltiples puestos)
-  const abrirPopupSinZoom = useCallback((puesto) => {
-    setPuestoSeleccionado(puesto);
-    setPopupAbierto(true);
-  }, []);
-
   const cerrarPopup = useCallback(() => {
     setPopupAbierto(false);
     setPuestoSeleccionado(null);
   }, []);
 
-  // Búsqueda por nombre, CI o nroPuesto
+  // Búsqueda por nombre, CI, nroPuesto o id
   const buscar = useCallback((termino) => {
     setBusqueda(termino);
     if (!termino.trim()) {
@@ -69,43 +67,48 @@ export const useMapa = ({ zoom, zoomBase, posicion, setZoom, setPosicion, dimens
       return;
     }
 
-    const terminoLower = termino.toLowerCase().trim();
-    const resultados = TODOS_LOS_PUESTOS.filter(p => {
-      // Buscar por nroPuesto
-      if (String(p.nroPuesto).includes(terminoLower)) return true;
-      // Buscar por nombre del afiliado (cuando tengamos datos reales)
-      if (p.afiliado?.nombre?.toLowerCase().includes(terminoLower)) return true;
-      // Buscar por CI
-      if (String(p.afiliado?.ci || '').includes(terminoLower)) return true;
+    const t = termino.toLowerCase().trim();
+
+    const base = filtroFila === 'todos'
+      ? puestosBase
+      : filtroFila === 'Callejon'
+        ? puestosBase.filter(p => p.cuadra === 'Callejón')
+        : puestosBase.filter(p => p.fila === filtroFila);
+
+    const resultados = base.filter(p => {
+      if (String(p.nroPuesto).includes(t)) return true;
+      if (p.afiliadoInfo?.nombre?.toLowerCase().includes(t)) return true;
+      if (String(p.afiliadoInfo?.ci || '').toLowerCase().includes(t)) return true;
       return false;
+    }).sort((a, b) => {
+      if (a.nroPuesto !== b.nroPuesto) return a.nroPuesto - b.nroPuesto;
+      return a.fila.localeCompare(b.fila);
     });
 
-    // Filtrar por fila si hay filtro activo
-    const resultadosFiltrados = filtroFila === 'todos'
-      ? resultados
-      : resultados.filter(p => p.fila === filtroFila);
-
-    setResultadosBusqueda(resultadosFiltrados.slice(0, 10));
+    setResultadosBusqueda(resultados.slice(0, 10));
     setMostrarResultados(true);
-  }, [filtroFila]);
+  }, [filtroFila, puestosBase]);
 
-  // Seleccionar resultado de búsqueda
   const seleccionarResultado = useCallback((puesto) => {
     setMostrarResultados(false);
-    setBusqueda(`Puesto ${puesto.nroPuesto} - Fila ${puesto.fila}`);
+    const label = puesto.cuadra === 'Callejón'
+      ? `Puesto ${puesto.nroPuesto} — Fila A - Callejón`
+      : `Puesto ${puesto.nroPuesto} — Fila ${puesto.fila} (${puesto.cuadra})`;
+    setBusqueda(label);
     irAPuesto(puesto, true);
   }, [irAPuesto]);
 
-  // Click en puesto del mapa
   const handleClickPuesto = useCallback((puesto) => {
     setPuestoSeleccionado(puesto);
     setPopupAbierto(true);
   }, []);
 
   // Puestos filtrados para el overlay
-  const puestosFiltrados = filtroFila === 'todos'
-    ? TODOS_LOS_PUESTOS
-    : TODOS_LOS_PUESTOS.filter(p => p.fila === filtroFila);
+  const puestosFiltrados = useMemo(() => {
+    if (filtroFila === 'todos') return puestosBase;
+    if (filtroFila === 'Callejon') return puestosBase.filter(p => p.cuadra === 'Callejón');
+    return puestosBase.filter(p => p.fila === filtroFila);
+  }, [filtroFila, puestosBase]);
 
   return {
     puestoSeleccionado,
@@ -118,8 +121,6 @@ export const useMapa = ({ zoom, zoomBase, posicion, setZoom, setPosicion, dimens
     mostrarResultados,
     setMostrarResultados,
     seleccionarResultado,
-    irAPuesto,
-    abrirPopupSinZoom,
     cerrarPopup,
     handleClickPuesto,
     puestosFiltrados,

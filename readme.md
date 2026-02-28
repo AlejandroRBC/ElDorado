@@ -26,6 +26,7 @@ npm install --save-dev concurrently wait-on
     npm install bcryptjs
     npm install bcrypt
     npm install express-session
+    npm install connect-sqlite3
 ## Frontend
     cd frontend
     npm install axios

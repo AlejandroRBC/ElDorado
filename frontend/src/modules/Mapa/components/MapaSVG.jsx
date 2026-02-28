@@ -95,19 +95,13 @@ const MapaSVG = forwardRef(({ onEstadoChange, children }, ref) => {
     return () => svg.removeEventListener('load', handleLoad);
   }, []);
 
-  // Prevenir zoom del navegador
+  // Registrar wheel con passive: false para poder llamar preventDefault
   useEffect(() => {
-    const prevenirZoomNavegador = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-      }
-    };
     const contenedor = contenedorRef.current;
-    if (contenedor) {
-      contenedor.addEventListener('wheel', prevenirZoomNavegador, { passive: false });
-      return () => contenedor.removeEventListener('wheel', prevenirZoomNavegador);
-    }
-  }, []);
+    if (!contenedor) return;
+    contenedor.addEventListener('wheel', manejarScroll, { passive: false });
+    return () => contenedor.removeEventListener('wheel', manejarScroll);
+  }, [zoom, posicion, zoomBase, dimensiones]);
 
   const manejarScroll = (e) => {
     e.preventDefault();
@@ -119,7 +113,7 @@ const MapaSVG = forwardRef(({ onEstadoChange, children }, ref) => {
 
     const factorZoom = e.deltaY > 0 ? 0.9 : 1.1;
     let nuevoZoom = zoom * factorZoom;
-    nuevoZoom = Math.max(zoomBase, Math.min(30 * zoomBase, nuevoZoom));
+    nuevoZoom = Math.max(zoomBase, Math.min(10 * zoomBase, nuevoZoom));
 
     if (nuevoZoom === zoom) return;
 
@@ -224,7 +218,6 @@ const MapaSVG = forwardRef(({ onEstadoChange, children }, ref) => {
       <div
         ref={contenedorRef}
         className="contenedor-zoom"
-        onWheel={manejarScroll}
         onMouseDown={manejarMouseAbajo}
         onMouseMove={manejarMouseMovimiento}
         onMouseUp={manejarMouseArriba}

@@ -264,7 +264,7 @@ function insertarPuestosEjemplo() {
               stmt.finalize((err) => {
                   if (err) console.error("❌ Error:", err.message);
                   else console.log("✅ Base de datos actualizada con los nuevos rangos.");
-                  db.close();
+                
               });
       });
 

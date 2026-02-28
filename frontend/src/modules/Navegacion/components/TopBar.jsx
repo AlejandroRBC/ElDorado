@@ -18,7 +18,7 @@ const Topbar = () => {
     navigate('/');
   };
 
-  // ✅ CONFIGURACIÓN redirige a UsuariosModule
+  
   const handleConfiguracion = () => {
     navigate('/admin/usuarios'); // Ajusta esta ruta según tu router
   };
@@ -112,7 +112,7 @@ const Topbar = () => {
                   <Menu.Label>Rol: {user.rol}</Menu.Label>
                   <Menu.Divider />
                   
-                  {/* ✅ CONFIGURACIÓN - Redirige a UsuariosModule */}
+                 
                   <Menu.Item
                     leftSection={<IconSettings size={14} />}
                     onClick={handleConfiguracion}
