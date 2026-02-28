@@ -180,7 +180,7 @@ const crearUsuario = async (req, res) => {
 const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rol, nom_usuario, password } = req.body;
+    const { id_afiliado, rol, nom_usuario, password } = req.body;
     const master = req.user;
 
     if (!rol || !nom_usuario) {

@@ -105,41 +105,41 @@ const PopupPuesto = ({
       <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
         <button
           onClick={onVerAfiliado}
-          disabled={!puesto?.afiliado}
+          disabled={!puesto?.id_afiliado}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             padding: '8px 12px',
-            backgroundColor: puesto?.afiliado
-              ? 'rgba(108, 154, 255, 0.12)'
+            backgroundColor: puesto?.id_afiliado
+              ? 'rgba(237, 190, 60, 0.1)'
               : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${puesto?.afiliado
-              ? 'rgba(108, 154, 255, 0.25)'
+            border: `1px solid ${puesto?.id_afiliado
+              ? 'rgba(237, 190, 60, 0.25)'
               : 'rgba(255,255,255,0.08)'}`,
             borderRadius: '6px',
-            cursor: puesto?.afiliado ? 'pointer' : 'not-allowed',
-            color: puesto?.afiliado ? '#a8c0ff' : '#555',
+            cursor: puesto?.id_afiliado ? 'pointer' : 'not-allowed',
+            color: puesto?.id_afiliado ? '#EDBE3C' : '#555',
             fontSize: '12px',
             fontWeight: 600,
             fontFamily: 'Arial, sans-serif',
             transition: 'all 0.15s ease',
             width: '100%',
-            opacity: puesto?.afiliado ? 1 : 0.5,
+            opacity: puesto?.id_afiliado ? 1 : 0.5,
           }}
           onMouseEnter={e => {
-            if (!puesto?.afiliado) return;
-            e.currentTarget.style.backgroundColor = 'rgba(108, 154, 255, 0.25)';
-            e.currentTarget.style.borderColor = 'rgba(108, 154, 255, 0.5)';
+            if (!puesto?.id_afiliado) return;
+            e.currentTarget.style.backgroundColor = 'rgba(237, 190, 60, 0.22)';
+            e.currentTarget.style.borderColor = 'rgba(237, 190, 60, 0.5)';
           }}
           onMouseLeave={e => {
-            if (!puesto?.afiliado) return;
-            e.currentTarget.style.backgroundColor = 'rgba(108, 154, 255, 0.12)';
-            e.currentTarget.style.borderColor = 'rgba(108, 154, 255, 0.25)';
+            if (!puesto?.id_afiliado) return;
+            e.currentTarget.style.backgroundColor = 'rgba(237, 190, 60, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(237, 190, 60, 0.25)';
           }}
         >
           <IconUser size={14} />
-          {puesto?.afiliado ? 'Afiliado' : 'Sin afiliado'}
+          {puesto?.id_afiliado ? 'Afiliado' : 'Sin afiliado'}
         </button>
 
         <button

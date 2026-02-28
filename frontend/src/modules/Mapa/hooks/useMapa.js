@@ -77,10 +77,8 @@ export const useMapa = ({
 
     const resultados = base.filter(p => {
       if (String(p.nroPuesto).includes(t)) return true;
-      if (p.afiliado?.nombre?.toLowerCase().includes(t)) return true;
-      if (p.afiliado?.paterno?.toLowerCase().includes(t)) return true;
-      if (p.afiliado?.materno?.toLowerCase().includes(t)) return true;
-      if (String(p.afiliado?.ci || '').toLowerCase().includes(t)) return true;
+      if (p.afiliadoInfo?.nombre?.toLowerCase().includes(t)) return true;
+      if (String(p.afiliadoInfo?.ci || '').toLowerCase().includes(t)) return true;
       return false;
     }).sort((a, b) => {
       if (a.nroPuesto !== b.nroPuesto) return a.nroPuesto - b.nroPuesto;

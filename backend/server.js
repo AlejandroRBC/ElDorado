@@ -13,6 +13,7 @@ const historialRoutes = require('./routes/historialRoutes');
 
 const app = express();
 const PORT = 3000;
+app.disable('etag');
 
 // ============================================
 // CONFIGURACIÓN CORS

@@ -1,11 +1,12 @@
 // src/modules/Mapa/MapaModule.jsx
 import React, { useState, useRef, useCallback } from 'react';
+import { LoadingOverlay } from '@mantine/core';
 import MapaSVG from './components/MapaSVG';
 import PuestosOverlay from './components/PuestosOverlay';
 import PopupPuesto from './components/PopupPuesto';
 import BuscadorMapa from './components/BuscadorMapa';
 import { useMapa } from './hooks/useMapa';
-import { useMapaData } from './hooks/useMapaData';
+import { useMapaData, obtenerAfiliadoCompleto } from './hooks/useMapaData';
 import { ModalMostrarHistorial } from '../GestionPatentesPuestos/components/ModalMostrarHistorial';
 import Card from '../Afiliados/Components/Card';
 import './Styles/mapa-zoom.css';
@@ -25,10 +26,11 @@ const MapaModule = () => {
 
   const [historialAbierto, setHistorialAbierto] = useState(false);
   const [puestoHistorial, setPuestoHistorial] = useState(null);
+
   const [cardAbierta, setCardAbierta] = useState(false);
   const [afiliadoCard, setAfiliadoCard] = useState(null);
+  const [cargandoAfiliado, setCargandoAfiliado] = useState(false);
 
-  // Datos reales del backend cruzados con coordenadas SVG
   const { puestosEnriquecidos, loading } = useMapaData();
 
   const handleEstadoChange = useCallback((nuevoEstado) => {
@@ -57,24 +59,34 @@ const MapaModule = () => {
     setPosicion: (p) => mapaSVGRef.current?.setPosicion(p),
     dimensiones: estadoMapa.dimensiones,
     contenedorRef: estadoMapa.contenedorRef,
-    // Pasamos los puestos enriquecidos para búsqueda y filtros
     puestosData: puestosEnriquecidos,
   });
 
   const buildPuestoHistorial = (puesto) => ({
-    id_puesto: puesto.id,
+    id_puesto: puesto.id_puesto_bd || puesto.id,
     nroPuesto: puesto.nroPuesto,
     fila: puesto.fila,
     cuadra: puesto.cuadra || '—',
   });
 
-  const handleVerAfiliado = () => {
+  // Al clickear "Afiliado" en el popup: fetchea el afiliado completo
+  const handleVerAfiliado = async () => {
     if (!puestoSeleccionado) return;
     puestoParaHistorialRef.current = puestoSeleccionado;
+
+    if (!puestoSeleccionado.id_afiliado) return; // sin afiliado asignado
+
     cerrarPopup();
-    if (puestoSeleccionado.afiliado) {
-      setAfiliadoCard(puestoSeleccionado.afiliado);
+    setCargandoAfiliado(true);
+
+    try {
+      const afiliadoCompleto = await obtenerAfiliadoCompleto(puestoSeleccionado.id_afiliado);
+      setAfiliadoCard(afiliadoCompleto);
       setCardAbierta(true);
+    } catch (err) {
+      console.error('Error cargando afiliado:', err);
+    } finally {
+      setCargandoAfiliado(false);
     }
   };
 
@@ -102,8 +114,16 @@ const MapaModule = () => {
   };
 
   return (
-    <div className="mapa-module">
+    <div className="mapa-module" style={{ position: 'relative' }}>
       <h1>Mapa del Sistema</h1>
+
+      {/* Loading global al fetchear afiliado */}
+      <LoadingOverlay
+        visible={cargandoAfiliado}
+        zIndex={9999}
+        overlayProps={{ blur: 2 }}
+        loaderProps={{ color: '#EDBE3C', size: 'lg' }}
+      />
 
       <BuscadorMapa
         busqueda={busqueda}
@@ -138,43 +158,19 @@ const MapaModule = () => {
         </MapaSVG>
       </div>
 
+      {/* Modal Historial */}
       <ModalMostrarHistorial
         opened={historialAbierto}
         close={() => setHistorialAbierto(false)}
         puesto={puestoHistorial}
       />
 
+      {/* Modal Card Afiliado */}
       {cardAbierta && afiliadoCard && (
         <div className="card-overlay" onClick={handleCerrarCard}>
           <div className="card-modal" onClick={(e) => e.stopPropagation()}>
-
-            <div className="card-modal-header">
-              <div className="card-modal-puesto-info">
-                {puestoParaHistorialRef.current && (
-                  <>
-                    <span className="card-modal-puesto-badge">
-                      Puesto {puestoParaHistorialRef.current.nroPuesto}
-                    </span>
-                    <span className="card-modal-fila-badge">
-                      Fila {puestoParaHistorialRef.current.fila}
-                    </span>
-                    <span className="card-modal-cuadra">
-                      {puestoParaHistorialRef.current.cuadra}
-                    </span>
-                  </>
-                )}
-              </div>
-              <button className="card-cerrar" onClick={handleCerrarCard}>✕</button>
-            </div>
-
+            <button className="card-cerrar" onClick={handleCerrarCard}>✕</button>
             <Card afiliado={afiliadoCard} />
-
-            <div style={{ padding: '8px 16px 16px' }}>
-              <button onClick={handleHistorialDesdeCard} className="card-historial-btn">
-                Ver Historial del Puesto
-              </button>
-            </div>
-
           </div>
         </div>
       )}
