@@ -17,10 +17,10 @@ const InicioModule = () => {
     },
     {
       id: 2,
-      title: 'Patentes',
+      title: 'Puestos',
       description: 'Control de patentes y puestos',
       icon: IconLicense,
-      path: '/patentes',
+      path: '/gestionPuestos',
     },
   ];
 
@@ -49,12 +49,12 @@ const InicioModule = () => {
       >
         {/* Frase inspiradora alineada a la derecha */}
         <Box style={{ 
-          maxWidth: '600px',
+          maxWidth: '900px',
           textAlign: 'right',
-          marginBottom: '40px',
+          marginTop: '90px',
         }}>
           <Text
-            size="2.5rem"
+            size="2rem"
             fw={700}
             style={{
               color: '#0f0f0f',
@@ -62,9 +62,8 @@ const InicioModule = () => {
               lineHeight: 1.3,
             }}
           >
-            "Donde cada conexión<br />
-            construye un futuro<br />
-            más próspero"
+            Trabajando juntos por un mejor mañana para todos los <br />
+            miembros de nuestra comunidad
           </Text>
         </Box>
 
@@ -107,80 +106,7 @@ const InicioModule = () => {
         </Group>
       </Paper>
 
-      {/* Estadísticas - Mantengo el Grid import */}
-      <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginTop: '30px' }}>
-        <Paper p="lg" radius="md" style={{ backgroundColor: 'white', border: '1px solid #eee' }}>
-          <Stack gap="xs" align="center">
-            <div style={{ 
-              width: '50px', 
-              height: '50px', 
-              backgroundColor: 'rgba(237, 190, 60, 0.1)', 
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <IconUsers size={24} color="#edbe3c" />
-            </div>
-            <Title order={2} style={{ color: '#0f0f0f' }}>24</Title>
-            <Text size="sm" style={{ color: '#666' }}>Afiliados Activos</Text>
-          </Stack>
-        </Paper>
-        
-        <Paper p="lg" radius="md" style={{ backgroundColor: 'white', border: '1px solid #eee' }}>
-          <Stack gap="xs" align="center">
-            <div style={{ 
-              width: '50px', 
-              height: '50px', 
-              backgroundColor: 'rgba(108, 154, 255, 0.1)', 
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <IconLicense size={24} color="#374567" />
-            </div>
-            <Title order={2} style={{ color: '#0f0f0f' }}>42</Title>
-            <Text size="sm" style={{ color: '#666' }}>Puestos Registrados</Text>
-          </Stack>
-        </Paper>
-        
-        <Paper p="lg" radius="md" style={{ backgroundColor: 'white', border: '1px solid #eee' }}>
-          <Stack gap="xs" align="center">
-            <div style={{ 
-              width: '50px', 
-              height: '50px', 
-              backgroundColor: 'rgba(76, 175, 80, 0.1)', 
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Text fw={700} size="xl" style={{ color: '#4CAF50' }}>✓</Text>
-            </div>
-            <Title order={2} style={{ color: '#0f0f0f' }}>95%</Title>
-            <Text size="sm" style={{ color: '#666' }}>Satisfacción</Text>
-          </Stack>
-        </Paper>
-        
-        <Paper p="lg" radius="md" style={{ backgroundColor: 'white', border: '1px solid #eee' }}>
-          <Stack gap="xs" align="center">
-            <div style={{ 
-              width: '50px', 
-              height: '50px', 
-              backgroundColor: 'rgba(255, 152, 0, 0.1)', 
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Text fw={700} size="xl" style={{ color: '#FF9800' }}>↻</Text>
-            </div>
-            <Title order={2} style={{ color: '#0f0f0f' }}>7</Title>
-            <Text size="sm" style={{ color: '#666' }}>Traspasos Este Mes</Text>
-          </Stack>
-        </Paper>
-      </div>
+      
     </Container>
   );
 };

@@ -11,6 +11,8 @@ import TablaPuestos from './TablaPuestos';
 import ModalAsignarPuesto from './ModalAsignarPuesto';
 import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 
+import { ModalTraspaso } from '../../GestionPatentesPuestos/components/ModalTraspaso';
+import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
 
 import { usePDFExport } from '../hooks/usePDFExport';
 
@@ -37,6 +39,18 @@ const DetallesAfiliado = () => {
     setRefreshPuestos(prev => prev + 1);
     setModalPuestoAbierto(false);
   }, [cargarAfiliado]);
+
+  const {
+    modalTraspasoAbierto,
+    puestoParaTraspaso,
+    abrirModalTraspaso,
+    cerrarModalTraspaso,
+    ejecutarTraspaso
+  } = useTraspasoDesdeAfiliado();
+  
+  const handleTraspaso = (puesto) => {
+    abrirModalTraspaso(puesto);
+  };
 
   const [modalDesafiliarAbierto, setModalDesafiliarAbierto] = useState(false);
   const [cargandoDesafiliar, setCargandoDesafiliar] = useState(false);
@@ -440,25 +454,11 @@ const DetallesAfiliado = () => {
                     setModalPuestoAbierto(false);
                   }, handlePuestoAsignado}
                 />
-                  <Button
-                    leftSection={<IconTransfer size={18} />}
-                    style={{
-                      backgroundColor: '#0f0f0f',
-                      color: 'white',
-                      borderRadius: '100px',
-                      fontWeight: 500,
-                      border: '2px solid #0f0f0f',
-                      padding: '8px 16px',
-                    }}
-                    onClick={() => alert('Funcionalidad en desarrollo')}
-                  >
-                    Realizar Traspaso
-                  </Button>
                 </Group>
               </Group>
 
               {/* Tabla de puestos */}
-              <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}  />
+              <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}    onTraspaso={handleTraspaso}/>
               </Box>
 
               
@@ -468,6 +468,12 @@ const DetallesAfiliado = () => {
                 afiliado={afiliado}
                 onConfirmar={handleDesafiliar}
                 loading={cargandoDesafiliar}
+              />
+              <ModalTraspaso
+                opened={modalTraspasoAbierto}
+                close={cerrarModalTraspaso}
+                puestoSeleccionado={puestoParaTraspaso}
+                onTraspaso={ejecutarTraspaso}
               />
           </>
         )}

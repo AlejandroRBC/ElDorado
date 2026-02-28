@@ -1,7 +1,7 @@
-// frontend/src/modules/Afiliados/components/TablaPuestos.jsx (versión actualizada)
+// frontend/src/modules/Afiliados/components/TablaPuestos.jsx
 import { useEffect, useState } from 'react';
-import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack } from '@mantine/core';
-import { IconEdit, IconTrash, IconEye, IconMapPin } from '@tabler/icons-react';
+import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack, Menu } from '@mantine/core';
+import { IconEdit, IconTrash, IconEye, IconMapPin, IconTransfer, IconDotsVertical } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 
 import ModalEditarPuesto from './ModalEditarPuesto';
@@ -9,10 +9,9 @@ import ModalDetallePuesto from './ModalDetallePuesto';
 import ModalAccionPuesto from './ModalAccionPuesto';
 import ModalConfirmarAccion from './ModalConfirmarAccion';
 
-
 const API_URL = 'http://localhost:3000/api';
 
-const TablaPuestos = ({ afiliadoId, onRefresh }) => {
+const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
   const [puestos, setPuestos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -54,14 +53,14 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
     setModalEditarAbierto(true);
   };
 
-  // Función para ver detalle del puesto (placeholder)
+  // Función para ver detalle del puesto
   const handleVerDetalle = (puesto) => {
     setPuestoParaDetalle(puesto);
     setModalDetalleAbierto(true);
   };
 
   // Función para eliminar puesto (DESPOJO o LIBERADO)
-  const handleEliminar = async (puesto) => {
+  const handleEliminar = (puesto) => {
     setPuestoSeleccionado(puesto);
     setModalAccionAbierto(true);
   };
@@ -70,12 +69,13 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
   const handleSeleccionarAccion = (razon) => {
     setAccionSeleccionada(razon);
     setModalAccionAbierto(false);
-    setModalConfirmacionAbierto(true); 
+    setModalConfirmacionAbierto(true);
   };
+
   const handleEjecutarAccion = async () => {
     try {
       setCargandoAccion(true);
-      
+
       const response = await fetch(`${API_URL}/afiliados/despojar-puesto`, {
         method: 'POST',
         headers: {
@@ -87,25 +87,24 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
           razon: accionSeleccionada
         }),
       });
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(result.error || 'Error al procesar la acción');
       }
-  
+
       notifications.show({
         title: '✅ Éxito',
         message: result.message,
         color: 'green'
       });
-  
-      
+
       setModalConfirmacionAbierto(false);
       setPuestoSeleccionado(null);
       setAccionSeleccionada(null);
       cargarPuestos();
-      
+
     } catch (err) {
       console.error('Error:', err);
       notifications.show({
@@ -117,7 +116,6 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
       setCargandoAccion(false);
     }
   };
-
 
   // Estados de carga / error / vacío
   if (cargando) {
@@ -182,10 +180,11 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge 
-          color={puesto.tiene_patente ? "green" : "yellow"} 
-          variant="dot">
-                    {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
+        <Badge
+          color={puesto.tiene_patente ? "green" : "yellow"}
+          variant="dot"
+        >
+          {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
         </Badge>
         {puesto.ancho && puesto.largo && (
           <Text size="xs" c="dimmed" mt={4}>
@@ -194,35 +193,68 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         )}
       </Table.Td>
       <Table.Td>
-        <Group gap={4}>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            title="Ver detalle"
-            style={{ color: '#0f0f0f' }}
-            onClick={() => handleVerDetalle(puesto)}
-          >
-            <IconEye size={16} />
-          </ActionIcon>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            title="Editar"
-            style={{ color: '#edbe3c' }}
-            onClick={() => handleEditar(puesto)}
-          >
-            <IconEdit size={16} />
-          </ActionIcon>
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            title="Desasignar"
-            style={{ color: '#F44336' }}
-            onClick={() => handleEliminar(puesto)}
-          >
-            <IconTrash size={16} />
-          </ActionIcon>
-        </Group>
+        <Menu 
+          shadow="md" 
+          width={200} 
+          position="bottom-end"
+          transitionProps={{ transition: 'pop-top-right' }}
+        >
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              size="md"
+              style={{ 
+                color: '#0f0f0f',
+                backgroundColor: '#f6f8fe',
+                '&:hover': {
+                  backgroundColor: '#edbe3c',
+                  color: '#0f0f0f'
+                }
+              }}
+            >
+              <IconDotsVertical size={18} />
+            </ActionIcon>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Item
+              leftSection={<IconEye size={16} />}
+              onClick={() => handleVerDetalle(puesto)}
+              description="Ver información completa del puesto"
+            >
+              Historial
+            </Menu.Item>
+
+            <Menu.Item
+              leftSection={<IconTransfer size={16} />}
+              onClick={() => onTraspaso && onTraspaso(puesto)}
+              description="Transferir el puesto a otro afiliado"
+              color="blue"
+            >
+              Traspasar
+            </Menu.Item>
+
+            <Menu.Item
+              leftSection={<IconEdit size={16} />}
+              onClick={() => handleEditar(puesto)}
+              description="Modificar rubro, patente o dimensiones"
+              color="yellow"
+            >
+              Editar
+            </Menu.Item>
+
+            <Menu.Divider />
+
+            <Menu.Item
+              leftSection={<IconTrash size={16} />}
+              onClick={() => handleEliminar(puesto)}
+              description="Liberar o despojar el puesto"
+              color="red"
+            >
+              Desasignar
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
       </Table.Td>
     </Table.Tr>
   ));
@@ -250,7 +282,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
               <Table.Th>Fecha Obtención</Table.Th>
               <Table.Th>Rubro</Table.Th>
               <Table.Th>Patente / Dimensiones</Table.Th>
-              <Table.Th>Opciones</Table.Th>
+              <Table.Th>Acciones</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
@@ -266,10 +298,11 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         }}
         puesto={puestoSeleccionado}
         onPuestoActualizado={() => {
-          cargarPuestos(); // Recargar después de editar
+          cargarPuestos();
           if (onRefresh) onRefresh();
         }}
       />
+
       <ModalDetallePuesto
         opened={modalDetalleAbierto}
         onClose={() => {
@@ -278,6 +311,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh }) => {
         }}
         puesto={puestoParaDetalle}
       />
+
       <ModalAccionPuesto
         opened={modalAccionAbierto}
         onClose={() => {
