@@ -1,10 +1,12 @@
+// frontend/src/modules/GestionPatentesPuestos/components/ModalTraspaso.jsx
 import { useState, useEffect } from "react";
 import { 
   Modal, TextInput, Button, Group, Stack, Text, 
-  Paper, Loader, Box, Image, Divider, Checkbox, Badge
+  Paper, Loader, Box, Image, Divider, Badge, Radio
 } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { afiliadosService } from "../service/afiliadosService";
 import { puestosService } from "../service/puestosService";
 import { getPerfilUrl } from '../../../utils/imageHelper';
@@ -21,7 +23,9 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
   // Datos del Emisor (Desde)
   const [afiliadoDesde, setAfiliadoDesde] = useState(null);
   const [puestosDelAfiliado, setPuestosDelAfiliado] = useState([]);
-  const [puestosSeleccionadosIds, setPuestosSeleccionadosIds] = useState([]);
+  
+  // Cambiamos de array a un solo ID (radio button)
+  const [puestoSeleccionadoId, setPuestoSeleccionadoId] = useState(null);
 
   // Datos del Receptor (A)
   const [afiliadoA, setAfiliadoA] = useState(null);
@@ -83,6 +87,11 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
       // Cargamos sus puestos usando su ID
       const puestos = await afiliadosService.obtenerPuestos(afiliado.id_afiliado);
       setPuestosDelAfiliado(puestos || []);
+      
+      // Por defecto, seleccionar el primer puesto si no hay ninguno seleccionado
+      if (puestos && puestos.length > 0 && !puestoSeleccionadoId) {
+        setPuestoSeleccionadoId(puestos[0].id_puesto);
+      }
     } catch (error) {
       console.error("No se encontró el emisor");
       setAfiliadoDesde(null);
@@ -90,6 +99,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
       setLoadingData(false);
     }
   };
+  
   const cargarDatosIniciales = async () => {
     setLoadingData(true);
 
@@ -100,7 +110,14 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
 
       setAfiliadoDesde(res.afiliadoActual || null);
       setPuestosDelAfiliado(res.puestosDelAfiliado || []);
-      setPuestosSeleccionadosIds([puestoSeleccionado.id_puesto]);
+      
+      // Seleccionar automáticamente el puesto que se clickeó en la tabla
+      if (puestoSeleccionado?.id_puesto) {
+        setPuestoSeleccionadoId(puestoSeleccionado.id_puesto);
+      } else if (res.puestosDelAfiliado && res.puestosDelAfiliado.length > 0) {
+        // Si no hay puesto específico, seleccionar el primero
+        setPuestoSeleccionadoId(res.puestosDelAfiliado[0].id_puesto);
+      }
 
     } catch (err) {
       console.error("Error cargando traspaso:", err);
@@ -108,7 +125,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
       setPuestosDelAfiliado([]);
     }
 
-    setLoadingData(false);   // ← fuera del finally evita bug render
+    setLoadingData(false);
   };
 
 
@@ -122,25 +139,44 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
     } catch (error) {
       console.error("No se encontró el afiliado");
       setAfiliadoA(null);
+      notifications.show({
+        title: 'Error',
+        message: 'No se encontró el afiliado',
+        color: 'red'
+      });
     } finally {
       setBuscandoA(false);
     }
   };
 
-  const togglePuesto = (id_puesto) => {
-    setPuestosSeleccionadosIds(prev => 
-      prev.includes(id_puesto) ? prev.filter(p => p !== id_puesto) : [...prev, id_puesto]
-    );
+  // Función para seleccionar un puesto (radio button)
+  const seleccionarPuesto = (id_puesto) => {
+    setPuestoSeleccionadoId(id_puesto);
   };
 
   const handleEjecutar = () => {
-    if (!afiliadoA) return alert("Debe seleccionar un destinatario");
-    if (puestosSeleccionadosIds.length === 0) return alert("Seleccione al menos un puesto");
+    if (!afiliadoA) {
+      notifications.show({
+        title: 'Error',
+        message: 'Debe seleccionar un destinatario',
+        color: 'red'
+      });
+      return;
+    }
+    
+    if (!puestoSeleccionadoId) {
+      notifications.show({
+        title: 'Error',
+        message: 'Seleccione un puesto para traspasar',
+        color: 'red'
+      });
+      return;
+    }
 
     onTraspaso({
       desde: afiliadoDesde.id_afiliado,
       para: afiliadoA.id_afiliado,
-      puestos: puestosSeleccionadosIds,
+      puestos: [puestoSeleccionadoId], // Enviar como array para mantener compatibilidad
       motivoDetallado: "TRASPASO"
     });
   };
@@ -156,7 +192,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
     setAfiliadoA(null);
 
     setPuestosDelAfiliado([]);
-    setPuestosSeleccionadosIds([]);
+    setPuestoSeleccionadoId(null);
   };
 
 
@@ -167,7 +203,6 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
         resetModal();
         close();
       }}
-
       size="90%" 
       centered withCloseButton={false} 
       padding={0} 
@@ -218,6 +253,11 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
 
                               const puestos = await afiliadosService.obtenerPuestos(a.id_afiliado);
                               setPuestosDelAfiliado(puestos || []);
+                              
+                              // Seleccionar el primer puesto automáticamente
+                              if (puestos && puestos.length > 0) {
+                                setPuestoSeleccionadoId(puestos[0].id_puesto);
+                              }
                             }}
                           >
                             <Text size="sm">
@@ -234,7 +274,6 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                     )}
                   </>
                 ) : (
-
                   // CASO AUTOMÁTICO: Solo lectura
                   <Stack gap={2} align="center">
                     <Text fw={700} size="sm" ta="center">
@@ -294,24 +333,24 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
             <Group justify="center" mt={30}>
               <Button 
                 variant="filled"
-                style={{ backgroundColor: '#0F0F0F' }} // Color Negro exacto
+                style={{ backgroundColor: '#0F0F0F' }}
                 radius="xl" 
                 px={45} 
                 onClick={() => {
                   resetModal();
                   close();
                 }}
-                >
+              >
                   Cancelar
               </Button>
               <Button 
                 variant="filled"
-                style={{ backgroundColor: '#EDBE3C' }} // Color Amarillo exacto
+                style={{ backgroundColor: '#EDBE3C' }}
                 radius="xl" 
                 px={45} 
                 c="black" 
                 fw={800} 
-                disabled={!afiliadoA}
+                disabled={!afiliadoA || !puestoSeleccionadoId}
                 onClick={handleEjecutar}
               >
                 Confirmar Traspaso
@@ -320,23 +359,21 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
           </Stack>
         </Box>
 
-        {/* DERECHA: PUESTOS DEL EMISOR */}
         {/* DERECHA: PANEL NEGRO (PUESTOS) */}
         <Box style={{ flex: 1, backgroundColor: '#0d0d0d', padding: '40px' }}>
-        <Stack gap="xl">
-            <Text c="white" align="center" fw={800} size="lg">Puestos</Text>
+          <Stack gap="xl">
+            <Text c="white" align="center" fw={800} size="lg">Selecciona un puesto</Text>
             
             <Stack gap="xs">
-            {/* Añadimos la validación puestosDelAfiliado && ... */}
-            {puestosDelAfiliado && puestosDelAfiliado.length > 0 ? (
+              {puestosDelAfiliado && puestosDelAfiliado.length > 0 ? (
                 puestosDelAfiliado.map((p) => {
-                const esSeleccionado = puestosSeleccionadosIds.includes(p.id_puesto);
-                
-                return (
+                  const esSeleccionado = puestoSeleccionadoId === p.id_puesto;
+                  
+                  return (
                     <Box
-                    key={p.id_puesto}
-                    onClick={() => togglePuesto(p.id_puesto)}
-                    style={{
+                      key={p.id_puesto}
+                      onClick={() => seleccionarPuesto(p.id_puesto)}
+                      style={{
                         display: 'flex',
                         alignItems: 'center',
                         padding: '12px 16px',
@@ -345,30 +382,40 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                         transition: 'all 0.2s ease',
                         backgroundColor: esSeleccionado ? '#f0c419' : 'transparent',
                         color: esSeleccionado ? 'black' : '#fff',
-                        border: '1px solid #333'
-                    }}
+                        border: '1px solid #333',
+                        '&:hover': {
+                          backgroundColor: esSeleccionado ? '#f0c419' : '#333',
+                        }
+                      }}
                     >
-                    <Checkbox 
-                        checked={esSeleccionado} 
-                        readOnly 
-                        color="dark" 
-                        mr="md" 
-                    />
-                    <Box>
+                      <Radio
+                        checked={esSeleccionado}
+                        onChange={() => seleccionarPuesto(p.id_puesto)}
+                        color="dark"
+                        mr="md"
+                        styles={{
+                          radio: {
+                            cursor: 'pointer',
+                            backgroundColor: esSeleccionado ? 'black' : 'transparent',
+                            borderColor: esSeleccionado ? 'black' : '#666',
+                          }
+                        }}
+                      />
+                      <Box>
                         <Text size="xs" fw={700}>Puesto N. {p.nroPuesto}</Text>
                         <Text size="10px" style={{ opacity: 0.8 }}>
-                        Fila {p.fila} - {p.cuadra}
+                          Fila {p.fila} - {p.cuadra}
                         </Text>
+                      </Box>
                     </Box>
-                    </Box>
-                );
+                  );
                 })
-            ) : (
-                <Text c="dimmed" size="xs" ta="center">No hay otros puestos vinculados</Text>
-            )}
+              ) : (
+                <Text c="dimmed" size="xs" ta="center">No hay puestos vinculados</Text>
+              )}
             </Stack>
-        </Stack>
-</Box>
+          </Stack>
+        </Box>
       </Box>
     </Modal>
   );

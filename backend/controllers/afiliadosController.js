@@ -202,7 +202,7 @@ exports.obtenerPuestos = (req, res) => {
       ON t.id_puesto = p.id_puesto
     WHERE t.id_afiliado = ?
       AND t.fecha_fin IS NULL
-    ORDER BY p.fila, p.cuadra, p.nroPuesto
+    ORDER BY p.id_puesto
   `;
 
   db.all(sql, [id], (err, rows) => {

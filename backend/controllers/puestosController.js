@@ -25,15 +25,7 @@ const listarPuestosDisponibles = (req, res) => {
       AND p.disponible = 1     
       AND t.id_puesto IS NULL  
     ORDER BY 
-      CASE p.fila 
-        WHEN 'A' THEN 1 
-        WHEN 'B' THEN 2 
-        WHEN 'C' THEN 3 
-        WHEN 'D' THEN 4 
-        WHEN 'E' THEN 5 
-      END,
-      p.cuadra,
-      p.nroPuesto
+      p.id_puesto
   `;
 
   db.all(sql, [], (err, rows) => {

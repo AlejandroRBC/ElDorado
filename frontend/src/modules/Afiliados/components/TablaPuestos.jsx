@@ -47,6 +47,12 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
     cargarPuestos();
   }, [afiliadoId]);
 
+  // Función para refrescar después de cualquier cambio
+  const handleRefresh = () => {
+    cargarPuestos();
+    if (onRefresh) onRefresh(); // Notificar al padre que hubo cambios
+  };
+
   // Función para abrir modal de edición
   const handleEditar = (puesto) => {
     setPuestoSeleccionado(puesto);
@@ -103,6 +109,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
       setModalConfirmacionAbierto(false);
       setPuestoSeleccionado(null);
       setAccionSeleccionada(null);
+      
       cargarPuestos();
 
     } catch (err) {
@@ -227,7 +234,11 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
 
             <Menu.Item
               leftSection={<IconTransfer size={16} />}
-              onClick={() => onTraspaso && onTraspaso(puesto)}
+              onClick={() => {
+                if (onTraspaso) {
+                  onTraspaso(puesto, handleRefresh); // ← Pasar el callback
+                }
+              }}
               description="Transferir el puesto a otro afiliado"
               color="blue"
             >

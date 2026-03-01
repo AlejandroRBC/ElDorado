@@ -48,8 +48,37 @@ const DetallesAfiliado = () => {
     ejecutarTraspaso
   } = useTraspasoDesdeAfiliado();
   
-  const handleTraspaso = (puesto) => {
-    abrirModalTraspaso(puesto);
+  const handleTraspaso = (puesto, onSuccess) => {
+    if (!puesto?.id_puesto) {
+      notifications.show({
+        title: '❌ Error',
+        message: 'El puesto seleccionado no es válido',
+        color: 'red'
+      });
+      return;
+    }
+    
+    const puestoParaModal = {
+      id_puesto: puesto.id_puesto,
+      nroPuesto: puesto.nroPuesto,
+      fila: puesto.fila,
+      cuadra: puesto.cuadra,
+      rubro: puesto.rubro,
+      tiene_patente: puesto.tiene_patente
+    };
+    
+    // Pasar el callback de éxito
+    abrirModalTraspaso(puestoParaModal, onSuccess);
+  };
+  const refrescarDatosAfiliado = () => {
+    cargarAfiliado(); // Recargar datos del afiliado
+    setRefreshPuestos(prev => prev + 1); // Forzar recarga de tabla
+    notifications.show({
+      title: '🔄 Actualizado',
+      message: 'Los datos se han actualizado',
+      color: 'blue',
+      autoClose: 2000
+    });
   };
 
   const [modalDesafiliarAbierto, setModalDesafiliarAbierto] = useState(false);
@@ -461,7 +490,8 @@ const DetallesAfiliado = () => {
               </Group>
 
               {/* Tabla de puestos */}
-              <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}    onTraspaso={handleTraspaso}/>
+              <TablaPuestos afiliadoId={afiliado.id} key={refreshPuestos}    onTraspaso={handleTraspaso}   onRefresh={refrescarDatosAfiliado} // ← Pasar el callback
+              />
               </Box>
 
               
