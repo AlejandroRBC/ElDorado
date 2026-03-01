@@ -86,7 +86,10 @@ exports.create = async (req, res) => {
       });
     }
     
-    const nuevoAfiliado = await Afiliado.create(req.body);
+    const nuevoAfiliado = await Afiliado.create({
+      ...req.body,
+      url_perfil: req.body.url_perfil || '/uploads/perfiles/sinPerfil.png'
+    });
     
     res.status(201).json({
       mensaje: 'Afiliado creado exitosamente',

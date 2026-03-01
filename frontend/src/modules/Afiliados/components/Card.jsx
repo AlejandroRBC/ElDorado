@@ -1,8 +1,9 @@
+// frontend/src/modules/Afiliados/components/Card.jsx
+
 import { Text, Group, Badge, Stack, ActionIcon, Box, Button } from '@mantine/core';
-import { IconEdit, IconChevronRight,IconUserCheck  } from '@tabler/icons-react';
+import { IconEdit, IconChevronRight, IconUserCheck } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { getPerfilUrl } from '../../../utils/imageHelper';
-
 
 const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
             padding: '6px',
             backgroundColor: '#374567',
             color: 'white',
+            zIndex: 10,
             '&:hover': {
               backgroundColor: '#2a3652',
             },
@@ -125,13 +127,15 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
           />
         </Box>
 
-        {/* Información del afiliado */}
-        <Stack gap={8} style={{ flex: 1 }}>
+        
+        <Stack gap={8} style={{ 
+          flex: 1,
+          paddingRight: !esDeshabilitado ? '30px' : '0px',
+          position: 'relative',
+          zIndex: 1
+        }}>
           <Text fw={700} size="sm" style={{ color: '#0f0f0f' }}>
-            {afiliado.nombre+" "} 
-            {afiliado.paterno+" "} 
-            {afiliado.materno} 
-
+            {afiliado.nombre} {afiliado.paterno} {afiliado.materno}
           </Text>
           
           <Text size="sm" style={{ color: '#666' }}>
@@ -142,16 +146,14 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
             Puestos:
           </Text>
           
-          <Group gap={6} wrap="wrap">
+          <Group gap={3} >
             {afiliado.patentes && afiliado.patentes.length > 0 ? (
               afiliado.patentes.map((puesto, index) => (
                 <Badge
                   key={index}
-                  size="sm"
                   style={{
                     backgroundColor: esDeshabilitado ? '#F44336' : '#EDBE3C',
                     color: esDeshabilitado ? 'white' : '#0f0f0f',
-                    fontWeight: 700,
                     padding: '4px 10px',
                     borderRadius: '4px',
                   }}
@@ -198,7 +200,6 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
         </Button>
       )}
 
-      {/* Línea y botón Ver más - solo si NO está deshabilitado */}
       {!esDeshabilitado && (
         <Box style={{ 
           position: 'relative',
@@ -208,14 +209,17 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
             position: 'absolute',
             top: '18px',
             left: 0,
-            right: '40%',
+            right: '160px',
             height: '3px',
             backgroundColor: 'black',
+            zIndex: 1,
           }} />
           
           <div style={{
             display: 'flex',
             justifyContent: 'flex-end',
+            position: 'relative',
+            zIndex: 2
           }}>
             <Button
               variant="subtle"
@@ -224,11 +228,13 @@ const Card = ({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
               onClick={verDetalles}
               style={{
                 color: '#0f0f0f',
-                padding: '0',
+                
                 height: 'auto',
                 fontWeight: 500,
                 fontSize: '13px',
                 backgroundColor: 'transparent',
+                position: 'relative',
+                zIndex: 3,
                 '&:hover': {
                   color: '#374567',
                   backgroundColor: 'transparent',

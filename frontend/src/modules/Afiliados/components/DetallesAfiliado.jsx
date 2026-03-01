@@ -82,7 +82,10 @@ const DetallesAfiliado = () => {
       });
   
       setModalDesafiliarAbierto(false);
-      cargarAfiliado(); // Recargar datos para reflejar el cambio
+
+      setTimeout(() => {
+        navigate('/afiliados');
+      }, 100);
       
     } catch (err) {
       notifications.show({

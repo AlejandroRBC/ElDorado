@@ -37,7 +37,7 @@ function crearTablas() {
       telefono VARCHAR(20),
       ocupacion VARCHAR(100),
       direccion TEXT,
-      url_perfil VARCHAR(255) DEFAULT '/assets/perfiles/sinPerfil.png',
+      url_perfil VARCHAR(255) DEFAULT '/uploads/perfiles/sinPerfil.png',  
       fecha_afiliacion DATE DEFAULT CURRENT_DATE,
       es_habilitado BOOLEAN DEFAULT 1
     )`,

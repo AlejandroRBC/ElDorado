@@ -168,7 +168,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
         close();
       }}
 
-      size="75%" 
+      size="90%" 
       centered withCloseButton={false} 
       padding={0} 
       radius="lg">

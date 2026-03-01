@@ -50,6 +50,7 @@ const ModalDesafiliarAfiliado = ({ opened, onClose, afiliado, onConfirmar, loadi
               <li>Los puestos quedarán disponibles para otros afiliados</li>
               <li>Se registrará en el historial como DESPOJADO por deshabilitación</li>
               <li>El afiliado no podrá iniciar sesión ni realizar operaciones</li>
+              <li><strong>Serás redirigido a la lista de afiliados</strong></li>
             </ul>
           </Stack>
         </Alert>
