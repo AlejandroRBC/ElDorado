@@ -20,7 +20,7 @@ export function TablaPuestos({
   }
 
   return (
-    <Box style={{ overflowX: 'auto' }}>
+    <Box style={{ overflowX: 'auto'}} pb='60px'>
       <Table verticalSpacing="md" horizontalSpacing="sm" variant="unstyled">
         <Table.Thead>
             <Table.Tr>

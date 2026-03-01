@@ -174,9 +174,7 @@ function insertarDatosEjemplo() {
     
     if (row && row.count === 0) {
       const afiliados = [
-        ['1234567','LP','Juan','Pérez','dummy','M','1985-05-15','76543210','Comerciante','Av Principal'],
-        ['7654321','LP','María','García','dummy','F','1990-08-22','71234567','Servicios','Calle Secundaria'],
-        ['9876543','LP','Carlos','López','dummy','M','1978-03-10','70123456','Industrial','Av Industrial']
+        ['1234567','LP','ElDorado','Sistema','','M','1985-05-15','77777777','SISTEMA','']
       ];
 
       let insertados = 0;
@@ -212,7 +210,7 @@ function insertarPuestosEjemplo() {
       
     if (row && row.count === 0) {
       // --- DATOS DE CONFIGURACIÓN ---
-      const pasosA = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 169, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298];
+      const pasosA = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 168, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298];
       const pasosB = [20, 32, 37, 41, 73, 79, 83, 90, 97, 128, 139, 151, 157, 161, 164, 167, 170, 173, 178, 186, 214, 215, 216, 217, 221, 225, 234, 239, 240];
 
       function obtenerCuadraA(n) {
@@ -222,50 +220,54 @@ function insertarPuestosEjemplo() {
         if (n >= 170 && n <= 234) return "Cuadra 3";
         if (n >= 235 && n <= 299) return "Cuadra 4";
         return "Desconocido";
-      }
-
-      function obtenerCuadraB(n) {
+    }
+    
+    function obtenerCuadraB(n) {
         if (n >= 1 && n <= 52)   return "Cuadra 1";
         if (n >= 53 && n <= 119)  return "Cuadra 2";
         if (n >= 120 && n <= 185) return "Cuadra 3";
         if (n >= 186 && n <= 247) return "Cuadra 4";
         return "Desconocido";
-      }
+    }
 
       // Ejecución serializada para mantener el orden de los IDs
       db.serialize(() => {
-              // Limpiamos la tabla antes de rellenar para evitar errores de duplicados si lo corres de nuevo
-              db.run("DELETE FROM puesto");
-              // Reiniciamos el contador de autoincremento (opcional)
-              db.run("DELETE FROM sqlite_sequence WHERE name='puesto'");
 
-              console.log("Re-calculando y cargando puestos...");
+                  const stmt = db.prepare("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)");
 
-              const stmt = db.prepare("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)");
+                  // --- PROCESAR FILA A ---
+                  for (let n = 1; n <= 299; n++) {
+                      let cuadra = obtenerCuadraA(n);
+                      let ancho = 1.5;
+                      let largo = (cuadra === "Callejón") ? 1.5 : 1.8;
 
-              // Procesar Fila A
-              for (let n = 1; n <= 299; n++) {
-                  let cuadra = obtenerCuadraA(n);
-                  stmt.run('A', cuadra, n);
-                  if (pasosA.includes(n)) {
-                      stmt.run('A', cuadra, 10000 + n);
+                      // Insertar Puesto
+                      stmt.run('A', cuadra, n, ancho, largo);
+                      
+                      // Insertar Paso (si corresponde)
+                      if (pasosA.includes(n)) {
+                          stmt.run('A', cuadra, 10000 + n, 0, 0); // Pasos con tamaño 0
+                      }
                   }
-              }
 
-              // Procesar Fila B
-              for (let n = 1; n <= 247; n++) {
-                  let cuadra = obtenerCuadraB(n);
-                  stmt.run('B', cuadra, n);
-                  if (pasosB.includes(n)) {
-                      stmt.run('B', cuadra, 10000 + n);
+                  // --- PROCESAR FILA B ---
+                  for (let n = 1; n <= 247; n++) {
+                      let cuadra = obtenerCuadraB(n);
+                      let ancho = 1.5;
+                      let largo = 1.8; // En Fila B no hay callejón según tu descripción
+
+                      stmt.run('B', cuadra, n, ancho, largo);
+                      
+                      if (pasosB.includes(n)) {
+                          stmt.run('B', cuadra, 10000 + n, 0, 0);
+                      }
                   }
-              }
 
-              stmt.finalize((err) => {
-                  if (err) console.error("❌ Error:", err.message);
-                  else console.log("✅ Base de datos actualizada con los nuevos rangos.");
-                
-              });
+                  stmt.finalize((err) => {
+                      if (err) console.error("❌ Error final:", err.message);
+                      else console.log("✅ Base de datos lista con puestos, pasos y tamaños.");
+                      db.close();
+                  });
       });
 
     } else {
