@@ -31,7 +31,7 @@ const login = (req, res) => {
             u.rol,
             u.es_vigente,
             u.fecha_fin_usuario,
-            a.nombre || ' ' || a.paterno AS nom_afiliado 
+            a.nombre || ' ' || a.paterno || COALESCE(' ' || a.materno, '') AS nom_afiliado
         FROM usuario u
         LEFT JOIN afiliado a ON u.id_afiliado = a.id_afiliado  
         WHERE u.nom_usuario = ?
@@ -93,7 +93,7 @@ const login = (req, res) => {
                 message: `Acceso concedido. Bienvenido ${user.nom_usuario}`,
                 user: {
                     id_usuario: user.id_usuario,
-                    usuario: user.nom_usuario,
+                    nom_usuario: user.nom_usuario,
                     nom_afiliado: user.nom_afiliado,
                     rol: user.rol
                 }

@@ -7,7 +7,7 @@ import { useLogin } from '../../../context/LoginContext';
 // HOOK DE FORMULARIO DE USUARIO
 // ============================================
 const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
-  const { isLogin, loading: authLoading } = useLogin();
+  const { user, isLogin, loading: authLoading, updateUser } = useLogin(); // ← agregado user y updateUser
 
   const [loading, setLoading] = useState(false);
   const [loadingAfiliados, setLoadingAfiliados] = useState(false);
@@ -115,6 +115,15 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
         response = await usuarioService.actualizar(usuarioId, dataToSend);
       } else {
         response = await usuarioService.crear(dataToSend);
+      }
+
+      // ─── FIX: si el usuario editado es el logueado,
+      //         actualizar el contexto para reflejar en el Topbar ───
+      if (esEdicion && response.data?.data?.id_usuario === user?.id_usuario) {
+        updateUser({
+          nom_usuario: response.data.data.nom_usuario,
+          rol:         response.data.data.rol,
+        });
       }
 
       notifications.show({

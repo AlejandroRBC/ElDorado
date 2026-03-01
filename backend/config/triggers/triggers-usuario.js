@@ -4,7 +4,12 @@ const db = require('../db');
 // TRIGGERS DE HISTORIAL DE USUARIO
 // ============================================
 function crearTriggersHistorial() {
-  
+
+  db.run(`DROP TRIGGER IF EXISTS trg_usuario_insert`);
+  db.run(`DROP TRIGGER IF EXISTS trg_usuario_desactivar`);
+  db.run(`DROP TRIGGER IF EXISTS trg_usuario_reactivar`);
+  db.run(`DROP TRIGGER IF EXISTS trg_usuario_update`);
+
   // Trigger: Registro de creación de usuario
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_usuario_insert
@@ -22,7 +27,7 @@ function crearTriggersHistorial() {
       VALUES (
         NEW.id_usuario,
         NEW.nom_usuario,
-        COALESCE((SELECT nombre || ' ' || paterno FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
+        COALESCE((SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
         NEW.rol,
         '➕ | Se creó usuario: ' || NEW.nom_usuario || ' con rol: ' || NEW.rol,
         COALESCE((SELECT nom_usuario_master FROM usuario_sesion WHERE id = 1), 'sistema'),
@@ -49,7 +54,7 @@ function crearTriggersHistorial() {
       VALUES (
         NEW.id_usuario,
         NEW.nom_usuario,
-        COALESCE((SELECT nombre || ' ' || paterno FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
+        COALESCE((SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
         NEW.rol,
         '❌ | Usuario DESACTIVADO: ' || NEW.nom_usuario,
         COALESCE((SELECT nom_usuario_master FROM usuario_sesion WHERE id = 1), 'sistema'),
@@ -76,7 +81,7 @@ function crearTriggersHistorial() {
       VALUES (
         NEW.id_usuario,
         NEW.nom_usuario,
-        COALESCE((SELECT nombre || ' ' || paterno FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
+        COALESCE((SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
         NEW.rol,
         '✅ | Usuario REACTIVADO: ' || NEW.nom_usuario,
         COALESCE((SELECT nom_usuario_master FROM usuario_sesion WHERE id = 1), 'sistema'),
@@ -86,6 +91,7 @@ function crearTriggersHistorial() {
   `);
 
   // Trigger: Registro de actualización de usuario
+  // NOTA: usa VALUES en lugar de SELECT para evitar error de sintaxis con NEW en SQLite
   db.run(`
     CREATE TRIGGER IF NOT EXISTS trg_usuario_update
     AFTER UPDATE ON usuario
@@ -100,26 +106,27 @@ function crearTriggersHistorial() {
         nom_usuario_master,
         nom_afiliado_master
       )
-      SELECT
+      VALUES (
         NEW.id_usuario,
         NEW.nom_usuario,
-        COALESCE((SELECT nombre || ' ' || paterno FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
+        COALESCE((SELECT nombre || ' ' || paterno || COALESCE(' ' || materno, '') FROM afiliado WHERE id_afiliado = NEW.id_afiliado), 'SIN AFILIADO'),
         NEW.rol,
-        '✏️ ' ||
-        CASE WHEN OLD.nom_usuario != NEW.nom_usuario 
-          THEN ' | Usuario: "' || OLD.nom_usuario || '" → "' || NEW.nom_usuario || '"' 
-          ELSE '' 
+        '✏️' ||
+        CASE WHEN OLD.nom_usuario != NEW.nom_usuario
+          THEN ' | Usuario: "' || OLD.nom_usuario || '" → "' || NEW.nom_usuario || '"'
+          ELSE ''
         END ||
-        CASE WHEN OLD.rol != NEW.rol 
-          THEN ' | Rol: "' || OLD.rol || '" → "' || NEW.rol || '"' 
-          ELSE '' 
+        CASE WHEN OLD.rol != NEW.rol
+          THEN ' | Rol: "' || OLD.rol || '" → "' || NEW.rol || '"'
+          ELSE ''
         END ||
-        CASE WHEN OLD.password != NEW.password 
-          THEN ' | Contraseña actualizada' 
-          ELSE '' 
+        CASE WHEN OLD.password != NEW.password
+          THEN ' | Contraseña actualizada'
+          ELSE ''
         END,
         COALESCE((SELECT nom_usuario_master FROM usuario_sesion WHERE id = 1), 'sistema'),
-        COALESCE((SELECT nom_afiliado_master FROM usuario_sesion WHERE id = 1), 'sistema');
+        COALESCE((SELECT nom_afiliado_master FROM usuario_sesion WHERE id = 1), 'sistema')
+      );
     END;
   `);
 }
