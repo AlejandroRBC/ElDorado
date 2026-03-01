@@ -8,6 +8,7 @@ import BuscadorMapa from './components/BuscadorMapa';
 import { useMapa } from './hooks/useMapa';
 import { useMapaData, obtenerAfiliadoCompleto } from './hooks/useMapaData';
 import { ModalMostrarHistorial } from '../GestionPatentesPuestos/components/ModalMostrarHistorial';
+import { ModalAsignarPuesto } from '../GestionPatentesPuestos/components/ModalAsignarPuesto';
 import Card from '../Afiliados/Components/Card';
 import './Styles/mapa-zoom.css';
 import './Styles/mapaInteractivo.css';
@@ -30,6 +31,8 @@ const MapaModule = () => {
   const [cardAbierta, setCardAbierta] = useState(false);
   const [afiliadoCard, setAfiliadoCard] = useState(null);
   const [cargandoAfiliado, setCargandoAfiliado] = useState(false);
+  const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
+  const [puestoParaAsignar, setPuestoParaAsignar] = useState(null);
 
   const { puestosEnriquecidos, loading } = useMapaData();
 
@@ -69,6 +72,21 @@ const MapaModule = () => {
     cuadra: puesto.cuadra || '—',
   });
 
+  const handleAsignarAfiliado = () => {
+    if (!puestoSeleccionado) return;
+    puestoParaHistorialRef.current = puestoSeleccionado;
+    cerrarPopup();
+    setPuestoParaAsignar({
+      id_puesto: puestoSeleccionado.id_puesto_bd,
+      nroPuesto: puestoSeleccionado.nroPuesto,
+      fila: puestoSeleccionado.fila,
+      cuadra: puestoSeleccionado.cuadra,
+      rubro: puestoSeleccionado.rubro || '',
+      tiene_patente: puestoSeleccionado.tiene_patente || false,
+    });
+    setModalAsignarAbierto(true);
+  };
+
   // Al clickear "Afiliado" en el popup: fetchea el afiliado completo
   const handleVerAfiliado = async () => {
     if (!puestoSeleccionado) return;
@@ -98,6 +116,15 @@ const MapaModule = () => {
     setHistorialAbierto(true);
   };
 
+  const handleHistorialDesdeCard = () => {
+    setCardAbierta(false);
+    setAfiliadoCard(null);
+    const puesto = puestoParaHistorialRef.current;
+    if (puesto) {
+      setPuestoHistorial(buildPuestoHistorial(puesto));
+      setHistorialAbierto(true);
+    }
+  };
 
   const handleCerrarCard = () => {
     setCardAbierta(false);
@@ -143,6 +170,7 @@ const MapaModule = () => {
             onClose={cerrarPopup}
             onVerAfiliado={handleVerAfiliado}
             onVerHistorial={handleVerHistorial}
+            onAsignarAfiliado={handleAsignarAfiliado}
             zoom={estadoMapa.zoom}
             posicion={estadoMapa.posicion}
           />
@@ -154,6 +182,16 @@ const MapaModule = () => {
         opened={historialAbierto}
         close={() => setHistorialAbierto(false)}
         puesto={puestoHistorial}
+      />
+
+      <ModalAsignarPuesto
+        opened={modalAsignarAbierto}
+        close={() => setModalAsignarAbierto(false)}
+        puesto={puestoParaAsignar}
+        onAsignado={() => {
+          setModalAsignarAbierto(false);
+          window.location.reload();
+        }}
       />
 
       {/* Modal Card Afiliado */}
