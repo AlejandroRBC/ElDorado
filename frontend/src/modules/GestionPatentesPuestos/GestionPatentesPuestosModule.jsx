@@ -1,6 +1,9 @@
 // frontend/src/modules/GestionPatentesPuestos/GestionPatentesPuestosModule.jsx
 import { useState } from "react";
-import { Stack, Title, Group, Box, Text, Loader } from "@mantine/core";
+import { Button,Affix,Transition,Stack, Title, Group, Box, Text, Loader } from "@mantine/core";
+
+import {IconArrowUp } from '@tabler/icons-react';
+
 import { useDisclosure } from "@mantine/hooks";
 
 import { usePuestos } from "./hooks/usePuestos";
@@ -17,7 +20,10 @@ function GestionPatentesPuestosModule() {
   const [editarOpened, { open: openEditar, close: closeEditar }] = useDisclosure(false);
   const [traspasoOpened, { open: openTraspaso, close: closeTraspaso }] = useDisclosure(false);
   const [historialOpened, { open: openHistorial, close: closeHistorial }] = useDisclosure(false);
-  const [asignarOpened, { open: openAsignar, close: closeAsignar }] = useDisclosure(false); // ← Nuevo
+  const [asignarOpened, { open: openAsignar, close: closeAsignar }] = useDisclosure(false); 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const {
     puestos,
@@ -101,7 +107,31 @@ function GestionPatentesPuestosModule() {
         onTraspaso={(p) => { setPuestoParaTraspaso(p); openTraspaso(); }}
         onAsignar={(p) => { setPuestoParaAsignar(p); openAsignar(); }} // ← Nueva prop
       />
+    <Affix position={{ bottom: 30, right: 30 }}>
+    <Transition transition="slide-up" mounted={true}>
+      {(transitionStyles) => (
+        <Button
+          leftSection={<IconArrowUp size={18} />}
+          style={{
+            ...transitionStyles,
+            backgroundColor: '#0f0f0f',
+            color: 'white',
+            borderRadius: '50px',
+            height: '50px',
+            padding: '0 25px',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+            border: '2px solid #edbe3c',
+            fontWeight: 600
+          }}
+          onClick={scrollToTop}
+        >
+          Volver arriba
+        </Button>
+      )}
+    </Transition>
+    </Affix>
     </Stack>
+
   );
 }
 
