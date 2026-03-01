@@ -98,15 +98,6 @@ const MapaModule = () => {
     setHistorialAbierto(true);
   };
 
-  const handleHistorialDesdeCard = () => {
-    setCardAbierta(false);
-    setAfiliadoCard(null);
-    const puesto = puestoParaHistorialRef.current;
-    if (puesto) {
-      setPuestoHistorial(buildPuestoHistorial(puesto));
-      setHistorialAbierto(true);
-    }
-  };
 
   const handleCerrarCard = () => {
     setCardAbierta(false);
@@ -169,7 +160,6 @@ const MapaModule = () => {
       {cardAbierta && afiliadoCard && (
         <div className="card-overlay" onClick={handleCerrarCard}>
           <div className="card-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="card-cerrar" onClick={handleCerrarCard}>✕</button>
             <Card afiliado={afiliadoCard} />
           </div>
         </div>

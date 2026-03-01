@@ -84,6 +84,13 @@ export function LoginProvider({ children }) {
     localStorage.setItem('user_session', JSON.stringify(userData));
     iniciarTemporizadorInactividad();
   };
+  const updateUser = (nuevosDatos) => {
+  setUser(prev => {
+    const updated = { ...prev, ...nuevosDatos };
+    localStorage.setItem('user_session', JSON.stringify(updated));
+    return updated;
+  });
+};
 
   const logout = async () => {
     try {
@@ -106,7 +113,7 @@ export function LoginProvider({ children }) {
   };
 
   return (
-    <LoginContext.Provider value={{ user, isLogin, loading, login, logout }}>
+    <LoginContext.Provider value={{ user, isLogin, loading, login, logout, updateUser }}>
       {children}
     </LoginContext.Provider>
   );
