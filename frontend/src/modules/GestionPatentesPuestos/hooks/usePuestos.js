@@ -1,13 +1,15 @@
+
 import { useEffect, useState } from "react";
 import { puestosService } from "../service/puestosService";
+import { notifications } from '@mantine/notifications';
 
-export function usePuestos(closeEditar, closeTraspaso) {
-
+export function usePuestos(closeEditar, closeTraspaso, closeAsignar) {
   const [puestos, setPuestos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
   const [puestoParaTraspaso, setPuestoParaTraspaso] = useState(null);
+  const [puestoParaAsignar, setPuestoParaAsignar] = useState(null); // ← Nuevo estado
 
   const cargarPuestos = async () => {
     try {
@@ -33,9 +35,19 @@ export function usePuestos(closeEditar, closeTraspaso) {
       await puestosService.actualizarPuesto(data.id_puesto, data);
       await cargarPuestos();
       closeEditar();
+      notifications.show({
+        title: '✅ Éxito',
+        message: 'Puesto actualizado correctamente',
+        color: 'green'
+      });
     } catch (e) {
       console.error(e);
       setError("Error al actualizar");
+      notifications.show({
+        title: '❌ Error',
+        message: 'No se pudo actualizar el puesto',
+        color: 'red'
+      });
     } finally {
       setLoading(false);
     }
@@ -48,7 +60,11 @@ export function usePuestos(closeEditar, closeTraspaso) {
       const idPuesto = data.puestos[0];
 
       if (data.desde === data.para) {
-        alert("No puede traspasar a sí mismo");
+        notifications.show({
+          title: '⚠️ Error',
+          message: 'No puede traspasar a sí mismo',
+          color: 'yellow'
+        });
         return;
       }
 
@@ -61,14 +77,34 @@ export function usePuestos(closeEditar, closeTraspaso) {
       if (resultado.success) {
         await cargarPuestos();
         closeTraspaso();
+        notifications.show({
+          title: '✅ Éxito',
+          message: 'Traspaso realizado correctamente',
+          color: 'green'
+        });
       }
 
     } catch (e) {
       console.error(e);
       setError("Error al realizar traspaso");
+      notifications.show({
+        title: '❌ Error',
+        message: e.response?.data?.error || 'Error al realizar traspaso',
+        color: 'red'
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  // Nueva función para manejar la asignación exitosa
+  const handleAsignacionExitosa = () => {
+    cargarPuestos();
+    notifications.show({
+      title: '✅ Éxito',
+      message: 'Puesto asignado correctamente',
+      color: 'green'
+    });
   };
 
   return {
@@ -78,8 +114,11 @@ export function usePuestos(closeEditar, closeTraspaso) {
     cargarPuestos,
     handleGuardarEdicion,
     handleEjecutarTraspaso,
+    handleAsignacionExitosa,
     puestoParaTraspaso,
     setPuestoParaTraspaso,
+    puestoParaAsignar,      // ← Nuevo
+    setPuestoParaAsignar,   // ← Nuevo
     puestoSeleccionado,
     setPuestoSeleccionado
   };

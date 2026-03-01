@@ -1,5 +1,5 @@
 import { Table, Text, Badge, ActionIcon, Menu, Box, Stack, Loader } from "@mantine/core";
-import { IconDotsVertical, IconEye, IconArrowsExchange, IconHistory, IconEdit } from "@tabler/icons-react";
+import { IconUserPlus, IconDotsVertical, IconEye, IconArrowsExchange, IconHistory, IconEdit } from "@tabler/icons-react";
 
 
 export function TablaPuestos({
@@ -7,7 +7,8 @@ export function TablaPuestos({
   loading,
   onVerHistorial,
   onEditar,
-  onTraspaso
+  onTraspaso,
+  onAsignar
 }) {
 
   if (loading) {
@@ -107,6 +108,13 @@ export function TablaPuestos({
                           onClick={() => onVerHistorial(puesto)}
                         >
                           Ver Historial
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<IconUserPlus size={14} />}
+                          onClick={() => onAsignar(puesto)}
+                          description="Asignar este puesto a un afiliado"
+                        >
+                          Asignar Afilado
                         </Menu.Item>
 
                         <Menu.Item
