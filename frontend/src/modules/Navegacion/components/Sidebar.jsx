@@ -1,104 +1,113 @@
 import { NavLink } from 'react-router-dom';
-import { Stack, Text, Group } from '@mantine/core';
-import { 
+import { Stack } from '@mantine/core';
+import { useMediaQuery } from 'react-responsive';
+import {
   IconHome,
   IconUsers,
   IconLicense,
   IconMap
 } from '@tabler/icons-react';
+import '../styles/navegacion.css';
 
-// Configuración de módulos
+/**
+ * Configuración de módulos disponibles en la sidebar.
+ * Cada módulo tiene nombre, ruta e ícono.
+ */
 const modules = [
-  {
-    name: 'Inicio',
-    path: '/inicio',
-    icon: IconHome,
-    component: 'InicioModule',
-  },
-  {
-    name: 'Afiliados',
-    path: '/afiliados',
-    icon: IconUsers,
-    component: 'AfiliacionModule',
-  },
-  {
-    name: 'Gestion Puestos',
-    path: '/gestionPuestos',
-    icon: IconLicense,
-    component: 'GestionPatentesPuestosModule',
-  },
-  {
-    name: 'Mapa',
-    path: '/mapa',
-    icon: IconMap,
-    component: 'MapaModule',
-  },
+  { name: 'Inicio',          path: '/inicio',        icon: IconHome    },
+  { name: 'Afiliados',       path: '/afiliados',      icon: IconUsers   },
+  { name: 'Gestion Puestos', path: '/gestionPuestos', icon: IconLicense },
+  { name: 'Mapa',            path: '/mapa',           icon: IconMap     },
 ];
 
-const SidebarItem = ({ module, isActive, onMouseEnter, onMouseLeave }) => {
-  const backgroundColor = isActive ? '#edbe3c' : 'transparent';
-  const iconColor = isActive ? '#0f0f0f' : '#edbe3c';
-  const textColor = isActive ? '#0f0f0f' : '#edbe3c';
+// ============================================
+// SUB-COMPONENTE: ÍTEM DE SIDEBAR
+// ============================================
+
+/**
+ * Ítem individual de la sidebar con estilos activo/hover.
+ *
+ * @param {Object}   module       - Datos del módulo (name, icon)
+ * @param {boolean}  isActive     - Si la ruta actual coincide
+ * @param {boolean}  soloIconos   - Si solo se muestran íconos (tablet)
+ * @param {Function} onMouseEnter - Handler hover entrada
+ * @param {Function} onMouseLeave - Handler hover salida
+ */
+const SidebarItem = ({ module, isActive, soloIconos, onMouseEnter, onMouseLeave }) => {
+  const bgColor    = isActive ? '#edbe3c' : 'transparent';
+  const iconColor  = isActive ? '#0f0f0f' : '#edbe3c';
+  const textColor  = isActive ? '#0f0f0f' : '#edbe3c';
+  const fontWeight = isActive ? 600 : 500;
 
   return (
     <div
-      style={{
-        backgroundColor,
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-      }}
+      style={{ backgroundColor: bgColor, cursor: 'pointer', transition: 'all 0.2s ease' }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <Group p="md">
+      <div
+        className="sidebar-item-inner"
+        style={{ justifyContent: soloIconos ? 'center' : 'flex-start' }}
+      >
         <module.icon
           size={20}
-          style={{
-            color: iconColor,
-            transition: 'color 0.2s ease',
-          }}
+          className="sidebar-icon"
+          style={{ color: iconColor }}
         />
-        <Text
-          style={{
-            color: textColor,
-            fontWeight: isActive ? 600 : 500,
-            transition: 'color 0.2s ease',
-          }}
-        >
-          {module.name}
-        </Text>
-      </Group>
+        {!soloIconos && (
+          <span
+            className="sidebar-label"
+            style={{ color: textColor, fontWeight }}
+          >
+            {module.name}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
 
+// ============================================
+// COMPONENTE PRINCIPAL: SIDEBAR
+// ============================================
+
+/**
+ * Barra lateral de navegación fija.
+ * - Fondo negro cubre toda la altura (100vh)
+ * - Items con margen superior para bajarlos
+ * - En tablet muestra solo íconos (60px), en desktop texto + ícono (200px)
+ */
 const Sidebar = () => {
+  const isTablet = useMediaQuery({ minWidth: 641, maxWidth: 1024 });
+  const sidebarWidth = isTablet ? 60 : 200;
+
   return (
-    <Stack
-      gap={0}
+    <div
       style={{
+        width:           sidebarWidth,
         backgroundColor: '#0f0f0f',
-        width: '200px',
-        position: 'fixed',
-        left: 0,
-        top: '20%',
-        overflowY: 'auto',
+        height:          '100vh',
+        display:         'flex',
+        flexDirection:   'column',
       }}
     >
-      {modules.map((module) => (
-        <div key={module.path}>
+      {/* ── Items de navegación bajados ── */}
+      <Stack gap={0} style={{ marginTop: isTablet ? '0.3rem' : '0.3rem' }}>
+        {modules.map((module) => (
           <NavLink
+            key={module.path}
             to={module.path}
             style={{ textDecoration: 'none' }}
           >
             {({ isActive }) => (
-              <SidebarItem 
-                module={module} 
+              <SidebarItem
+                module={module}
                 isActive={isActive}
+                soloIconos={isTablet}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#edbe3c';
                   const icon = e.currentTarget.querySelector('svg');
-                  const text = e.currentTarget.querySelector('p');
+                  const text = e.currentTarget.querySelector('span');
                   if (icon) icon.style.color = '#0f0f0f';
                   if (text) text.style.color = '#0f0f0f';
                 }}
@@ -106,7 +115,7 @@ const Sidebar = () => {
                   if (!isActive) {
                     e.currentTarget.style.backgroundColor = 'transparent';
                     const icon = e.currentTarget.querySelector('svg');
-                    const text = e.currentTarget.querySelector('p');
+                    const text = e.currentTarget.querySelector('span');
                     if (icon) icon.style.color = '#edbe3c';
                     if (text) text.style.color = '#edbe3c';
                   }
@@ -114,9 +123,9 @@ const Sidebar = () => {
               />
             )}
           </NavLink>
-        </div>
-      ))}
-    </Stack>
+        ))}
+      </Stack>
+    </div>
   );
 };
 

@@ -6,12 +6,13 @@ import api from '../../../api/axiosConfig';
 
 export const LoginService = {
   /**
-   * Autenticar usuario
+   * Autenticar usuario con credenciales
+   * @param {{ usuario: string, password: string }} credentials
    */
   login: async (credentials) => {
     try {
       const { data } = await api.post('/auth/login', credentials);
-      return data; 
+      return data;
     } catch (error) {
       const message = error.response?.data?.message || 'Error de conexión con el servidor';
       throw new Error(message);
@@ -19,7 +20,7 @@ export const LoginService = {
   },
 
   /**
-   * Cerrar sesión local
+   * Cerrar sesión limpiando datos locales
    */
   logout: () => {
     localStorage.removeItem('user_session');

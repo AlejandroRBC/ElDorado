@@ -1,11 +1,525 @@
 /* ============================================
+   FUENTES GOOGLE
+============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ============================================
+   VARIABLES GLOBALES
+============================================ */
+:root {
+  --color-primary: #0f0f0f;
+  --color-accent: #EDBE3C;
+  --color-bg: #F6F9FF;
+  --color-white: #ffffff;
+  --color-border: #eee;
+  --color-dimmed: #0f0f0f;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --font-title: 'Bebas Neue', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 100px;
+}
+
+/* ============================================
+   BASE GLOBAL
+============================================ */
+.usuario-module *,
+.usuario-form *,
+.usuario-list * {
+  font-family: var(--font-body);
+}
+
+/* ============================================
+   MÓDULO PRINCIPAL
+============================================ */
+.usuario-module {
+  font-family: var(--font-body);
+}
+
+.usuario-module-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: var(--color-primary) !important;
+  color: var(--color-white) !important;
+  border-radius: var(--radius-xl) !important;
+  height: 50px !important;
+  padding: 0 25px !important;
+  box-shadow: 0 4px 15px var(--color-shadow) !important;
+  border: none !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.usuario-module-fab:hover {
+  background-color: var(--color-accent) !important;
+  color: var(--color-primary) !important;
+  box-shadow: 0 6px 20px rgba(237, 190, 60, 0.35) !important;
+}
+
+/* ============================================
+   PAPER / CONTENEDOR PRINCIPAL DE LISTA
+============================================ */
+.usuario-list-paper {
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 4px 20px var(--color-shadow) !important;
+  min-height: 70vh;
+  position: relative;
+}
+
+/* ============================================
+   LISTA DE USUARIOS - ENCABEZADO
+============================================ */
+.usuario-list {
+  font-family: var(--font-body);
+}
+
+.usuario-list-loader {
+  display: block;
+  margin: 40px auto;
+}
+
+.usuario-list-header {
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  align-items: flex-end;
+}
+
+.usuario-list-title {
+  font-family: var(--font-title) !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+}
+
+/* ============================================
+   FILTROS
+============================================ */
+.usuario-list-filtros-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.usuario-list-filtro-label {
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 4px;
+  color: var(--color-primary);
+  font-family: var(--font-body) !important;
+}
+
+.usuario-list-filtro-select input,
+.usuario-list-filtro-select .mantine-Select-input {
+  background-color: var(--color-bg) !important;
+  border: 1px solid var(--color-bg) !important;
+  border-radius: var(--radius-sm) !important;
+  height: 45px !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.875rem !important;
+}
+
+.usuario-list-filtro-select .mantine-Select-input:focus {
+  border-color: var(--color-primary) !important;
+}
+
+/* Switch toggle estado */
+.usuario-list-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usuario-list-switch-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-dimmed);
+  font-family: var(--font-body);
+}
+
+.usuario-list-switch-label.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============================================
+   TABLA - ESTILO MÓDULO AFILIADOS
+============================================ */
+.usuario-table-scroll {
+  overflow-x: auto;
+}
+
+.usuario-table {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  overflow: hidden;
+  min-width: 900px;
+  font-family: var(--font-body) !important;
+}
+
+.usuario-table thead {
+  background-color: var(--color-bg) !important;
+}
+
+.usuario-table thead th {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  color: var(--color-primary) !important;
+  padding: 14px 16px !important;
+  white-space: nowrap;
+}
+
+/* Cabeceras de tabla: sin badge gris, texto limpio */
+.usuario-table thead th {
+  text-align: center !important;
+}
+
+.usuario-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.15s ease;
+  cursor: default;
+}
+
+.usuario-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.usuario-table tbody td {
+  font-family: var(--font-body) !important;
+  font-size: 0.875rem !important;
+  padding: 14px 16px !important;
+  color: var(--color-primary);
+  vertical-align: middle;
+  text-align: center !important;
+}
+
+.usuario-table-empty {
+  text-align: center;
+  color: var(--color-dimmed);
+  font-style: italic;
+  padding: 40px !important;
+  font-family: var(--font-body) !important;
+}
+
+.usuario-table-motivo-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   BOTONES DE ACCIÓN EN TABLA
+============================================ */
+.usuario-list-action-buttons {
+  gap: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.usuario-action-btn {
+  border-radius: 6px !important;
+  transition: background-color 0.15s ease !important;
+}
+.usuario-action-btn:hover {
+  background-color: white !important;
+}
+
+/* ============================================
+   TABS
+============================================ */
+.usuario-tabs .mantine-Tabs-tab {
+  font-family: var(--font-body) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  color: var(--color-dimmed) !important;
+  transition: color 0.15s ease !important;
+}
+
+.usuario-tabs .mantine-Tabs-tab[data-active] {
+  color: var(--color-primary) !important;
+  border-bottom-color: var(--color-accent) !important;
+  font-weight: 600 !important;
+}
+
+.usuario-tabs .mantine-Tabs-tabsList {
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+
+/* ============================================
+   HISTORIAL PANEL - ENCABEZADO ESTILO PUESTOS
+============================================ */
+.usuario-historial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.usuario-historial-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usuario-historial-title {
+  font-family: var(--font-title) !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+}
+
+.usuario-historial-title-underline {
+  border-bottom: 2px solid var(--color-primary);
+  width: 160px;
+  margin-bottom: 6px;
+}
+
+.usuario-historial-filtros {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.usuario-list-filtro-input input,
+.usuario-list-filtro-input .mantine-TextInput-input {
+  background-color: var(--color-bg) !important;
+  border: 1px solid var(--color-bg) !important;
+  border-radius: var(--radius-sm) !important;
+  height: 45px !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.875rem !important;
+}
+
+.usuario-list-filtro-input .mantine-TextInput-input:focus {
+  border-color: var(--color-primary) !important;
+}
+
+.usuario-list-filtro-id {
+  width: 120px;
+}
+
+.usuario-list-filtro-fecha {
+  width: 160px;
+}
+
+/* ============================================
    FORMULARIO DE USUARIO
 ============================================ */
 .usuario-form {
-  max-width: 600px;
-  margin: 0 auto;
+  font-family: var(--font-body);
 }
 
+.usuario-form-title {
+  font-family: var(--font-title) !important;
+  font-size: 1.75rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+  margin-bottom: 1.25rem;
+}
+
+.usuario-form .mantine-TextInput-input,
+.usuario-form .mantine-Select-input,
+.usuario-form .mantine-PasswordInput-input {
+  background-color: var(--color-bg) !important;
+  border: 1px solid var(--color-bg) !important;
+  border-radius: var(--radius-sm) !important;
+  height: 45px !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.875rem !important;
+}
+
+.usuario-form .mantine-TextInput-input:focus,
+.usuario-form .mantine-Select-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: none !important;
+}
+
+.usuario-form .mantine-TextInput-label,
+.usuario-form .mantine-Select-label,
+.usuario-form .mantine-Checkbox-label {
+  font-family: var(--font-body) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 4px;
+  color: var(--color-primary);
+}
+
+.usuario-form-afiliado-disabled {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  color: #333 !important;
+  font-weight: 500 !important;
+  font-family: var(--font-body) !important;
+}
+
+/* ============================================
+   BUSCADOR DE AFILIADOS (estilo BuscadorMapa)
+============================================ */
+.usuario-form-search-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.usuario-form-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg);
+  border: 1.5px solid #ddd;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+
+.usuario-form-search-input-wrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: none;
+}
+
+.usuario-form-search-input-wrapper input {
+  border: none !important;
+  outline: none !important;
+  flex: 1;
+  font-size: 0.875rem !important;
+  color: #333;
+  background: transparent !important;
+  font-family: var(--font-body) !important;
+  height: 32px !important;
+}
+
+.usuario-form-clear-button {
+  padding: 0 !important;
+  min-width: auto !important;
+  color: #999 !important;
+}
+
+.usuario-form-results-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1.5px solid #ddd !important;
+  border-radius: var(--radius-sm) !important;
+  margin-top: 0 !important;
+  background-color: var(--color-white) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+  padding: 4px !important;
+}
+
+.usuario-form-result-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  height: auto;
+  margin-bottom: 2px;
+  text-align: left;
+  font-weight: normal;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.12s;
+  font-family: var(--font-body);
+}
+
+.usuario-form-result-item:hover {
+  background-color: var(--color-bg);
+}
+
+.usuario-form-result-icon {
+  width: 28px;
+  height: 28px;
+  background-color: var(--color-accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.usuario-form-no-results {
+  text-align: center;
+  padding: 1rem 0.5rem;
+  font-family: var(--font-body) !important;
+  font-size: 0.875rem !important;
+}
+
+/* ── Guardar / Actualizar: fondo amarillo → hover negro ── */
+.usuario-btn-save,
+.usuario-btn-save:not(:disabled) {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border: none;
+  outline: none;
+  border-radius: var(--radius-xl);
+  height: 40px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0 25px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.usuario-btn-save:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.usuario-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Cancelar: fondo negro → hover amarillo ── */
+.usuario-btn-cancel,
+.usuario-btn-cancel:not(:disabled) {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  outline: none;
+  border-radius: var(--radius-xl);
+  height: 40px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0 25px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.usuario-btn-cancel:hover {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.usuario-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   LOADER
+============================================ */
 .usuario-form-loader {
   display: block;
   margin: 20px auto;
@@ -14,131 +528,5 @@
 .usuario-form-loader-title {
   text-align: center;
   margin-top: 1rem;
-}
-
-.usuario-form-afiliado-disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-  color: #333;
-  font-weight: 500;
-}
-
-.usuario-form-search-container {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.usuario-form-clear-button {
-  padding: 0;
-  min-width: auto;
-}
-
-.usuario-form-results-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #e9ecef;
-  margin-top: 4px;
-  background-color: white;
-}
-
-.usuario-form-result-item {
-  justify-content: flex-start;
-  padding: 10px 12px;
-  height: auto;
-  margin-bottom: 2px;
-  text-align: left;
-  font-weight: normal;
-}
-
-.usuario-form-no-results {
-  text-align: center;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-/* ============================================
-   LISTA DE USUARIOS
-============================================ */
-.usuario-list {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.usuario-list table {
-  margin-top: 20px;
-}
-
-.usuario-list-loader {
-  display: block;
-  margin: 20px auto;
-}
-
-.usuario-list-header {
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.usuario-list-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.usuario-list-filter {
-  width: 150px;
-}
-
-.usuario-list-filtros-historial {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.usuario-list-filtro-id {
-  width: 120px;
-}
-
-.usuario-list-filtro-fecha {
-  width: 140px;
-}
-
-.usuario-list-empty {
-  text-align: center;
-}
-
-.usuario-list-motivo-cell {
-  max-width: 300px;
-}
-
-.usuario-list-action-buttons {
-  gap: 0.25rem;
-}
-
-/* ============================================
-   RESPONSIVE
-============================================ */
-@media (max-width: 768px) {
-  .usuario-list {
-    padding: 10px;
-    overflow-x: auto;
-  }
-  
-  .usuario-form {
-    max-width: 100%;
-    padding: 10px;
-  }
-  
-  .usuario-list-filtros-historial {
-    flex-wrap: wrap;
-  }
-  
-  .usuario-list-filtro-id,
-  .usuario-list-filtro-fecha {
-    width: 100%;
-  }
+  font-family: var(--font-body) !important;
 }

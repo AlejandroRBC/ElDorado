@@ -34,6 +34,7 @@ npm install --save-dev concurrently wait-on
     npm install exceljs
     npm install vite-plugin-svgr
     npm install jspdf jspdf-autotable
+    npm install react-responsive
 
 
 

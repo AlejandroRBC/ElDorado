@@ -1,4 +1,4 @@
-import api from '../../../api/axiosConfig'; 
+import api from '../../../api/axiosConfig';
 
 // ============================================
 // SERVICIOS DE USUARIO
@@ -6,65 +6,73 @@ import api from '../../../api/axiosConfig';
 
 const usuarioService = {
   /**
-   * Listar usuarios con filtro opcional
+   * Listar usuarios con filtro de estado opcional
+   * @param {string} estado - 'todos' | 'activo' | 'inactivo'
    */
   listar: (estado = 'todos') => {
     return api.get('/usuario', { params: { estado } });
   },
 
   /**
-   * Obtener afiliados para select (con búsqueda)
+   * Obtener afiliados disponibles para el selector de búsqueda
+   * @param {string} search - Término de búsqueda opcional
    */
   obtenerAfiliadosSelect: (search = '') => {
-    return api.get('/usuario/afiliados/select', { 
-      params: { search } 
-    });
+    return api.get('/usuario/afiliados/select', { params: { search } });
   },
 
   /**
-   * Obtener afiliado por ID
+   * Obtener datos de un afiliado por su ID
+   * @param {number} id - ID del afiliado
    */
   obtenerAfiliadoPorId: (id) => {
     return api.get(`/usuario/afiliados/${id}`);
   },
 
   /**
-   * Crear nuevo usuario
+   * Crear un nuevo usuario
+   * @param {Object} data - Datos del usuario (id_afiliado, rol, nom_usuario, password)
    */
   crear: (data) => {
     return api.post('/usuario', data);
   },
-  
+
   /**
-   * Obtener usuario por ID
+   * Obtener un usuario por su ID
+   * @param {number} id - ID del usuario
    */
   obtener: (id) => {
     return api.get(`/usuario/${id}`);
   },
 
   /**
-   * Actualizar usuario (password opcional)
+   * Actualizar datos de un usuario (password es opcional)
+   * @param {number} id   - ID del usuario
+   * @param {Object} data - Datos a actualizar
    */
   actualizar: (id, data) => {
     return api.put(`/usuario/${id}`, data);
   },
 
   /**
-   * Desactivar usuario
+   * Desactivar un usuario (baja lógica)
+   * @param {number} id - ID del usuario
    */
   desactivar: (id) => {
     return api.patch(`/usuario/${id}/desactivar`);
   },
 
   /**
-   * Reactivar usuario
+   * Reactivar un usuario previamente desactivado
+   * @param {number} id - ID del usuario
    */
   reactivar: (id) => {
     return api.patch(`/usuario/${id}/reactivar`);
   },
 
   /**
-   * Historial de cambios con filtros
+   * Obtener historial de cambios con filtros opcionales
+   * @param {Object} params - { id_usuario, desde, hasta }
    */
   historial: (params = {}) => {
     return api.get('/usuario/historial', { params });

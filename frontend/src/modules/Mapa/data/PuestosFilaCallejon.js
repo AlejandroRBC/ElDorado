@@ -1,3 +1,6 @@
+// ============================================
+// PUESTOS CALLEJON
+// ============================================
 export const puestosFilaCallejon = [
     { id:76, nroPuesto: 68,  cuadra:"Callejón", fila: 'A', x: 490, y: 320, width: 5,  height: 7 },
     { id:77, nroPuesto: 69,  cuadra:"Callejón", fila: 'A', x: 490, y: 311, width: 5,  height: 8 },

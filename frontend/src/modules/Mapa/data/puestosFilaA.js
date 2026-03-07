@@ -1,3 +1,6 @@
+// ============================================
+// PUESTOS FILA A
+// ============================================
 export const puestosFilaA = [
     { id:1, nroPuesto: 1,   cuadra:"1ra cuadra", fila: 'A', x: 108, y: 328, width: 5,  height: 11 },
     { id:3, nroPuesto: 2,   cuadra:"1ra cuadra", fila: 'A', x: 118, y: 333, width: 5,  height: 11 },

@@ -9,7 +9,8 @@ import { useLogin } from '../../../context/LoginContext';
 // ============================================
 
 /**
- * Maneja la lógica del formulario de login
+ * Maneja el estado y la lógica del formulario de autenticación.
+ * Expone el formulario, el handler de submit y el estado de carga.
  */
 export function useLoginForm() {
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,8 @@ export function useLoginForm() {
   });
 
   /**
-   * Procesar login
+   * Procesar intento de login contra el servidor
+   * @param {Object} values - { usuario, password }
    */
   const handleLogin = async (values) => {
     setLoading(true);

@@ -1,4 +1,9 @@
 /* ============================================
+   FUENTES GOOGLE
+============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ============================================
    CONTENEDOR PRINCIPAL
 ============================================ */
 .login-full-container {
@@ -7,6 +12,7 @@
   width: 100vw;
   overflow: hidden;
   background: white;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* ============================================
@@ -77,6 +83,7 @@
 .login-form-wrapper {
   width: 100%;
   max-width: 450px;
+  padding: 0 2rem;
 }
 
 .login-form-stack {
@@ -86,7 +93,7 @@
 
 .login-title {
   margin-bottom: 15px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Bebas Neue', sans-serif !important;
   font-weight: 400;
   font-size: 45px;
   line-height: 100%;
@@ -116,6 +123,7 @@
   padding-bottom: 14px;
   height: 52px;
   font-size: 15px;
+  font-family: 'Poppins', sans-serif;
   width: 100%;
 }
 
@@ -133,6 +141,7 @@
   padding-bottom: 17px;
   height: 52px;
   font-size: 15px;
+  font-family: 'Poppins', sans-serif;
   width: 100%;
 }
 
@@ -143,6 +152,7 @@
 .login-input-password .mantine-PasswordInput-innerInput {
   padding-left: 25px;
   color: #0F0F0F;
+  font-family: 'Poppins', sans-serif;
 }
 
 .login-input-password .mantine-PasswordInput-innerInput::placeholder {
@@ -153,6 +163,7 @@
    BOTÓN DE SUBMIT
 ============================================ */
 .login-submit-button {
+  font-family: 'Poppins', sans-serif !important;
   font-weight: 600;
   font-size: 14px;
   width: 60%;

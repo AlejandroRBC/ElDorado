@@ -1,12 +1,29 @@
-import { Paper, Title, Text, Button, Group, Stack, Container, Box } from '@mantine/core';
+import { Paper, Title, Text, Button, Group, Container, Box } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { IconUsers, IconLicense, IconArrowRight } from '@tabler/icons-react';
 import { useState } from 'react';
+import { useMediaQuery } from 'react-responsive';
+import ModuleHeader from '../Navegacion/components/ModuleHeader';
+import './Styles/inicio.css';
 
+// ============================================
+// MÓDULO DE INICIO
+// ============================================
+
+/**
+ * Página principal del sistema.
+ * Muestra una frase inspiradora y accesos directos a los módulos principales.
+ */
 const InicioModule = () => {
   const navigate = useNavigate();
   const [hoveredButton, setHoveredButton] = useState(null);
 
+  // ── Breakpoints responsive ──
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+
+  /**
+   * Módulos disponibles con su ruta y ícono
+   */
   const modulesData = [
     {
       id: 1,
@@ -25,65 +42,34 @@ const InicioModule = () => {
   ];
 
   return (
-    <Container fluid p="md">
-      {/* Encabezado del módulo */}
-      <Group justify="space-between" mb="xl">
-        <Title order={1} style={{ color: '#0f0f0f', fontSize: '2rem' }}>
-          Panel Principal
-        </Title>
-      </Group>
+    <Container fluid p="md" className="inicio-module">
 
-      {/* Contenido principal - Todo en una columna alineado a la derecha */}
-      <Paper 
-        p="xl" 
-        radius="lg" 
-        style={{ 
-          backgroundColor: 'white',
-          minHeight: '400px',
-          border: '1px solid #eee',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Frase inspiradora alineada a la derecha */}
-        <Box style={{ 
-          maxWidth: '900px',
-          textAlign: 'right',
-          marginTop: '90px',
-        }}>
-          <Text
-            size="1.8rem"
-            fw={700}
-            style={{
-              color: '#0f0f0f',
-              fontStyle: 'italic',
-              lineHeight: 1.3,
-            }}
-          >
-            "Trabajando juntos por un mejor mañana para todos los <br />
+      {/* ── Encabezado ── */}
+      <ModuleHeader title="Inicio" />
+
+      {/* ── Contenedor principal ── */}
+      <Paper p="xl" className="inicio-paper">
+
+        {/* ── Frase inspiradora ── */}
+        <Box className="inicio-quote">
+          <Text className="inicio-quote-text">
+            "Trabajando juntos por un mejor mañana para todos los{isMobile ? ' ' : <br />}
             miembros de nuestra comunidad"
           </Text>
         </Box>
 
-        {/* Botones en la misma fila, alineados a la derecha */}
-        <Group 
-          gap="md" 
-          style={{ 
-            justifyContent: 'flex-end',
-            width: '100%',
-          }}
-        >
+        {/* ── Botones de módulos ── */}
+        <Group gap="md" className="inicio-buttons-group">
           {modulesData.map((module) => {
             const isHovered = hoveredButton === module.id;
-            
+
             return (
               <Button
                 key={module.id}
                 leftSection={<module.icon size={22} />}
                 rightSection={<IconArrowRight size={20} />}
                 size="lg"
+                className="inicio-module-btn"
                 onClick={() => navigate(module.path)}
                 onMouseEnter={() => setHoveredButton(module.id)}
                 onMouseLeave={() => setHoveredButton(null)}
@@ -91,10 +77,6 @@ const InicioModule = () => {
                   backgroundColor: isHovered ? '#0f0f0f' : '#edbe3c',
                   color: isHovered ? 'white' : '#0f0f0f',
                   justifyContent: 'space-between',
-                  borderRadius: '100px',
-                  height: '65px',
-                  minWidth: '200px',
-                  transition: 'all 0.3s ease',
                   transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
                   boxShadow: isHovered ? '0 4px 15px rgba(15, 15, 15, 0.2)' : 'none',
                 }}
@@ -105,8 +87,6 @@ const InicioModule = () => {
           })}
         </Group>
       </Paper>
-
-      
     </Container>
   );
 };

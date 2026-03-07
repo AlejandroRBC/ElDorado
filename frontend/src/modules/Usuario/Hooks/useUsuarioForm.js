@@ -6,23 +6,35 @@ import { useLogin } from '../../../context/LoginContext';
 // ============================================
 // HOOK DE FORMULARIO DE USUARIO
 // ============================================
-const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
-  const { user, isLogin, loading: authLoading, updateUser } = useLogin(); // ← agregado user y updateUser
 
-  const [loading, setLoading] = useState(false);
+/**
+ * Maneja todo el estado y la lógica del formulario de usuario.
+ * Soporta tanto creación como edición.
+ * En creación: carga la lista de afiliados disponibles para el buscador.
+ * En edición: carga los datos actuales del usuario y su afiliado.
+ *
+ * @param {Function} onSuccess  - Callback al guardar con éxito
+ * @param {number|null} usuarioId - ID del usuario a editar (null = nuevo)
+ */
+const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
+  const { user, isLogin, loading: authLoading, updateUser } = useLogin();
+
+  const [loading, setLoading]               = useState(false);
   const [loadingAfiliados, setLoadingAfiliados] = useState(false);
-  const [afiliados, setAfiliados] = useState([]);
+  const [afiliados, setAfiliados]           = useState([]);
   const [cambiarPassword, setCambiarPassword] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
+  const [searchTerm, setSearchTerm]         = useState('');
+  const [formData, setFormData]             = useState({
     id_afiliado: '',
     rol: 'usuario',
     nom_usuario: '',
     password: ''
   });
 
+  // true si estamos editando un usuario existente
   const esEdicion = !!usuarioId;
 
+  // ── Cargar afiliados para el buscador (solo en creación) ──
   useEffect(() => {
     if (!authLoading && isLogin && !esEdicion) {
       const cargarAfiliados = async () => {
@@ -40,29 +52,29 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
           setLoadingAfiliados(false);
         }
       };
-
       cargarAfiliados();
     }
   }, [authLoading, isLogin, esEdicion]);
 
+  // ── Cargar datos del usuario a editar ──
   useEffect(() => {
     if (!authLoading && isLogin && usuarioId) {
       const cargarUsuario = async () => {
         try {
           setLoading(true);
-          
-          const responseUsuario = await usuarioService.obtener(usuarioId);
-          const usuario = responseUsuario.data.data;
+
+          const responseUsuario  = await usuarioService.obtener(usuarioId);
+          const usuario          = responseUsuario.data.data;
 
           const responseAfiliado = await usuarioService.obtenerAfiliadoPorId(usuario.id_afiliado);
-          const afiliadoData = responseAfiliado.data.data;
+          const afiliadoData     = responseAfiliado.data.data;
 
           setFormData({
-            id_afiliado: usuario.id_afiliado || '',
+            id_afiliado:      usuario.id_afiliado || '',
             id_afiliado_data: afiliadoData,
-            rol: usuario.rol,
-            nom_usuario: usuario.nom_usuario,
-            password: ''
+            rol:              usuario.rol,
+            nom_usuario:      usuario.nom_usuario,
+            password:         ''
           });
         } catch (error) {
           notifications.show({
@@ -74,15 +86,22 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
           setLoading(false);
         }
       };
-
       cargarUsuario();
     }
   }, [usuarioId, authLoading, isLogin]);
 
+  /**
+   * Actualizar un campo del formulario
+   * @param {string} field - Nombre del campo
+   * @param {any}    value - Nuevo valor
+   */
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  /**
+   * Enviar formulario (crear o actualizar)
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -98,12 +117,13 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     try {
       setLoading(true);
 
-      const dataToSend = { 
+      const dataToSend = {
         id_afiliado: formData.id_afiliado,
-        rol: formData.rol,
+        rol:         formData.rol,
         nom_usuario: formData.nom_usuario
       };
-      
+
+      // Incluir password solo si corresponde
       if (!esEdicion) {
         dataToSend.password = formData.password;
       } else if (esEdicion && cambiarPassword && formData.password) {
@@ -117,8 +137,7 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
         response = await usuarioService.crear(dataToSend);
       }
 
-      // ─── FIX: si el usuario editado es el logueado,
-      //         actualizar el contexto para reflejar en el Topbar ───
+      // Si el usuario editado es el logueado, actualizar el contexto (Topbar)
       if (esEdicion && response.data?.data?.id_usuario === user?.id_usuario) {
         updateUser({
           nom_usuario: response.data.data.nom_usuario,
@@ -147,6 +166,9 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
     }
   };
 
+  /**
+   * Resetear el formulario a su estado inicial
+   */
   const resetForm = () => {
     setFormData({
       id_afiliado: '',

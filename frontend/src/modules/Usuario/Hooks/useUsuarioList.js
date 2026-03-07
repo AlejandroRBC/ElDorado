@@ -8,16 +8,17 @@ import { useLogin } from '../../../context/LoginContext';
 // ============================================
 
 /**
- * Maneja la lógica de la lista de usuarios e historial
+ * Maneja la lógica de la lista de usuarios y el historial de auditoría.
+ * Expone funciones para desactivar, reactivar y recargar manualmente.
  */
 const useUsuarioList = () => {
   const { isLogin, loading: authLoading } = useLogin();
 
-  const [usuarios, setUsuarios] = useState([]);
-  const [historial, setHistorial] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [usuarios, setUsuarios]           = useState([]);
+  const [historial, setHistorial]         = useState([]);
+  const [loading, setLoading]             = useState(false);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
-  const [filtro, setFiltro] = useState('todos');
+  const [filtro, setFiltro] = useState('activo');
   const [filtroHistorial, setFiltroHistorial] = useState({
     id_usuario: '',
     desde: '',
@@ -25,7 +26,7 @@ const useUsuarioList = () => {
   });
 
   /**
-   * Cargar lista de usuarios
+   * Cargar lista de usuarios según el filtro de estado
    */
   const cargarUsuarios = useCallback(async () => {
     try {
@@ -44,7 +45,7 @@ const useUsuarioList = () => {
   }, [filtro]);
 
   /**
-   * Cargar historial de cambios
+   * Cargar historial de cambios con filtros opcionales
    */
   const cargarHistorial = useCallback(async () => {
     try {
@@ -62,22 +63,19 @@ const useUsuarioList = () => {
     }
   }, [filtroHistorial]);
 
-  // Cargar usuarios al montar o cambiar filtro
+  // Recargar usuarios al cambiar filtro
   useEffect(() => {
-    if (!authLoading && isLogin) {
-      cargarUsuarios();
-    }
+    if (!authLoading && isLogin) cargarUsuarios();
   }, [cargarUsuarios, authLoading, isLogin]);
 
-  // Cargar historial al montar o cambiar filtros
+  // Recargar historial al cambiar filtros
   useEffect(() => {
-    if (!authLoading && isLogin) {
-      cargarHistorial();
-    }
+    if (!authLoading && isLogin) cargarHistorial();
   }, [cargarHistorial, authLoading, isLogin]);
 
   /**
-   * Desactivar usuario
+   * Desactivar un usuario por ID
+   * @param {number} id - ID del usuario
    */
   const desactivar = async (id) => {
     try {
@@ -99,7 +97,8 @@ const useUsuarioList = () => {
   };
 
   /**
-   * Reactivar usuario
+   * Reactivar un usuario por ID
+   * @param {number} id - ID del usuario
    */
   const reactivar = async (id) => {
     try {

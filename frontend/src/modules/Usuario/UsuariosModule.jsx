@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Container, Modal, Button } from '@mantine/core';
+import { Container, Modal, Button, Paper } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
+import { useMediaQuery } from 'react-responsive';
 import UsuarioList from './Components/usuarioList';
 import UsuarioForm from './Components/usuarioForm';
 import './Styles/usuario.css';
@@ -10,15 +11,20 @@ import './Styles/usuario.css';
 // ============================================
 
 /**
- * Página principal del módulo de usuarios
+ * Página principal del módulo de usuarios.
+ * Contiene la lista de usuarios, el historial y el modal de creación/edición.
+ * El botón flotante (FAB) abre el modal para crear un nuevo usuario.
  */
 const UsuariosModule = () => {
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalAbierto, setModalAbierto]     = useState(false);
   const [usuarioEditando, setUsuarioEditando] = useState(null);
-  const [recargarLista, setRecargarLista] = useState(0);
+  const [recargarLista, setRecargarLista]   = useState(0);
+
+  // ── Breakpoints responsive ──
+  const isMobile = useMediaQuery({ maxWidth: 640 });
 
   /**
-   * Abrir modal para nuevo usuario
+   * Abrir modal en modo creación
    */
   const handleNuevo = () => {
     setUsuarioEditando(null);
@@ -26,7 +32,8 @@ const UsuariosModule = () => {
   };
 
   /**
-   * Abrir modal para editar usuario
+   * Abrir modal en modo edición con los datos del usuario seleccionado
+   * @param {Object} usuario - Datos del usuario a editar
    */
   const handleEditar = (usuario) => {
     setUsuarioEditando(usuario);
@@ -34,7 +41,7 @@ const UsuariosModule = () => {
   };
 
   /**
-   * Cerrar modal y recargar lista
+   * Cerrar modal y forzar recarga de la lista
    */
   const handleSuccess = () => {
     setModalAbierto(false);
@@ -43,32 +50,45 @@ const UsuariosModule = () => {
   };
 
   return (
-    <Container size="xl" py="md">
-      <UsuarioList 
-        onEditar={handleEditar} 
-        key={recargarLista}
-      />
-      
-      <Button
-        leftSection={<IconPlus size={16} />}
-        onClick={handleNuevo}
-        style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          zIndex: 1000
-        }}
-        size="lg"
+    <Container fluid p="md" className="usuario-module">
+
+      {/* Contenedor principal con estilo Paper */}
+      <Paper
+        p="xl"
+        className="usuario-list-paper"
       >
-        Nuevo Usuario
+        {/* Lista de usuarios + historial */}
+        <UsuarioList
+          onEditar={handleEditar}
+          key={recargarLista}
+        />
+      </Paper>
+
+      {/* ── Botón flotante nuevo usuario ── */}
+      <Button
+        leftSection={<IconPlus size={18} />}
+        onClick={handleNuevo}
+        className="usuario-module-fab"
+        size={isMobile ? 'md' : 'lg'}
+      >
+        {isMobile ? 'Nuevo' : 'Nuevo Usuario'}
       </Button>
 
+      {/* ── Modal crear / editar ── */}
       <Modal
         opened={modalAbierto}
         onClose={() => setModalAbierto(false)}
         title={usuarioEditando ? 'Editar Usuario' : 'Nuevo Usuario'}
-        size="lg"
+        size={isMobile ? '100%' : 'lg'}
         centered
+        radius="lg"
+        styles={{
+          title: {
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: '1.5rem',
+            letterSpacing: '1px',
+          }
+        }}
       >
         <UsuarioForm
           onSuccess={handleSuccess}

@@ -266,7 +266,6 @@ function insertarPuestosEjemplo() {
                   stmt.finalize((err) => {
                       if (err) console.error("❌ Error final:", err.message);
                       else console.log("✅ Base de datos lista con puestos, pasos y tamaños.");
-                      db.close();
                   });
       });
 
