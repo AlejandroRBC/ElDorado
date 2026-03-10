@@ -1,5 +1,5 @@
 import { Group, Switch, Text, Badge, Tooltip } from '@mantine/core';
-import { IconUserOff, IconUsers } from '@tabler/icons-react';
+import {IconTrash,IconTrashOff} from '@tabler/icons-react';
 
 const ToggleViewDeshabilitados = ({ 
   mostrarDeshabilitados, 
@@ -9,10 +9,7 @@ const ToggleViewDeshabilitados = ({
   return (
     <Group gap="md" align="center">
       <Group gap="xs" align="center">
-        <IconUsers 
-          size={18} 
-          style={{ color: !mostrarDeshabilitados ? '#0f0f0f' : '#999' }} 
-        />
+       
         <Switch
           checked={mostrarDeshabilitados}
           onChange={(event) => onChange(event.currentTarget.checked)}
@@ -34,7 +31,7 @@ const ToggleViewDeshabilitados = ({
           }}
         />
         <Group gap={4} align="center">
-          <IconUserOff 
+          <IconTrash 
             size={18} 
             style={{ color: mostrarDeshabilitados ? '#F44336' : '#999' }} 
           />

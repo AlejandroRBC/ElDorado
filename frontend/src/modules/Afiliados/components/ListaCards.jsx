@@ -8,7 +8,7 @@ const ListaCards = ({ afiliados = [], esDeshabilitados = false, onRehabilitar })
         <Grid.Col 
           key={afiliado.id} 
           span={{
-            base: 13,
+            base: 12,
             xs: 7,
             sm: 7,
             md: 5,

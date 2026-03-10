@@ -26,7 +26,7 @@ const AfiliadosModule = () => {
   const [searchValue, setSearchValue] = useState('');
   
   // Debounce para búsqueda automática (300ms)
-  const [debouncedSearch] = useDebouncedValue(searchValue, 100);
+  const [debouncedSearch] = useDebouncedValue(searchValue, 300);
 
   const [mostrarDeshabilitados, setMostrarDeshabilitados] = useState(false);
   // Hook para deshabilitados
@@ -180,8 +180,8 @@ const AfiliadosModule = () => {
 
       // Ordenar alfabéticamente por nombre completo
       const datosOrdenados = [...listaAExportar].sort((a, b) => {
-        const nombreA = a.nombre || '';
-        const nombreB = b.nombre || '';
+        const nombreA = a.paterno || '';
+        const nombreB = b.paterno || '';
         return nombreA.localeCompare(nombreB);
       });
 
@@ -535,7 +535,7 @@ const AfiliadosModule = () => {
               }}
               onClick={handleExportarExcel}
             >
-              Exportar lista actual
+              Exportar lista
             </Button>
 
             {hayFiltrosActivos() && (

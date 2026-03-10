@@ -18,10 +18,6 @@ export const useCrearAfiliado = () => {
       if (!datos.ci || !datos.nombre || !datos.paterno) {
         throw new Error('CI, Nombre y Apellido Paterno son requeridos');
       }
-
-      
-    
-
       // 3. Preparar datos básicos del afiliado
       const datosBasicos = {
         ci: datos.ci.trim(),

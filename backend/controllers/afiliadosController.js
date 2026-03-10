@@ -1,409 +1,325 @@
+// backend/controllers/afiliadosController.js
 const Afiliado = require('../models/Afiliado');
-const db = require('../config/db');
 
-exports.getAll = async (req, res) => {
+// ============================================
+// OBTENER TODOS (con filtros)
+// ============================================
+exports.obtenerTodos = async (req, res) => {
   try {
-    const { 
-      search, 
-      rubro, 
+    const {
+      search,
+      rubro,
       orden = 'alfabetico',
       puestoCount = null,
-      conPatente = null 
+      conPatente = null
     } = req.query;
-    
-    const afiliados = await Afiliado.findAll({ 
-      search, 
-      rubro,
-      orden,
-      puestoCount,
-      conPatente
-    });
-    
+
+    const afiliados = await Afiliado.obtenerTodos({ search, rubro, orden, puestoCount, conPatente });
     res.json(afiliados);
   } catch (error) {
-    console.error('Error en getAll:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener afiliados',
-      detalles: error.message 
-    });
+    console.error('Error en obtenerTodos:', error);
+    res.status(500).json({ error: 'Error al obtener afiliados', detalles: error.message });
   }
 };
 
-// Obtener rubros únicos para el filtro
-exports.getRubros = async (req, res) => {
+
+// ============================================
+// OBTENER DESHABILITADOS
+// ============================================
+exports.obtenerDeshabilitados = async (req, res) => {
   try {
-    const rubros = await Afiliado.getRubrosUnicos();
-    res.json(rubros);
+    const { search, orden = 'alfabetico' } = req.query;
+
+    const afiliados = await Afiliado.obtenerDeshabilitados({ search, orden });
+    res.json(afiliados);
   } catch (error) {
-    console.error('Error al obtener rubros:', error);
-    res.status(500).json({ error: 'Error al obtener rubros' });
+    console.error('Error en obtenerDeshabilitados:', error);
+    res.status(500).json({ error: 'Error al obtener afiliados deshabilitados', detalles: error.message });
   }
 };
 
-// Obtener estadísticas para los contadores
-exports.getEstadisticas = async (req, res) => {
+
+// ============================================
+// OBTENER POR ID
+// ============================================
+exports.obtenerPorId = async (req, res) => {
   try {
-    const estadisticas = await Afiliado.getEstadisticas();
-    res.json(estadisticas);
-  } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
-    res.status(500).json({ error: 'Error al obtener estadísticas' });
-  }
-};
-// Obtener afiliado por ID
-exports.getById = async (req, res) => {
-  try {
-    const afiliado = await Afiliado.findById(req.params.id);
-    
+    const afiliado = await Afiliado.obtenerPorId(req.params.id);
+
     if (!afiliado) {
       return res.status(404).json({ error: 'Afiliado no encontrado' });
     }
-    
+
     res.json(afiliado);
   } catch (error) {
-    console.error(`Error en getById ${req.params.id}:`, error);
-    res.status(500).json({ 
-      error: 'Error al obtener afiliado',
-      detalles: error.message 
-    });
+    console.error(`Error en obtenerPorId ${req.params.id}:`, error);
+    res.status(500).json({ error: 'Error al obtener afiliado', detalles: error.message });
   }
 };
 
-// Crear nuevo afiliado
-exports.create = async (req, res) => {
+
+// ============================================
+// CREAR
+// ============================================
+exports.crear = async (req, res) => {
   try {
-    // Validaciones básicas
     if (!req.body.ci || !req.body.nombre || !req.body.paterno) {
-      return res.status(400).json({ 
-        error: 'CI, nombre y apellido paterno son requeridos' 
-      });
+      return res.status(400).json({ error: 'CI, nombre y apellido paterno son requeridos' });
     }
-    
-    // Validar formato de CI (ejemplo simple)
+
     if (!/^\d+$/.test(req.body.ci)) {
-      return res.status(400).json({ 
-        error: 'CI debe contener solo números' 
-      });
+      return res.status(400).json({ error: 'CI debe contener solo números' });
     }
-    
-    const nuevoAfiliado = await Afiliado.create({
+
+    const nuevoAfiliado = await Afiliado.crear({
       ...req.body,
       url_perfil: req.body.url_perfil || '/uploads/perfiles/sinPerfil.png'
     });
-    
-    res.status(201).json({
-      mensaje: 'Afiliado creado exitosamente',
-      afiliado: nuevoAfiliado
-    });
+
+    res.status(201).json({ mensaje: 'Afiliado creado exitosamente', afiliado: nuevoAfiliado });
   } catch (error) {
-    console.error('Error en create:', error);
-    
-    // Manejar error de CI duplicado
+    console.error('Error en crear:', error);
     if (error.message.includes('UNIQUE constraint failed')) {
-      return res.status(400).json({ 
-        error: 'Ya existe un afiliado con este CI' 
-      });
+      return res.status(400).json({ error: 'Ya existe un afiliado con este CI' });
     }
-    
-    res.status(500).json({ 
-      error: 'Error al crear afiliado',
-      detalles: error.message 
-    });
-  }
-};
-// AGREGAR MÉTODO UPDATE
-
-exports.update = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const datos = req.body;
-    
-    // Validaciones básicas
-    if (!datos.ci || !datos.nombre || !datos.paterno) {
-      return res.status(400).json({ 
-        error: 'CI, nombre y apellido paterno son requeridos' 
-      });
-    }
-    
-    // Validar formato de CI
-    if (!/^\d+$/.test(datos.ci)) {
-      return res.status(400).json({ 
-        error: 'CI debe contener solo números' 
-      });
-    }
-    
-    const afiliadoActualizado = await Afiliado.update(id, datos);
-    
-    res.json({
-      mensaje: 'Afiliado actualizado exitosamente',
-      afiliado: afiliadoActualizado
-    });
-  } catch (error) {
-    console.error('Error en update:', error);
-    
-    if (error.message.includes('UNIQUE constraint failed')) {
-      return res.status(400).json({ 
-        error: 'Ya existe un afiliado con este CI' 
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Error al actualizar afiliado',
-      detalles: error.message 
-    });
+    res.status(500).json({ error: 'Error al crear afiliado', detalles: error.message });
   }
 };
 
-// Ruta de prueba
-exports.test = (req, res) => {
-  res.json({ 
-    mensaje: 'API de Afiliados funcionando',
-    fecha: new Date().toISOString()
-  });
-};
-
-// buscador para el recpetior y emisor
-exports.buscar = (req, res) => {
-  const q = req.query.q || '';
-
-  const sql = `
-    SELECT id_afiliado, ci, nombre, paterno, url_perfil
-    FROM afiliado
-    WHERE 
-      ci LIKE ? OR
-      nombre LIKE ? OR
-      paterno LIKE ?
-    LIMIT 10
-  `;
-
-  const like = `%${q}%`;
-
-  db.all(sql, [like, like, like], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-};
-
-// Obtener puestos activos de un afiliado
-exports.obtenerPuestos = (req, res) => {
-  const id = req.params.id;
-
-  const sql = `
-    SELECT 
-      p.id_puesto,
-      p.fila,
-      p.cuadra,
-      p.nroPuesto,
-      p.rubro,
-      p.tiene_patente,
-      t.fecha_ini
-    FROM puesto p
-    JOIN tenencia_puesto t 
-      ON t.id_puesto = p.id_puesto
-    WHERE t.id_afiliado = ?
-      AND t.fecha_fin IS NULL
-    ORDER BY p.id_puesto
-  `;
-
-  db.all(sql, [id], (err, rows) => {
-    if (err) {
-      console.error("Error obtenerPuestos:", err);
-      return res.status(500).json({ error: err.message });
-    }
-
-    res.json(rows);
-  });
-};
-
-// Despojar o liberar puesto de un afiliado
-exports.despojarPuesto = (req, res) => {
-  const { idAfiliado, idPuesto, razon } = req.body;
-  
-  if (!idAfiliado || !idPuesto || !razon) {
-    return res.status(400).json({ 
-      error: 'Faltan datos: idAfiliado, idPuesto y razon son requeridos' 
-    });
-  }
-
-  if (!['DESPOJADO', 'LIBERADO'].includes(razon)) {
-    return res.status(400).json({ 
-      error: 'La razón debe ser DESPOJADO o LIBERADO' 
-    });
-  }
-
-  // Iniciar transacción
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION');
-
-    // 1. Actualizar la tenencia activa del puesto para este afiliado
-    db.run(
-      `UPDATE tenencia_puesto 
-       SET fecha_fin = CURRENT_DATE, razon = ?
-       WHERE id_afiliado = ? AND id_puesto = ? AND fecha_fin IS NULL`,
-      [razon, idAfiliado, idPuesto],
-      function(err) {
-        if (err) {
-          db.run('ROLLBACK');
-          console.error('Error actualizando tenencia:', err);
-          return res.status(500).json({ error: err.message });
-        }
-
-        if (this.changes === 0) {
-          db.run('ROLLBACK');
-          return res.status(404).json({ 
-            error: 'No se encontró una tenencia activa para este puesto y afiliado' 
-          });
-        }
-
-        // 2. Marcar el puesto como disponible
-        db.run(
-          `UPDATE puesto SET disponible = 1 WHERE id_puesto = ?`,
-          [idPuesto],
-          function(err) {
-            if (err) {
-              db.run('ROLLBACK');
-              console.error('Error actualizando disponibilidad:', err);
-              return res.status(500).json({ error: err.message });
-            }
-
-            db.run('COMMIT');
-            
-            res.json({
-              success: true,
-              message: `Puesto ${razon === 'DESPOJADO' ? 'despojado' : 'liberado'} correctamente`,
-              razon: razon,
-              id_puesto: idPuesto,
-              id_afiliado: idAfiliado
-            });
-          }
-        );
-      }
-    );
-  });
-};
-
-exports.getDeshabilitados = async (req, res) => {
-  try {
-    const { 
-      search, 
-      orden = 'alfabetico'
-    } = req.query;
-    
-    const afiliados = await Afiliado.findAllDeshabilitados({ 
-      search, 
-      orden
-    });
-    
-    res.json(afiliados);
-  } catch (error) {
-    console.error('Error en getDeshabilitados:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener afiliados deshabilitados',
-      detalles: error.message 
-    });
-  }
-};
 
 // ============================================
-// REHABILITAR AFILIADO (fecha de afiliación = hoy)
+// ACTUALIZAR
+// ============================================
+exports.actualizar = async (req, res) => {
+  try {
+    const datos = req.body;
+
+    if (!datos.ci || !datos.nombre || !datos.paterno) {
+      return res.status(400).json({ error: 'CI, nombre y apellido paterno son requeridos' });
+    }
+
+    if (!/^\d+$/.test(datos.ci)) {
+      return res.status(400).json({ error: 'CI debe contener solo números' });
+    }
+
+    const afiliadoActualizado = await Afiliado.actualizar(req.params.id, datos);
+    res.json({ mensaje: 'Afiliado actualizado exitosamente', afiliado: afiliadoActualizado });
+  } catch (error) {
+    console.error('Error en actualizar:', error);
+    if (error.message.includes('UNIQUE constraint failed')) {
+      return res.status(400).json({ error: 'Ya existe un afiliado con este CI' });
+    }
+    res.status(500).json({ error: 'Error al actualizar afiliado', detalles: error.message });
+  }
+};
+
+
+// ============================================
+// DESHABILITAR
+// ============================================
+exports.deshabilitar = async (req, res) => {
+  try {
+    const { es_habilitado } = req.body;
+    await Afiliado.deshabilitar(req.params.id, es_habilitado);
+
+    res.json({
+      success: true,
+      mensaje: es_habilitado === 0 ? 'Afiliado deshabilitado' : 'Afiliado habilitado'
+    });
+  } catch (error) {
+    console.error('Error en deshabilitar:', error);
+    if (error.message === 'Afiliado no encontrado') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// REHABILITAR
 // ============================================
 exports.rehabilitar = async (req, res) => {
   try {
-    const { id } = req.params;
-    
-    // Actualizar afiliado: habilitado y nueva fecha de afiliación
-    db.run(
-      `UPDATE afiliado 
-       SET es_habilitado = 1,
-           fecha_afiliacion = CURRENT_DATE
-       WHERE id_afiliado = ?`,
-      [id],
-      function(err) {
-        if (err) {
-          console.error('Error rehabilitando afiliado:', err);
-          return res.status(500).json({ error: err.message });
-        }
-        
-        if (this.changes === 0) {
-          return res.status(404).json({ error: 'Afiliado no encontrado' });
-        }
-        
-        res.json({
-          success: true,
-          message: 'Afiliado rehabilitado exitosamente',
-          id: id,
-          fecha_rehabilitacion: new Date().toISOString().split('T')[0]
-        });
-      }
-    );
+    const resultado = await Afiliado.rehabilitar(req.params.id);
+    res.json({ success: true, mensaje: 'Afiliado rehabilitado exitosamente', ...resultado });
   } catch (error) {
     console.error('Error en rehabilitar:', error);
+    if (error.message === 'Afiliado no encontrado') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(500).json({ error: error.message });
   }
 };
 
+
 // ============================================
-// CONTAR AFILIADOS DESHABILITADOS
+// CONTAR DESHABILITADOS
 // ============================================
-exports.countDeshabilitados = async (req, res) => {
+exports.contarDeshabilitados = async (req, res) => {
   try {
-    db.get(
-      `SELECT COUNT(*) as total FROM afiliado WHERE es_habilitado = 0`,
-      [],
-      (err, row) => {
-        if (err) {
-          console.error('Error contando deshabilitados:', err);
-          return res.status(500).json({ error: err.message });
-        }
-        
-        res.json({ total: row?.total || 0 });
-      }
-    );
+    const total = await Afiliado.contarDeshabilitados();
+    res.json({ total });
   } catch (error) {
-    console.error('Error en countDeshabilitados:', error);
+    console.error('Error en contarDeshabilitados:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
 
-exports.getPdfData = async (req, res) => {
+// ============================================
+// BUSCAR (para selector de traspaso)
+// ============================================
+exports.buscar = async (req, res) => {
   try {
-    const { id } = req.params;
-    
-    // Usar el mismo método findById pero podrías optimizarlo
-    // para traer solo lo necesario para el PDF
-    const afiliado = await Afiliado.findById(id);
-    
+    const resultados = await Afiliado.buscar(req.query.q || '');
+    res.json(resultados);
+  } catch (error) {
+    console.error('Error en buscar:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// OBTENER PUESTOS ACTIVOS DE UN AFILIADO
+// ============================================
+exports.obtenerPuestos = async (req, res) => {
+  try {
+    const puestos = await Afiliado.obtenerPuestos(req.params.id);
+    res.json(puestos);
+  } catch (error) {
+    console.error('Error en obtenerPuestos:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// ASIGNAR PUESTO
+// ============================================
+exports.asignarPuesto = async (req, res) => {
+  try {
+    const resultado = await Afiliado.asignarPuesto(req.params.id, req.body);
+    res.json({ success: true, mensaje: 'Puesto asignado exitosamente', ...resultado });
+  } catch (error) {
+    console.error('Error en asignarPuesto:', error);
+    const erroresCliente = ['Puesto no encontrado', 'El puesto no está disponible', 'El puesto ya está ocupado'];
+    if (erroresCliente.includes(error.message)) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
+// ============================================
+// DESPOJAR O LIBERAR PUESTO
+// ============================================
+exports.despojarPuesto = async (req, res) => {
+  try {
+    const { idAfiliado, idPuesto, razon } = req.body;
+
+    if (!idAfiliado || !idPuesto || !razon) {
+      return res.status(400).json({ error: 'idAfiliado, idPuesto y razon son requeridos' });
+    }
+
+    if (!['DESPOJADO', 'LIBERADO'].includes(razon)) {
+      return res.status(400).json({ error: 'La razón debe ser DESPOJADO o LIBERADO' });
+    }
+
+    const resultado = await Afiliado.despojarPuesto(idAfiliado, idPuesto, razon);
+    res.json({
+      success: true,
+      mensaje: `Puesto ${razon === 'DESPOJADO' ? 'despojado' : 'liberado'} correctamente`,
+      ...resultado
+    });
+  } catch (error) {
+    console.error('Error en despojarPuesto:', error);
+    if (error.message.includes('No se encontró')) {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// OBTENER RUBROS
+// ============================================
+exports.obtenerRubros = async (req, res) => {
+  try {
+    const rubros = await Afiliado.obtenerRubros();
+    res.json(rubros);
+  } catch (error) {
+    console.error('Error en obtenerRubros:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// OBTENER ESTADÍSTICAS
+// ============================================
+exports.obtenerEstadisticas = async (req, res) => {
+  try {
+    const estadisticas = await Afiliado.obtenerEstadisticas();
+    res.json(estadisticas);
+  } catch (error) {
+    console.error('Error en obtenerEstadisticas:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// ============================================
+// OBTENER DATOS PARA PDF
+// ============================================
+exports.obtenerDatosPdf = async (req, res) => {
+  try {
+    const afiliado = await Afiliado.obtenerPorId(req.params.id);
+
     if (!afiliado) {
       return res.status(404).json({ error: 'Afiliado no encontrado' });
     }
-    
-    // Puedes estructurar los datos específicamente para el PDF
-    const pdfData = {
-      id: afiliado.id,
-      nombreCompleto: afiliado.nombreCompleto,
-      nombre: afiliado.nombre,
-      paterno: afiliado.paterno,
-      materno: afiliado.materno,
-      ci: afiliado.ci,
-      ci_numero: afiliado.ci_numero,
-      extension: afiliado.extension,
-      fecNac: afiliado.fecNac,
-      edad: afiliado.edad,
-      sexo: afiliado.sexo,
-      telefono: afiliado.telefono,
-      ocupacion: afiliado.ocupacion,
-      direccion: afiliado.direccion,
-      fecha_afiliacion: afiliado.fecha_afiliacion,
-      es_habilitado: afiliado.es_habilitado,
-      url_perfil: afiliado.url_perfil,
-      puestos: afiliado.puestos, // Esto ya incluye historial
-      fechaGeneracion: new Date().toISOString()
-    };
-    
-    res.json(pdfData);
+
+    res.json({ ...afiliado, fechaGeneracion: new Date().toISOString() });
   } catch (error) {
-    console.error('Error en getPdfData:', error);
+    console.error('Error en obtenerDatosPdf:', error);
     res.status(500).json({ error: error.message });
   }
+};
+
+
+// ============================================
+// SUBIR FOTO DE PERFIL
+// ============================================
+exports.subirFotoPerfil = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ exito: false, error: 'No se recibió ninguna imagen' });
+    }
+
+    const resultado = await Afiliado.actualizarFotoPerfil(
+      req.params.id,
+      `/uploads/perfiles/${req.file.filename}`
+    );
+
+    res.json({
+      exito: true,
+      mensaje: 'Foto de perfil actualizada correctamente',
+      datos: { url: resultado.url, idAfiliado: req.params.id }
+    });
+  } catch (error) {
+    console.error('Error en subirFotoPerfil:', error);
+    res.status(500).json({ exito: false, error: 'Error al procesar la imagen' });
+  }
+};
+
+
+// ============================================
+// RUTA DE PRUEBA
+// ============================================
+exports.probar = (req, res) => {
+  res.json({ mensaje: 'API de Afiliados funcionando', fecha: new Date().toISOString() });
 };
