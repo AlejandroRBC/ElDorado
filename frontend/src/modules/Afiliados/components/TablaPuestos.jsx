@@ -1,39 +1,32 @@
-// frontend/src/modules/Afiliados/components/TablaPuestos.jsx
 import { useEffect, useState } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack, Menu } from '@mantine/core';
 import { IconEdit, IconTrash, IconEye, IconMapPin, IconTransfer, IconDotsVertical } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-
-import ModalEditarPuesto from './ModalEditarPuesto';
-import ModalDetallePuesto from './ModalDetallePuesto';
-import ModalAccionPuesto from './ModalAccionPuesto';
+import { afiliadosService } from '../services/afiliadosService';
+import ModalEditarPuesto    from './ModalEditarPuesto';
+import ModalDetallePuesto   from './ModalDetallePuesto';
+import ModalAccionPuesto    from './ModalAccionPuesto';
 import ModalConfirmarAccion from './ModalConfirmarAccion';
 
-const API_URL = 'http://localhost:3000/api';
-
 const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
-  const [puestos, setPuestos] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
-  const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
-  const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
-  const [puestoParaDetalle, setPuestoParaDetalle] = useState(null);
-  const [modalAccionAbierto, setModalAccionAbierto] = useState(false);
+  const [puestos,                  setPuestos]                  = useState([]);
+  const [cargando,                 setCargando]                 = useState(true);
+  const [error,                    setError]                    = useState(null);
+  const [modalEditarAbierto,       setModalEditarAbierto]       = useState(false);
+  const [puestoSeleccionado,       setPuestoSeleccionado]       = useState(null);
+  const [modalDetalleAbierto,      setModalDetalleAbierto]      = useState(false);
+  const [puestoParaDetalle,        setPuestoParaDetalle]        = useState(null);
+  const [modalAccionAbierto,       setModalAccionAbierto]       = useState(false);
   const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
-  const [accionSeleccionada, setAccionSeleccionada] = useState(null);
-  const [cargandoAccion, setCargandoAccion] = useState(false);
+  const [accionSeleccionada,       setAccionSeleccionada]       = useState(null);
+  const [cargandoAccion,           setCargandoAccion]           = useState(false);
 
   const cargarPuestos = async () => {
     if (!afiliadoId) return;
     try {
       setCargando(true);
       setError(null);
-
-      const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/puestos`);
-      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-      const data = await response.json();
+      const data = await afiliadosService.obtenerPuestosDeAfiliado(afiliadoId);
       setPuestos(data);
     } catch (err) {
       console.error('Error cargando puestos del afiliado:', err);
@@ -43,35 +36,17 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
     }
   };
 
-  useEffect(() => {
-    cargarPuestos();
-  }, [afiliadoId]);
+  useEffect(() => { cargarPuestos(); }, [afiliadoId]);
 
-  // Función para refrescar después de cualquier cambio
   const handleRefresh = () => {
     cargarPuestos();
-    if (onRefresh) onRefresh(); // Notificar al padre que hubo cambios
+    if (onRefresh) onRefresh();
   };
 
-  // Función para abrir modal de edición
-  const handleEditar = (puesto) => {
-    setPuestoSeleccionado(puesto);
-    setModalEditarAbierto(true);
-  };
+  const handleEditar     = (puesto) => { setPuestoSeleccionado(puesto); setModalEditarAbierto(true); };
+  const handleVerDetalle = (puesto) => { setPuestoParaDetalle(puesto);  setModalDetalleAbierto(true); };
+  const handleEliminar   = (puesto) => { setPuestoSeleccionado(puesto); setModalAccionAbierto(true); };
 
-  // Función para ver detalle del puesto
-  const handleVerDetalle = (puesto) => {
-    setPuestoParaDetalle(puesto);
-    setModalDetalleAbierto(true);
-  };
-
-  // Función para eliminar puesto (DESPOJO o LIBERADO)
-  const handleEliminar = (puesto) => {
-    setPuestoSeleccionado(puesto);
-    setModalAccionAbierto(true);
-  };
-
-  // Función para cuando se selecciona una acción en el primer modal
   const handleSeleccionarAccion = (razon) => {
     setAccionSeleccionada(razon);
     setModalAccionAbierto(false);
@@ -81,79 +56,32 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
   const handleEjecutarAccion = async () => {
     try {
       setCargandoAccion(true);
+      const result = await afiliadosService.desasignarPuesto(
+        afiliadoId,
+        puestoSeleccionado.id_puesto,
+        accionSeleccionada,
+      );
 
-      const response = await fetch(`${API_URL}/afiliados/despojar-puesto`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          idAfiliado: afiliadoId,
-          idPuesto: puestoSeleccionado.id_puesto,
-          razon: accionSeleccionada
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Error al procesar la acción');
-      }
-
-      notifications.show({
-        title: '✅ Éxito',
-        message: result.message,
-        color: 'green'
-      });
-
+      notifications.show({ title: '✅ Éxito', message: result.message, color: 'green' });
       setModalConfirmacionAbierto(false);
       setPuestoSeleccionado(null);
       setAccionSeleccionada(null);
-      
       cargarPuestos();
-
     } catch (err) {
       console.error('Error:', err);
-      notifications.show({
-        title: '❌ Error',
-        message: err.message,
-        color: 'red'
-      });
+      notifications.show({ title: '❌ Error', message: err.message, color: 'red' });
     } finally {
       setCargandoAccion(false);
     }
   };
 
-  // Estados de carga / error / vacío
-  if (cargando) {
-    return (
-      <Center py="xl">
-        <Loader size="sm" color="dark" />
-      </Center>
-    );
-  }
+  if (cargando) return <Center py="xl"><Loader size="sm" color="dark" /></Center>;
 
-  if (error) {
-    return (
-      <Center py="xl">
-        <Text c="red" size="sm">{error}</Text>
-      </Center>
-    );
-  }
+  if (error) return <Center py="xl"><Text c="red" size="sm">{error}</Text></Center>;
 
   if (puestos.length === 0) {
     return (
-      <Stack
-        align="center"
-        gap="xs"
-        py="xl"
-        style={{
-          backgroundColor: '#f9f9f9',
-          borderRadius: '8px',
-          padding: '40px',
-          color: '#666',
-        }}
-      >
+      <Stack align="center" gap="xs" py="xl" style={{ backgroundColor: '#f9f9f9', borderRadius: '8px', padding: '40px', color: '#666' }}>
         <IconMapPin size={40} style={{ color: '#ccc' }} />
         <Text size="lg">No hay puestos asignados</Text>
         <Text size="sm" c="dimmed">Este afiliado no tiene puestos activos</Text>
@@ -163,22 +91,12 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
 
   const rows = puestos.map((puesto) => (
     <Table.Tr key={puesto.id_puesto} style={{ borderBottom: '1px solid #eee' }}>
-      <Table.Td>
-        <Text fw={600} style={{ color: '#0f0f0f' }}>
-          {puesto.nroPuesto}
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>{puesto.fila}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>{puesto.cuadra}</Text>
-      </Table.Td>
+      <Table.Td><Text fw={600} style={{ color: '#0f0f0f' }}>{puesto.nroPuesto}</Text></Table.Td>
+      <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.fila}</Text></Table.Td>
+      <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.cuadra}</Text></Table.Td>
       <Table.Td>
         <Text size="sm" style={{ color: '#666' }}>
-          {puesto.fecha_ini
-            ? new Date(puesto.fecha_ini).toLocaleDateString('es-ES')
-            : '—'}
+          {puesto.fecha_ini ? new Date(puesto.fecha_ini).toLocaleDateString('es-ES') : '—'}
         </Text>
       </Table.Td>
       <Table.Td>
@@ -187,81 +105,38 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge
-          color={puesto.tiene_patente ? "green" : "yellow"}
-          variant="dot"
-        >
-          {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
+        <Badge color={puesto.tiene_patente ? 'green' : 'yellow'} variant="dot">
+          {puesto.tiene_patente ? 'CON PATENTE' : 'SIN PATENTE'}
         </Badge>
         {puesto.ancho && puesto.largo && (
-          <Text size="xs" c="dimmed" mt={4}>
-            {puesto.ancho}m x {puesto.largo}m
-          </Text>
+          <Text size="xs" c="dimmed" mt={4}>{puesto.ancho}m x {puesto.largo}m</Text>
         )}
       </Table.Td>
       <Table.Td>
-        <Menu 
-          shadow="md" 
-          width={200} 
-          position="bottom-end"
-          transitionProps={{ transition: 'pop-top-right' }}
-        >
+        <Menu shadow="md" width={200} position="bottom-end" transitionProps={{ transition: 'pop-top-right' }}>
           <Menu.Target>
             <ActionIcon
-              variant="subtle"
-              size="md"
-              style={{ 
-                color: '#0f0f0f',
-                backgroundColor: '#f6f8fe',
-                '&:hover': {
-                  backgroundColor: '#edbe3c',
-                  color: '#0f0f0f'
-                }
-              }}
+              variant="subtle" size="md"
+              aria-label="Acciones del puesto"
+              style={{ color: '#0f0f0f', backgroundColor: '#f6f8fe' }}
             >
               <IconDotsVertical size={18} />
             </ActionIcon>
           </Menu.Target>
-
           <Menu.Dropdown>
-            <Menu.Item
-              leftSection={<IconEye size={16} />}
-              onClick={() => handleVerDetalle(puesto)}
-              description="Ver información completa del puesto"
-            >
+            <Menu.Item leftSection={<IconEye size={16} />} description="Ver información completa del puesto" onClick={() => handleVerDetalle(puesto)}>
               Historial
             </Menu.Item>
-
-            <Menu.Item
-              leftSection={<IconTransfer size={16} />}
-              onClick={() => {
-                if (onTraspaso) {
-                  onTraspaso(puesto, handleRefresh); // ← Pasar el callback
-                }
-              }}
-              description="Transferir el puesto a otro afiliado"
-              color="blue"
+            <Menu.Item leftSection={<IconTransfer size={16} />} description="Transferir el puesto a otro afiliado" color="blue"
+              onClick={() => { if (onTraspaso) onTraspaso(puesto, handleRefresh); }}
             >
               Traspasar
             </Menu.Item>
-
-            <Menu.Item
-              leftSection={<IconEdit size={16} />}
-              onClick={() => handleEditar(puesto)}
-              description="Modificar rubro, patente o dimensiones"
-              color="yellow"
-            >
+            <Menu.Item leftSection={<IconEdit size={16} />} description="Modificar rubro, patente o dimensiones" color="yellow" onClick={() => handleEditar(puesto)}>
               Editar
             </Menu.Item>
-
             <Menu.Divider />
-
-            <Menu.Item
-              leftSection={<IconTrash size={16} />}
-              onClick={() => handleEliminar(puesto)}
-              description="Liberar o despojar el puesto"
-              color="red"
-            >
+            <Menu.Item leftSection={<IconTrash size={16} />} description="Liberar o despojar el puesto" color="red" onClick={() => handleEliminar(puesto)}>
               Desasignar
             </Menu.Item>
           </Menu.Dropdown>
@@ -273,73 +148,40 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
   return (
     <>
       <ScrollArea>
-        <Table
-          striped
-          highlightOnHover
-          verticalSpacing="md"
-          horizontalSpacing="lg"
-          style={{
-            border: '1px solid #eee',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            minWidth: '900px',
-          }}
+        <Table striped highlightOnHover verticalSpacing="md" horizontalSpacing="lg"
+          style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', minWidth: '900px' }}
         >
           <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
             <Table.Tr>
-              <Table.Th>Nro</Table.Th>
-              <Table.Th>Fila</Table.Th>
-              <Table.Th>Cuadra</Table.Th>
-              <Table.Th>Fecha Obtención</Table.Th>
-              <Table.Th>Rubro</Table.Th>
-              <Table.Th>Patente / Dimensiones</Table.Th>
-              <Table.Th>Acciones</Table.Th>
+              {['Nro', 'Fila', 'Cuadra', 'Fecha Obtención', 'Rubro', 'Patente / Dimensiones', 'Acciones'].map((col) => (
+                <Table.Th key={col}>{col}</Table.Th>
+              ))}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
       </ScrollArea>
 
-      {/* Modales */}
       <ModalEditarPuesto
         opened={modalEditarAbierto}
-        onClose={() => {
-          setModalEditarAbierto(false);
-          setPuestoSeleccionado(null);
-        }}
+        onClose={() => { setModalEditarAbierto(false); setPuestoSeleccionado(null); }}
         puesto={puestoSeleccionado}
-        onPuestoActualizado={() => {
-          cargarPuestos();
-          if (onRefresh) onRefresh();
-        }}
+        onPuestoActualizado={() => { cargarPuestos(); if (onRefresh) onRefresh(); }}
       />
-
       <ModalDetallePuesto
         opened={modalDetalleAbierto}
-        onClose={() => {
-          setModalDetalleAbierto(false);
-          setPuestoParaDetalle(null);
-        }}
+        onClose={() => { setModalDetalleAbierto(false); setPuestoParaDetalle(null); }}
         puesto={puestoParaDetalle}
       />
-
       <ModalAccionPuesto
         opened={modalAccionAbierto}
-        onClose={() => {
-          setModalAccionAbierto(false);
-          setPuestoSeleccionado(null);
-        }}
+        onClose={() => { setModalAccionAbierto(false); setPuestoSeleccionado(null); }}
         puesto={puestoSeleccionado}
         onConfirm={handleSeleccionarAccion}
       />
-
       <ModalConfirmarAccion
         opened={modalConfirmacionAbierto}
-        onClose={() => {
-          setModalConfirmacionAbierto(false);
-          setPuestoSeleccionado(null);
-          setAccionSeleccionada(null);
-        }}
+        onClose={() => { setModalConfirmacionAbierto(false); setPuestoSeleccionado(null); setAccionSeleccionada(null); }}
         puesto={puestoSeleccionado}
         razon={accionSeleccionada}
         onConfirmar={handleEjecutarAccion}

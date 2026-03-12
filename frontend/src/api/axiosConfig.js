@@ -1,22 +1,16 @@
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
-// ============================================
-// CONFIGURACIÓN DE AXIOS
-// ============================================
-
-/**
- * Instancia de Axios configurada para la API
- * - Base URL apunta al backend local
- * - Timeout de 5 segundos
- * - Credenciales habilitadas para enviar cookies de sesión
- */
+// ============================================================
+// INSTANCIA DE AXIOS CONFIGURADA
+// ============================================================
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: API_BASE_URL,
   timeout: 5000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   },
-  withCredentials: true 
+  withCredentials: true,
 });
 
 export default api;

@@ -1,4 +1,3 @@
-// frontend/src/modules/Afiliados/components/ModalConfirmarAccion.jsx
 import { Modal, Box, Group, Stack, Text, Button, Paper, Badge, Alert } from '@mantine/core';
 import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react';
 

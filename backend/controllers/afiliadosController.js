@@ -1,4 +1,4 @@
-// backend/controllers/afiliadosController.js
+
 const Afiliado = require('../models/Afiliado');
 
 // ============================================

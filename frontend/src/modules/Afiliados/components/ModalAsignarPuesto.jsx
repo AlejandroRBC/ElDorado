@@ -1,4 +1,3 @@
-// frontend/src/modules/Afiliados/components/ModalAsignarPuesto.jsx
 import { Paper, Modal, Box, Group, Stack, Text, Button, Select, TextInput, Checkbox, LoadingOverlay, Badge, Table, ScrollArea, Pagination, CloseButton, Alert, SimpleGrid, NumberInput } from '@mantine/core';
 import { IconSearch, IconX, IconAlertCircle, IconCheck, IconMapPin, IconFilter, IconFilterOff } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';

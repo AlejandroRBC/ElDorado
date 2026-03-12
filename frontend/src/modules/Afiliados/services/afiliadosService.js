@@ -1,73 +1,58 @@
-const API_URL = 'http://localhost:3000/api';
+import { API_BASE_URL } from '../../../api/config';
 
 export const afiliadosService = {
   deshabilitarAfiliado: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/${id}/deshabilitar`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${id}/deshabilitar`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ es_habilitado: 0 }),
       });
-  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al deshabilitar afiliado');
       }
-  
       return await response.json();
     } catch (error) {
       console.error('Error en deshabilitarAfiliado:', error);
       throw error;
     }
   },
-  
-  // rehabilitar
+
   habilitarAfiliado: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/${id}/habilitar`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${id}/habilitar`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ es_habilitado: 1 }),
       });
-  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al habilitar afiliado');
       }
-  
       return await response.json();
     } catch (error) {
       console.error('Error en habilitarAfiliado:', error);
       throw error;
     }
   },
+
   obtenerTodos: async (filtros = {}) => {
     try {
       const params = new URLSearchParams();
-      
-      if (filtros.search) params.append('search', filtros.search);
-      if (filtros.rubro) params.append('rubro', filtros.rubro);
-      if (filtros.orden) params.append('orden', filtros.orden);
-      if (filtros.conPatente !== undefined && filtros.conPatente !== null) {
-        params.append('conPatente', filtros.conPatente);
-      }
-      if (filtros.puestoCount !== undefined && filtros.puestoCount !== null) {
-        params.append('puestoCount', filtros.puestoCount);
-      }
-      
+      if (filtros.search)    params.append('search',    filtros.search);
+      if (filtros.rubro)     params.append('rubro',     filtros.rubro);
+      if (filtros.orden)     params.append('orden',     filtros.orden);
+      if (filtros.conPatente  != null) params.append('conPatente',  filtros.conPatente);
+      if (filtros.puestoCount != null) params.append('puestoCount', filtros.puestoCount);
+
       const queryString = params.toString();
-      const url = queryString ? `${API_URL}/afiliados?${queryString}` : `${API_URL}/afiliados`;
-      
+      const url = queryString
+        ? `${API_BASE_URL}/afiliados?${queryString}`
+        : `${API_BASE_URL}/afiliados`;
+
       const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
       return await response.json();
     } catch (error) {
       console.error('Error en afiliadosService.obtenerTodos:', error);
@@ -75,10 +60,9 @@ export const afiliadosService = {
     }
   },
 
-  // Obtener rubros únicos
   obtenerRubros: async () => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/rubros`);
+      const response = await fetch(`${API_BASE_URL}/afiliados/rubros`);
       if (!response.ok) throw new Error('Error al obtener rubros');
       return await response.json();
     } catch (error) {
@@ -87,32 +71,27 @@ export const afiliadosService = {
     }
   },
 
-
   actualizar: async (id, afiliadoData) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(afiliadoData),
       });
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       }
-      
       return await response.json();
     } catch (error) {
       console.error('Error en afiliadosService.actualizar:', error);
       throw error;
     }
   },
-  // Obtener estadísticas
+
   obtenerEstadisticas: async () => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/estadisticas`);
+      const response = await fetch(`${API_BASE_URL}/afiliados/estadisticas`);
       if (!response.ok) throw new Error('Error al obtener estadísticas');
       return await response.json();
     } catch (error) {
@@ -121,50 +100,41 @@ export const afiliadosService = {
     }
   },
 
-
   probarConexion: async () => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/test`);
+      const response = await fetch(`${API_BASE_URL}/afiliados/test`);
       return await response.json();
     } catch (error) {
       console.error('Error probando conexión:', error);
       return { error: 'No se pudo conectar con el servidor' };
     }
   },
-  
+
   obtenerPorId: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/${id}`);
-      
+      const response = await fetch(`${API_BASE_URL}/afiliados/${id}`);
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Afiliado no encontrado');
-        }
+        if (response.status === 404) throw new Error('Afiliado no encontrado');
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-      
       return await response.json();
     } catch (error) {
       console.error(`Error en afiliadosService.obtenerPorId ${id}:`, error);
       throw error;
     }
   },
-  
+
   crear: async (afiliadoData) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(afiliadoData),
       });
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       }
-      
       return await response.json();
     } catch (error) {
       console.error('Error en afiliadosService.crear:', error);
@@ -172,23 +142,18 @@ export const afiliadosService = {
     }
   },
 
-  // NUEVO: Subir imagen de perfil
   subirFotoPerfil: async (afiliadoId, fotoFile) => {
     try {
       const formData = new FormData();
       formData.append('foto', fotoFile);
-      
-      const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/upload-perfil`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${afiliadoId}/upload-perfil`, {
         method: 'POST',
         body: formData,
-        // NOTA: No establezcas Content-Type manualmente para FormData
       });
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       }
-      
       return await response.json();
     } catch (error) {
       console.error('Error en afiliadosService.subirFotoPerfil:', error);
@@ -196,106 +161,121 @@ export const afiliadosService = {
     }
   },
 
-
-// Obtener puestos disponibles (no ocupados, no pasos)
-obtenerPuestosDisponibles: async () => {
-  try {
-    const response = await fetch(`${API_URL}/puestos/disponibles`);
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+  obtenerPuestosDisponibles: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/puestos/disponibles`);
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const result = await response.json();
+      return result.data || result;
+    } catch (error) {
+      console.error('Error en obtenerPuestosDisponibles:', error);
+      throw error;
     }
-    const result = await response.json();
-    
-    
-    return result.data || result;
-  } catch (error) {
-    console.error('Error en obtenerPuestosDisponibles:', error);
-    throw error;
-  }
-},
+  },
 
-// Asignar puesto a afiliado
   asignarPuesto: async (afiliadoId, puestoData) => {
     try {
-      const response = await fetch(`${API_URL}/afiliados/${afiliadoId}/asignar-puesto`, {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${afiliadoId}/asignar-puesto`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(puestoData),
       });
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
       }
-      
       return await response.json();
     } catch (error) {
       console.error('Error en asignarPuesto:', error);
       throw error;
     }
   },
-  // ============================================
-// MÉTODOS PARA AFILIADOS DESHABILITADOS
-// ============================================
 
-// Obtener afiliados deshabilitados
-obtenerDeshabilitados: async (filtros = {}) => {
-  try {
-    const params = new URLSearchParams();
-    
-    if (filtros.search) params.append('search', filtros.search);
-    if (filtros.orden) params.append('orden', filtros.orden);
-    
-    const queryString = params.toString();
-    const url = queryString ? `${API_URL}/afiliados/deshabilitados?${queryString}` : `${API_URL}/afiliados/deshabilitados`;
-    
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+  obtenerDeshabilitados: async (filtros = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filtros.search) params.append('search', filtros.search);
+      if (filtros.orden)  params.append('orden',  filtros.orden);
+      const queryString = params.toString();
+      const url = queryString
+        ? `${API_BASE_URL}/afiliados/deshabilitados?${queryString}`
+        : `${API_BASE_URL}/afiliados/deshabilitados`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error en obtenerDeshabilitados:', error);
+      throw error;
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error en obtenerDeshabilitados:', error);
-    throw error;
-  }
-},
+  },
 
-// Contar afiliados deshabilitados
-contarDeshabilitados: async () => {
-  try {
-    const response = await fetch(`${API_URL}/afiliados/deshabilitados/count`);
-    if (!response.ok) throw new Error('Error al contar deshabilitados');
-    const data = await response.json();
-    return data.total || 0;
-  } catch (error) {
-    console.error('Error en contarDeshabilitados:', error);
-    return 0;
-  }
-},
+  contarDeshabilitados: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/afiliados/deshabilitados/count`);
+      if (!response.ok) throw new Error('Error al contar deshabilitados');
+      const data = await response.json();
+      return data.total || 0;
+    } catch (error) {
+      console.error('Error en contarDeshabilitados:', error);
+      return 0;
+    }
+  },
 
-// Rehabilitar afiliado
-rehabilitarAfiliado: async (id) => {
-  try {
-    const response = await fetch(`${API_URL}/afiliados/${id}/rehabilitar`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+  // ── Puestos de un afiliado ──────────────────────────────
+  obtenerPuestosDeAfiliado: async (afiliadoId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${afiliadoId}/puestos`);
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error en obtenerPuestosDeAfiliado:', error);
+      throw error;
+    }
+  },
+
+  // ── Desasignar (despojar/liberar) un puesto de un afiliado
+  desasignarPuesto: async (idAfiliado, idPuesto, razon) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/afiliados/despojar-puesto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idAfiliado, idPuesto, razon }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Error al desasignar el puesto');
+      return result;
+    } catch (error) {
+      console.error('Error en desasignarPuesto:', error);
+      throw error;
+    }
+  },
+
+  // ── Historial de un puesto ───────────────────────────────
+  obtenerHistorialPuesto: async (idPuesto) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/historial/${idPuesto}`);
+      if (!response.ok) throw new Error('Error al cargar el historial');
+      return await response.json();
+    } catch (error) {
+      console.error('Error en obtenerHistorialPuesto:', error);
+      throw error;
+    }
+  },
+
+  rehabilitarAfiliado: async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/afiliados/${id}/rehabilitar`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al rehabilitar afiliado');
       }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Error al rehabilitar afiliado');
+      return await response.json();
+    } catch (error) {
+      console.error('Error en rehabilitarAfiliado:', error);
+      throw error;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error en rehabilitarAfiliado:', error);
-    throw error;
-  }
-},
+  },
 };

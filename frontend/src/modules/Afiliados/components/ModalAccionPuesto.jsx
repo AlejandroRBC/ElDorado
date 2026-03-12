@@ -1,4 +1,3 @@
-// frontend/src/modules/Afiliados/components/ModalAccionPuesto.jsx
 import { Modal, Box, Group, Stack, Text, Button, Paper, Badge } from '@mantine/core';
 import { IconAlertTriangle, IconFlag, IconDoorExit, IconX } from '@tabler/icons-react';
 
@@ -35,7 +34,6 @@ const ModalAccionPuesto = ({ opened, onClose, puesto, onConfirm }) => {
         <Text size="sm" c="dimmed" ta="center">
           ¿Qué acción deseas realizar con este puesto?
         </Text>
-
         {/* Botones en la misma fila */}
         <Group grow gap="md">
           {/* Botón LIBERAR */}
