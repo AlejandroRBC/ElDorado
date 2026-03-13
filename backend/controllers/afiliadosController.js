@@ -63,13 +63,15 @@ exports.obtenerPorId = async (req, res) => {
 // ============================================
 exports.crear = async (req, res) => {
   try {
-    if (!req.body.ci || !req.body.nombre || !req.body.paterno) {
+    if (!req.body.ci || !req.body.nombre) {
       return res.status(400).json({ error: 'CI, nombre y apellido paterno son requeridos' });
     }
 
-    if (!/^\d+$/.test(req.body.ci)) {
-      return res.status(400).json({ error: 'CI debe contener solo números' });
-    }
+
+    // elimine esto por que el carnete puede tener numeros por duplicados del segip
+    // if (!/^[0-9]{5,10}(-[0-9A-Z]{1,3})?$/.test(req.body.ci)) {
+    //   return res.status(400).json({ error: 'CI debe contener solo números' });
+    // }
 
     const nuevoAfiliado = await Afiliado.crear({
       ...req.body,
@@ -94,13 +96,11 @@ exports.actualizar = async (req, res) => {
   try {
     const datos = req.body;
 
-    if (!datos.ci || !datos.nombre || !datos.paterno) {
+    if (!datos.ci || !datos.nombre) {
       return res.status(400).json({ error: 'CI, nombre y apellido paterno son requeridos' });
     }
 
-    if (!/^\d+$/.test(datos.ci)) {
-      return res.status(400).json({ error: 'CI debe contener solo números' });
-    }
+    
 
     const afiliadoActualizado = await Afiliado.actualizar(req.params.id, datos);
     res.json({ mensaje: 'Afiliado actualizado exitosamente', afiliado: afiliadoActualizado });

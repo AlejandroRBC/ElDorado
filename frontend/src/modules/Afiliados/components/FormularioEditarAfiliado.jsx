@@ -45,11 +45,7 @@ const computarFormData = (afiliado) => {
 
   let ciNumero  = afiliado.ci || '';
   let extension = 'LP';
-  if (ciNumero.includes('-')) {
-    const [num, ext] = ciNumero.split('-');
-    ciNumero  = num;
-    extension = ext || 'LP';
-  }
+ 
 
   return {
     ci:            afiliado.ci_numero  || ciNumero,
@@ -237,10 +233,10 @@ const FormularioEditarAfiliado = ({
                   required disabled={loading} styles={estiloInput}
                 />
                 <TextInput
-                  label="Paterno *" placeholder="Pérez"
+                  label="Paterno" placeholder="Pérez"
                   value={formData.paterno}
                   onChange={(e) => handleChange('paterno', e.target.value)}
-                  required disabled={loading} styles={estiloInput}
+                  disabled={loading} styles={estiloInput}
                 />
                 <TextInput
                   label="Materno" placeholder="García"

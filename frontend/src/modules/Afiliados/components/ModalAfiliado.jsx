@@ -21,7 +21,7 @@ const DEPARTAMENTOS = [
   { value: 'SC', label: 'Santa Cruz' }, { value: 'OR', label: 'Oruro' },
   { value: 'PT', label: 'Potosí' },    { value: 'TJ', label: 'Tarija' },
   { value: 'CH', label: 'Chuquisaca' }, { value: 'BE', label: 'Beni' },
-  { value: 'PD', label: 'Pando' },
+  { value: 'PD', label: 'Pando' },{ value: 'QR', label: 'Q.R.' },
 ];
 
 const SEXOS = [
@@ -176,7 +176,6 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
   const validarFormulario = useCallback(() => {
     if (!formData.ci?.trim())      return 'El CI es requerido';
     if (!formData.nombre?.trim())  return 'El nombre es requerido';
-    if (!formData.paterno?.trim()) return 'El apellido paterno es requerido';
     return null;
   }, [formData]);
 
@@ -310,7 +309,7 @@ const ModalAfiliado = ({ opened, onClose, onAfiliadoCreado }) => {
                       <TextInput label="CI *" placeholder="1234567" value={formData.ci} onChange={(e) => setFormData({ ...formData, ci: e.target.value })} leftSection={<IconId size={16} />} required />
                       <Select label="Expedido *" data={DEPARTAMENTOS} value={formData.extension} onChange={(v) => setFormData({ ...formData, extension: v })} />
                       <TextInput label="Nombre *" placeholder="Juan" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} leftSection={<IconUser size={16} />} required />
-                      <TextInput label="Paterno *" placeholder="Pérez" value={formData.paterno} onChange={(e) => setFormData({ ...formData, paterno: e.target.value })} required />
+                      <TextInput label="Paterno" placeholder="Pérez" value={formData.paterno} onChange={(e) => setFormData({ ...formData, paterno: e.target.value })}  />
                       <TextInput label="Materno" placeholder="García" value={formData.materno} onChange={(e) => setFormData({ ...formData, materno: e.target.value })} />
                       <Select label="Sexo" data={SEXOS} value={formData.sexo} onChange={(v) => setFormData({ ...formData, sexo: v })} />
                       <TextInput label="Fecha Nacimiento" type="date" value={formData.fecNac} onChange={(e) => setFormData({ ...formData, fecNac: e.target.value })} leftSection={<IconCalendar size={16} />} />

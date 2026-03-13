@@ -34,7 +34,7 @@ export const useEditarAfiliado = (id) => {
 
     try {
       // 1. Validar datos básicos
-      if (!datos.ci || !datos.nombre || !datos.paterno) {
+      if (!datos.ci || !datos.nombre) {
         throw new Error('CI, Nombre y Apellido Paterno son requeridos');
       }
 

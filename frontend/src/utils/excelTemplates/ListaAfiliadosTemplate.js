@@ -1,10 +1,3 @@
-// Template de exportación para la lista de afiliados (activos y deshabilitados).
-// Devuelve { datos, columnas } listo para pasarle a exportToExcel().
-
-/**
- * @param   {Array}  lista  Afiliados tal como los devuelve la API.
- * @returns {{ datos: Array, columnas: Array }}
- */
 export const prepararDatosAfiliados = (lista) => {
   const datosOrdenados = [...lista].sort((a, b) =>
     (a.paterno || '').localeCompare(b.paterno || '')
@@ -13,12 +6,24 @@ export const prepararDatosAfiliados = (lista) => {
   const datos = datosOrdenados.map((item, index) => ({
     ...item,
     nro_lista:   index + 1,
-    ci_numero:   item.ci ? item.ci.split('-')[0] : '',
-    ci_expedido: item.ci?.includes('-') ? item.ci.split('-')[1] : 'LP',
+    ci_numero:   item.ci ? item.ci.split(' ')[0] : '',
+    ci_expedido: item.ci?.includes('-') ? item.ci.split(' ')[1] : 'LP',
     nombre_solo: item.nombre  || '',
     ap_paterno:  item.paterno || '',
     ap_materno:  item.materno || '',
   }));
+
+  // ── helpers ──────────────────────────────────────────────
+  const parsePuesto = (p) => {
+    const [nro = '', fila = '', ...resto] = p.trim().split('-');
+    return { nro, fila, cuadra: resto.join('-') };
+  };
+
+  const joinCol = (patentes, key) =>
+    patentes?.length
+      ? patentes.map((p) => parsePuesto(p)[key]).join('\n')
+      : '—';
+  // ─────────────────────────────────────────────────────────
 
   const columnas = [
     {
@@ -55,15 +60,26 @@ export const prepararDatosAfiliados = (lista) => {
       key:    'ci_expedido',
       format: (r) => r.ci_expedido || 'LP',
     },
+    // ── PUESTOS dividido en 3 columnas ───────────────────
     {
-      header: 'PUESTOS',
-      key:    'puestos',
-      format: (r) =>
-        r.patentes?.length
-          ? r.patentes.map((p) => p.trim()).join('\n')
-          : 'Sin puestos',
-      style: { alignment: { vertical: 'top', wrapText: true } },
+      header: 'NRO PUESTO',
+      key:    'nro_puesto',
+      format: (r) => joinCol(r.patentes, 'nro'),
+      style:  { alignment: { vertical: 'top', wrapText: true } },
     },
+    {
+      header: 'FILA',
+      key:    'fila',
+      format: (r) => joinCol(r.patentes, 'fila'),
+      style:  { alignment: { vertical: 'top', wrapText: true } },
+    },
+    {
+      header: 'CUADRA',
+      key:    'cuadra',
+      format: (r) => joinCol(r.patentes, 'cuadra'),
+      style:  { alignment: { vertical: 'top', wrapText: true } },
+    },
+    // ─────────────────────────────────────────────────────
     {
       header:  'TOTAL PUESTOS',
       key:     'total_puestos',

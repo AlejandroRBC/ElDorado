@@ -139,7 +139,7 @@ const Afiliado = {
               nombre: row.nombre.trim(),
               paterno: row.paterno,
               materno: row.materno,
-              ci: `${row.ci}-${row.extension}`,
+              ci: `${row.ci} ${row.extension}`,
               ocupacion: row.ocupacion,
               patentes: row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
               total_puestos: row.total_puestos || 0,

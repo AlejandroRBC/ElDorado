@@ -49,7 +49,7 @@ function crearTablas() {
       nroPuesto INTEGER NOT NULL,
       ancho INTEGER,
       largo INTEGER,
-      tiene_patente BOOLEAN DEFAULT 0,
+      tiene_patente BOOLEAN DEFAULT 1,
       rubro TEXT,
       disponible BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
@@ -205,9 +205,8 @@ function insertarDatosEjemplo() {
 // ============================================
 function insertarPuestosEjemplo() {
   db.get(`SELECT COUNT(*) AS count FROM puesto`, (err, row) => {
-    
     if (err) return;
-      
+
     if (row && row.count === 0) {
       // --- DATOS DE CONFIGURACIÓN ---
       const pasosA = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 168, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298];
@@ -217,60 +216,59 @@ function insertarPuestosEjemplo() {
         if (n >= 1 && n <= 67)   return "Cuadra 1";
         if (n >= 68 && n <= 117)  return "Callejón";
         if (n >= 118 && n <= 169) return "Cuadra 2";
-        if (n >= 170 && n <= 234) return "Cuadra 3";
-        if (n >= 235 && n <= 299) return "Cuadra 4";
+        if (n >= 170 && n <= 233) return "Cuadra 3"; 
+        if (n >= 234 && n <= 299) return "Cuadra 4";
         return "Desconocido";
-    }
-    
-    function obtenerCuadraB(n) {
+      }
+
+      function obtenerCuadraB(n) {
         if (n >= 1 && n <= 52)   return "Cuadra 1";
         if (n >= 53 && n <= 119)  return "Cuadra 2";
         if (n >= 120 && n <= 185) return "Cuadra 3";
         if (n >= 186 && n <= 247) return "Cuadra 4";
         return "Desconocido";
-    }
+      }
 
       // Ejecución serializada para mantener el orden de los IDs
       db.serialize(() => {
+        const stmt = db.prepare("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)");
 
-                  const stmt = db.prepare("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)");
+        // --- PROCESAR FILA A ---
+        for (let n = 1; n <= 299; n++) {
+          let cuadra = obtenerCuadraA(n);
+          let ancho = 1.5;
+          let largo = (cuadra === "Callejón") ? 1.5 : 1.8;
 
-                  // --- PROCESAR FILA A ---
-                  for (let n = 1; n <= 299; n++) {
-                      let cuadra = obtenerCuadraA(n);
-                      let ancho = 1.5;
-                      let largo = (cuadra === "Callejón") ? 1.5 : 1.8;
+          // Insertar Puesto
+          stmt.run('A', cuadra, n, ancho, largo);
 
-                      // Insertar Puesto
-                      stmt.run('A', cuadra, n, ancho, largo);
-                      
-                      // Insertar Paso (si corresponde)
-                      if (pasosA.includes(n)) {
-                          stmt.run('A', cuadra, 10000 + n, 0, 0); // Pasos con tamaño 0
-                      }
-                  }
+          // Insertar Paso (si corresponde)
+          if (pasosA.includes(n)) {
+            stmt.run('A', cuadra, 10000 + n, 0, 0); 
+          }
+        }
 
-                  // --- PROCESAR FILA B ---
-                  for (let n = 1; n <= 247; n++) {
-                      let cuadra = obtenerCuadraB(n);
-                      let ancho = 1.5;
-                      let largo = 1.8; // En Fila B no hay callejón según tu descripción
+        // --- PROCESAR FILA B ---
+        for (let n = 1; n <= 247; n++) {
+          let cuadra = obtenerCuadraB(n);
+          let ancho = 1.5;
+          let largo = 1.8;
 
-                      stmt.run('B', cuadra, n, ancho, largo);
-                      
-                      if (pasosB.includes(n)) {
-                          stmt.run('B', cuadra, 10000 + n, 0, 0);
-                      }
-                  }
+          stmt.run('B', cuadra, n, ancho, largo);
 
-                  stmt.finalize((err) => {
-                      if (err) console.error("❌ Error final:", err.message);
-                      else console.log("✅ Base de datos lista con puestos, pasos y tamaños.");
-                  });
+          if (pasosB.includes(n)) {
+            stmt.run('B', cuadra, 10000 + n, 0, 0);
+          }
+        }
+
+        stmt.finalize((err) => {
+          if (err) console.error("❌ Error final:", err.message);
+          else console.log("✅ Base de datos lista con puestos, pasos y tamaños.");
+        });
       });
 
     } else {
-      //insertarTenenciasEjemplo();
+      // insertarTenenciasEjemplo();
     }
   });
 }

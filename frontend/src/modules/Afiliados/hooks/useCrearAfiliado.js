@@ -32,8 +32,6 @@ export const useCrearAfiliado = () => {
         direccion: datos.direccion || '',
       };
 
-      console.log('📝 Creando afiliado:', datosBasicos);
-
       // 4. Crear afiliado en backend
       const respuestaCrear = await afiliadosService.crear(datosBasicos);
       
@@ -42,16 +40,13 @@ export const useCrearAfiliado = () => {
       }
 
       const afiliadoId = respuestaCrear.afiliado.id || respuestaCrear.afiliado.id_afiliado;
-      console.log('✅ Afiliado creado con ID:', afiliadoId);
 
       // 5. Subir foto si existe
       if (datos.foto) {
         try {
-          console.log('📸 Subiendo foto...');
           await afiliadosService.subirFotoPerfil(afiliadoId, datos.foto);
-          console.log('✅ Foto subida exitosamente');
         } catch (fotoError) {
-          console.warn('⚠️ No se pudo subir la foto:', fotoError);
+          console.warn('No se pudo subir la foto:', fotoError);
         }
       }
 
@@ -59,7 +54,6 @@ export const useCrearAfiliado = () => {
       const puestosAsignados = [];
       for (const puesto of datos.puestos) {
         try {
-          console.log(`🏪 Asignando puesto ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}...`);
           
           const puestoData = {
             fila: puesto.fila,
@@ -72,7 +66,6 @@ export const useCrearAfiliado = () => {
           
           const resultado = await afiliadosService.asignarPuesto(afiliadoId, puestoData);
           puestosAsignados.push(resultado);
-          console.log(`✅ Puesto asignado: ${puesto.nroPuesto}-${puesto.fila}-${puesto.cuadra}`);
         } catch (puestoError) {
           console.error(`❌ Error asignando puesto ${puesto.nroPuesto}:`, puestoError);
           throw new Error(`Error al asignar puesto ${puesto.nroPuesto}: ${puestoError.message}`);

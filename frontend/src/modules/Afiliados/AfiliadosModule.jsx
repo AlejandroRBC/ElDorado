@@ -281,7 +281,6 @@ const AfiliadosModule = () => {
               style={{ ...transitionStyles, backgroundColor: '#0f0f0f', color: 'white', borderRadius: '50px', height: '50px', padding: '0 25px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', border: '2px solid #edbe3c', fontWeight: 600 }}
               onClick={scrollToTop}
             >
-              Volver arriba
             </Button>
           )}
         </Transition>
