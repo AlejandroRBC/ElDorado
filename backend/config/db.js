@@ -49,10 +49,17 @@ function crearTablas() {
       nroPuesto INTEGER NOT NULL,
       ancho INTEGER,
       largo INTEGER,
-      tiene_patente BOOLEAN DEFAULT 0,
       rubro TEXT,
       disponible BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
+    )`,
+    `CREATE TABLE IF NOT EXISTS patente (
+      id_patente INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_puesto INTEGER UNIQUE,
+      nro_patente INTEGER UNIQUE,
+      estado TEXT DEFAULT 'ACTIVA',
+      fecha_asignacion DATE DEFAULT CURRENT_DATE,
+      FOREIGN KEY (id_puesto) REFERENCES puesto(id_puesto)
     )`,
 
     `CREATE TABLE IF NOT EXISTS tenencia_puesto (
@@ -189,6 +196,7 @@ function insertarDatosEjemplo() {
             insertarPuestosEjemplo();
             //insertarTenenciasEjemplo();
             crearUsuarioAdmin();
+
           }
         });
       });

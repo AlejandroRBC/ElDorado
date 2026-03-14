@@ -27,6 +27,7 @@ export function TablaPuestos({
             <Table.Tr>
                 {[
                 "N° Puesto",
+                "Patente",
                 "Fila/Cuadra",
                 "Estado",
                 "Ancho/largo",
@@ -73,14 +74,15 @@ export function TablaPuestos({
               ) : (
                 <>
                   <Table.Td fw={700}>{puesto.nroPuesto}</Table.Td>
+                  <Table.Td>{puesto.nro_patente ? puesto.nro_patente : " "}</Table.Td>
                   <Table.Td>{puesto.fila} - {puesto.cuadra}</Table.Td>
 
                   <Table.Td>
                     <Badge
-                      color={puesto.tiene_patente ? "green" : "yellow"}
+                      color={puesto.nro_patente ? "green" : "yellow"}
                       variant="dot"
                     >
-                      {puesto.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
+                      {puesto.nro_patente ? "CON PATENTE" : "SIN PATENTE"}
                     </Badge>
                   </Table.Td>
 
@@ -147,3 +149,8 @@ export function TablaPuestos({
     </Box>
   );
 }
+
+
+
+
+

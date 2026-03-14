@@ -13,7 +13,6 @@ const listarPuestosDisponibles = (req, res) => {
       p.nroPuesto,
       p.ancho,
       p.largo,
-      p.tiene_patente,
       p.rubro,
       CASE 
         WHEN p.disponible = 1 AND t.id_puesto IS NULL THEN 1
@@ -85,39 +84,44 @@ const listar = (req, res) => {
   const sql = `
     SELECT
       p.id_puesto,
+      pat.nro_patente AS nro_patente,
       p.fila,
       p.cuadra,
       p.nroPuesto,
       p.ancho,
       p.largo,
-      p.tiene_patente,
       p.rubro,
       t.fecha_ini AS fecha_adquisicion,
       a.id_afiliado,
       a.ci,
       (a.nombre || ' ' || a.paterno || ' ' || a.materno) AS apoderado
     FROM puesto p
+
+    LEFT JOIN patente pat
+    ON pat.id_puesto = p.id_puesto
+
     LEFT JOIN (
       SELECT *
       FROM tenencia_puesto
       WHERE fecha_fin IS NULL
     ) t
-      ON p.id_puesto = t.id_puesto
+    ON p.id_puesto = t.id_puesto
+
     LEFT JOIN afiliado a
-      ON a.id_afiliado = t.id_afiliado
+    ON a.id_afiliado = t.id_afiliado
+
     ORDER BY p.id_puesto ASC
   `;
 
   db.all(sql, [], (err, rows) => {
     if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Error al listar puestos" });
+      console.error("ERROR SQL:", err);
+      return res.status(500).json({ error: err.message });
     }
 
     res.json(rows);
   });
 };
-
 
 // ===============================
 // OBTENER INFORMACIÓN PARA TRASPASO
@@ -235,11 +239,38 @@ const traspasar = (req, res) => {
   });
 };
 
+function reordenarPatentes() {
+  db.all(`
+    SELECT id_patente
+    FROM patente
+    ORDER BY nro_patente ASC
+  `, [], (err, rows) => {
+
+    if (err) {
+      console.error("Error reordenando patentes:", err);
+      return;
+    }
+
+    rows.forEach((pat, index) => {
+
+      const nuevoNumero = index + 1;
+
+      db.run(`
+        UPDATE patente
+        SET nro_patente = ?
+        WHERE id_patente = ?
+      `, [nuevoNumero, pat.id_patente]);
+
+    });
+
+  });
+}
 // ===============================
 // ACTUALIZAR PUESTO (VERSIÓN GESTIÓN)
 // ===============================
 const actualizar = (req, res) => {
   const id = parseInt(req.params.id);
+
   const {
     nroPuesto,
     rubro,
@@ -254,38 +285,99 @@ const actualizar = (req, res) => {
     return res.status(400).json({ error: "ID inválido" });
   }
 
-  const sql = `
-    UPDATE puesto
-    SET nroPuesto = ?,
-        rubro = ?,
-        fila = ?,
-        cuadra = ?,
-        ancho = ?,
-        largo = ?,
-        tiene_patente = ?
-    WHERE id_puesto = ?
-  `;
+  db.serialize(() => {
 
-  db.run(sql, [
-    nroPuesto,
-    rubro,
-    fila,
-    cuadra,
-    ancho,
-    largo,
-    tiene_patente ? 1 : 0,
-    id
-  ], function(err) {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Error al actualizar puesto" });
-    }
+    db.run(`
+      UPDATE puesto
+      SET nroPuesto = ?,
+          rubro = ?,
+          fila = ?,
+          cuadra = ?,
+          ancho = ?,
+          largo = ?
+      WHERE id_puesto = ?
+    `, [nroPuesto, rubro, fila, cuadra, ancho, largo, id], function(err){
 
-    res.json({
-      success: true,
-      mensaje: "Puesto actualizado"
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Error actualizando puesto" });
+      }
+
+      // ==========================
+      // CONTROL DE PATENTE
+      // ==========================
+
+      if (tiene_patente) {
+
+        db.get(`
+          SELECT *
+          FROM patente
+          WHERE id_puesto = ?
+        `,[id],(err2,patente)=>{
+
+          if(err2){
+            return res.status(500).json({error:err2.message})
+          }
+
+          if(!patente){
+
+            db.get(`
+              SELECT MAX(nro_patente) as max
+              FROM patente
+            `,(err3,row)=>{
+
+              const nuevaPatente = (row?.max || 0) + 1;
+
+              db.run(`
+                INSERT INTO patente
+                (id_puesto,nro_patente)
+                VALUES (?,?)
+              `,[id,nuevaPatente], () => {
+
+                reordenarPatentes();
+
+                res.json({
+                  success:true,
+                  mensaje:"Puesto actualizado con nueva patente"
+                });
+
+              });
+
+            });
+
+          }else{
+
+            res.json({
+              success:true,
+              mensaje:"Puesto actualizado"
+            });
+
+          }
+
+        });
+
+      } else {
+
+        db.run(`
+          DELETE FROM patente
+          WHERE id_puesto = ?
+        `,[id], () => {
+
+          reordenarPatentes();
+
+          res.json({
+            success:true,
+            mensaje:"Puesto actualizado (sin patente)"
+          });
+
+        });
+
+      }
+
     });
+
   });
+
 };
 
 // ===============================
