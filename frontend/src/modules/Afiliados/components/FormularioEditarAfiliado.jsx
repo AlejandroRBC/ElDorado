@@ -15,8 +15,8 @@ const DEPARTAMENTOS = [
 ];
 
 const SEXOS = [
-  { value: 'M', label: 'Masculino' },
   { value: 'F', label: 'Femenino' },
+  { value: 'M', label: 'Masculino' },
 ];
 
 const estiloInput = { input: { backgroundColor: '#f6f8fe', border: '1px solid #f6f8fe' } };

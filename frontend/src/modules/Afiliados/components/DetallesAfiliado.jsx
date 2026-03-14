@@ -1,6 +1,6 @@
 import { Paper, Container, Title, Text, Button, Group, Stack, Box, Badge, LoadingOverlay, Alert, Loader } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IconFilePencil, IconArrowLeft, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck } from '@tabler/icons-react';
+import { IconHistory,IconFilePencil, IconArrowLeft, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAfiliado } from '../hooks/useAfiliado';
 import { useState, useCallback, lazy, Suspense } from 'react';
@@ -11,10 +11,14 @@ import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 import { ModalTraspaso } from '../../GestionPatentesPuestos/components/ModalTraspaso';
 import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
 import { usePDFExport } from '../hooks/usePDFExport';
+
+import ModalHistorialAfiliado from './ModalHistorialAfiliado';
+import { useHistorialAfiliado }from '../hooks/useHistorialAfiliado';
+import {handleAbrirHistorial,handleCerrarHistorial,} from '../handlers/historialHandlers';
+ 
 //Con lazy(), el chunk no se
 // descarga hasta que el usuario pulsa "Añadir Puesto".
 const ModalAsignarPuesto = lazy(() => import('./ModalAsignarPuesto'));
-
 const CargandoModal = () => (
   <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
     <Loader size="sm" />
@@ -30,8 +34,14 @@ const DetallesAfiliado = () => {
   const [modalDesafiliarAbierto, setModalDesafiliarAbierto] = useState(false);
   const { desafiliar, cargando: cargandoDesafiliar } = useDesafiliarAfiliado();
   const [refreshPuestos, setRefreshPuestos] = useState(0);
-
   const { exportando, exportarDetalleAfiliado } = usePDFExport();
+
+  const [modalHistorialAbierto, setModalHistorialAbierto] = useState(false);
+  const { historial, cargando: cargandoHistorial, error: errorHistorial, cargarHistorial, limpiarHistorial } = useHistorialAfiliado();
+ 
+
+
+
   const handleGenerarPDF = () => exportarDetalleAfiliado(id);
 
   const handlePuestoAsignado = useCallback(() => {
@@ -133,6 +143,19 @@ const DetallesAfiliado = () => {
             >
               Editar Perfil de Afiliado
             </Button>
+            <Button
+              leftSection={<IconHistory size={18} />}
+              onClick={() => handleAbrirHistorial(setModalHistorialAbierto, cargarHistorial, id)}
+              style={{
+                backgroundColor: '#0f0f0f',
+                color:           'white',
+                borderRadius:    '100px',
+                fontWeight:      500,
+                padding:         '10px 20px',
+              }}
+            >
+              Historial del Afiliado
+            </Button>
 
             {afiliado?.es_habilitado === 1 && (
               <Button
@@ -143,6 +166,7 @@ const DetallesAfiliado = () => {
                 Desafiliar Afiliado
               </Button>
             )}
+            
 
             {afiliado?.es_habilitado === 0 && (
               <Button
@@ -294,6 +318,14 @@ const DetallesAfiliado = () => {
               close={cerrarModalTraspaso}
               puestoSeleccionado={puestoParaTraspaso}
               onTraspaso={ejecutarTraspaso}
+            />
+             <ModalHistorialAfiliado
+              opened={modalHistorialAbierto}
+              onClose={() => handleCerrarHistorial(setModalHistorialAbierto, limpiarHistorial)}
+              historial={historial}
+              cargando={cargandoHistorial}
+              error={errorHistorial}
+              nombreAfiliado={afiliado?.nombreCompleto || afiliado?.nombre || ''}
             />
           </>
         )}

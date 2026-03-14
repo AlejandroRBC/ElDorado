@@ -1,0 +1,159 @@
+/* ============================================================
+   MODAL HISTORIAL DEL AFILIADO
+   Paleta oficial: #FFFFFF #C4C4C4 #0F0F0F #EDBE3C
+                   #F6F9FF #E2ECFF #374567 #0E1528
+   Fuente: Poppins (ya importada en navegacion.css)
+   ============================================================ */
+
+/* ── Contenedor del título ────────────────────────────────── */
+.historial-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 112.9%;
+    letter-spacing: 0%;
+    color: #0E1528;
+    margin: 0;
+    white-space: nowrap;
+  }
+  
+  /* ── Línea decorativa junto al título ───────────────────────
+     Se renderiza como un <hr> que crece flexiblemente           */
+  .historial-linea-deco {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, #E2ECFF, transparent);
+    border: none;
+    margin: 0;
+    min-width: 40px;
+  }
+  .historial-title-underline {
+    border-bottom: 2px solid var(--color-primary);
+    width: 160px;
+    margin-bottom: 6px;
+  }
+  
+  /* ── Wrapper del header interno del modal ───────────────────
+     Agrupa el título + la línea en la misma fila               */
+  .historial-header-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+  
+  /* ── Tabla — sin líneas visibles ────────────────────────────
+     Sobrescribe los estilos de Mantine Table para este modal   */
+  .historial-tabla table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .historial-tabla th,
+  .historial-tabla td {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  
+  /* ── Encabezado de la tabla ─────────────────────────────────
+     Color oficial F6F9FF, texto oscuro, sin borde inferior     */
+  .historial-tabla thead tr {
+    background-color: #F6F9FF !important;
+  }
+  
+  .historial-tabla thead th {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: #374567;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 12px 20px;
+    background-color: #F6F9FF !important;
+    border-bottom: none !important;
+  }
+  
+  /* ── Filas del cuerpo ───────────────────────────────────────
+     Sin bordes; el espacio vertical separa visualmente         */
+  .historial-tabla tbody tr {
+    background-color: #FFFFFF;
+    transition: background-color 0.15s ease;
+  }
+  
+  .historial-tabla tbody tr:hover {
+    background-color: #F6F9FF;
+  }
+  
+  .historial-tabla tbody td {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: #0F0F0F;
+    padding: 14px 20px;
+    vertical-align: middle;
+    border-bottom: none !important;
+  }
+  
+  /* ── Píldora de tipo de evento ──────────────────────────────
+     Color de fondo levemente tintado, texto del mismo tono     */
+  .historial-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: #F6F9FF;
+    color: #374567;
+  }
+  
+  .historial-badge.tipo-directorio-ingreso {
+    background-color: #E2ECFF;
+    color: #374567;
+  }
+  
+  .historial-badge.tipo-directorio-egreso {
+    background-color: #F6F9FF;
+    color: #C4C4C4;
+  }
+  
+  .historial-badge.tipo-modificacion {
+    background-color: #F6F9FF;
+    color: #0E1528;
+  }
+  
+  .historial-badge.tipo-desafiliacion {
+    background-color: #F6F9FF;
+    color: #0F0F0F;
+  }
+  
+  /* ── Estado vacío ───────────────────────────────────────────*/
+  .historial-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 48px 24px;
+    color: #C4C4C4;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+  }
+  
+  /* ── Texto de detalle (segunda línea de la celda) ────────── */
+  .historial-detalle {
+    font-size: 12px;
+    color: #C4C4C4;
+    margin-top: 3px;
+    font-style: italic;
+    word-break: break-word;
+  }
+  
+  /* ── Texto de responsable ───────────────────────────────────*/
+  .historial-responsable {
+    font-size: 12px;
+    color: #374567;
+  }
