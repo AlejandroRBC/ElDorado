@@ -1,0 +1,266 @@
+/* ============================================================
+   MÓDULO DIRECTORIO
+   Paleta: #FFFFFF #C4C4C4 #0F0F0F #EDBE3C
+           #F6F9FF #E2ECFF #374567 #0E1528
+   Fuente: Poppins
+   ============================================================ */
+
+/* ── Cuadro principal ───────────────────────────────────────── */
+.dir-cuadro {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  /* ── Barra superior del cuadro ──────────────────────────────── */
+  .dir-cuadro-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background-color: #0E1528;
+    gap: 12px;
+  }
+  
+  .dir-cuadro-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #FFFFFF;
+    margin: 0;
+    letter-spacing: 0.04em;
+  }
+  
+  .dir-cuadro-gestion {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: #EDBE3C;
+    font-weight: 500;
+  }
+  
+  /* ── Tabla del cuadro ───────────────────────────────────────── */
+  .dir-tabla table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .dir-tabla th,
+  .dir-tabla td {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .dir-tabla thead tr {
+    background-color: #F6F9FF;
+  }
+  
+  .dir-tabla thead th {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    color: #374567;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 12px 24px;
+    background-color: #F6F9FF;
+  }
+  
+  .dir-tabla tbody tr {
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #F6F9FF !important;
+  }
+  
+  .dir-tabla tbody tr:last-child {
+    border-bottom: none !important;
+  }
+  
+  .dir-tabla tbody tr:hover {
+    background-color: #F6F9FF;
+  }
+  
+  .dir-tabla tbody td {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: #0F0F0F;
+    padding: 14px 24px;
+    vertical-align: middle;
+  }
+  
+  /* ── Número de orden del cargo ──────────────────────────────── */
+  .dir-cargo-orden {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: #E2ECFF;
+    color: #374567;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  /* ── Nombre del cargo ───────────────────────────────────────── */
+  .dir-cargo-nombre {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #0E1528;
+  }
+  
+  /* ── Estado vacante ─────────────────────────────────────────── */
+  .dir-vacante {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: #C4C4C4;
+    font-style: italic;
+  }
+  
+  /* ── Nombre afiliado ────────────────────────────────────────── */
+  .dir-afiliado-nombre {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: #0F0F0F;
+  }
+  
+  .dir-afiliado-ci {
+    font-size: 11px;
+    color: #C4C4C4;
+    margin-top: 2px;
+  }
+  
+  /* ── Estado vacío (no hay directorio cargado) ───────────────── */
+  .dir-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 64px 24px;
+    color: #C4C4C4;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+  }
+  
+  /* ── Modal gestión — tabla interna ──────────────────────────── */
+  .dir-modal-tabla table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .dir-modal-tabla th,
+  .dir-modal-tabla td {
+    border: none !important;
+  }
+  
+  .dir-modal-tabla thead tr {
+    background-color: #F6F9FF;
+  }
+  
+  .dir-modal-tabla thead th {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    color: #374567;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 16px;
+    background-color: #F6F9FF;
+  }
+  
+  .dir-modal-tabla tbody tr {
+    border-bottom: 1px solid #F6F9FF !important;
+  }
+  
+  .dir-modal-tabla tbody td {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    padding: 10px 16px;
+    vertical-align: middle;
+  }
+  
+  /* ── Header del modal con título + línea ────────────────────── */
+  .dir-modal-header-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+  
+  .dir-modal-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 112.9%;
+    color: #0E1528;
+    margin: 0;
+    white-space: nowrap;
+  }
+  
+  .dir-modal-linea {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(to right, #E2ECFF, transparent);
+    border: none;
+    margin: 0;
+  }
+  
+  /* ── Buscador de afiliado (dentro del modal) ────────────────── */
+  .dir-buscador-wrap {
+    position: relative;
+  }
+  
+  .dir-buscador-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border: 1px solid #E2ECFF;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
+    z-index: 9999;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  
+  .dir-buscador-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+    border-bottom: 1px solid #F6F9FF;
+  }
+  
+  .dir-buscador-item:last-child {
+    border-bottom: none;
+  }
+  
+  .dir-buscador-item:hover {
+    background-color: #F6F9FF;
+  }
+  
+  .dir-buscador-item-nombre {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: #0F0F0F;
+  }
+  
+  .dir-buscador-item-ci {
+    font-size: 11px;
+    color: #C4C4C4;
+    margin-top: 1px;
+  }
+  
+  .dir-buscador-vacio {
+    padding: 16px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: #C4C4C4;
+  }

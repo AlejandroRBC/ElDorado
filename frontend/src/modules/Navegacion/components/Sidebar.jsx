@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { Stack } from '@mantine/core';
 import { useMediaQuery } from 'react-responsive';
 import {
+  IconBuildingCommunity,
   IconHome,
   IconUsers,
   IconLicense,
@@ -18,6 +19,9 @@ const modules = [
   { name: 'Afiliados',       path: '/afiliados',      icon: IconUsers   },
   { name: 'Gestion Puestos', path: '/gestionPuestos', icon: IconLicense },
   { name: 'Mapa',            path: '/mapa',           icon: IconMap     },
+];
+const modulesBottom = [
+  { name: 'Directorio', path: '/directorio', icon: IconBuildingCommunity },
 ];
 
 // ============================================
@@ -89,11 +93,47 @@ const Sidebar = () => {
         height:          '100vh',
         display:         'flex',
         flexDirection:   'column',
+        justifyContent:  'space-between',
       }}
     >
-      {/* ── Items de navegación bajados ── */}
-      <Stack gap={0} style={{ marginTop: isTablet ? '0.3rem' : '0.3rem' }}>
+      {/* ── Items principales (arriba) ── */}
+      <Stack gap={0} style={{ marginTop: '0.3rem' }}>
         {modules.map((module) => (
+          <NavLink
+            key={module.path}
+            to={module.path}
+            style={{ textDecoration: 'none' }}
+          >
+            {({ isActive }) => (
+              <SidebarItem
+                module={module}
+                isActive={isActive}
+                soloIconos={isTablet}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#edbe3c';
+                  const icon = e.currentTarget.querySelector('svg');
+                  const text = e.currentTarget.querySelector('span');
+                  if (icon) icon.style.color = '#0f0f0f';
+                  if (text) text.style.color = '#0f0f0f';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    const icon = e.currentTarget.querySelector('svg');
+                    const text = e.currentTarget.querySelector('span');
+                    if (icon) icon.style.color = '#edbe3c';
+                    if (text) text.style.color = '#edbe3c';
+                  }
+                }}
+              />
+            )}
+          </NavLink>
+        ))}
+      </Stack>
+ 
+      {/* ── Items inferiores (pegados al fondo) ── */}
+      <Stack gap={0} style={{ marginBottom: '1rem' }}>
+        {modulesBottom.map((module) => (
           <NavLink
             key={module.path}
             to={module.path}

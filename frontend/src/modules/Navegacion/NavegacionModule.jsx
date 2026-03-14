@@ -17,6 +17,7 @@ const MapaModule                   = lazy(() => import('../Mapa/MapaModule'));
 const UsuariosModule               = lazy(() => import('../Usuario/UsuariosModule'));
 const DetallesAfiliado             = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
 const EditarAfiliadoPage           = lazy(() => import('../Afiliados/pages/EditarAfiliadoPage'));
+const DirectorioModule = lazy(() => import('../Directorio/DirectorioModule'));
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -70,6 +71,7 @@ const NavegacionModule = () => {
             <Route path="/admin/usuarios"       element={<UsuariosModule />} />
             <Route path="/afiliados/:id"        element={<DetallesAfiliado />} />
             <Route path="/afiliados/editar/:id" element={<EditarAfiliadoPage />} />
+            <Route path="/directorio" element={<DirectorioModule />} />
           </Routes>
         </Suspense>
       </AppShell.Main>
