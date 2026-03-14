@@ -215,3 +215,36 @@ exports.obtenerHistorialAfiliacion = (req, res) => {
     res.json({ success: true, data: rows, total: rows.length });
   });
 };
+
+
+/// crear gestion pero despues areglar 
+exports.crearGestion = async (req, res) => {
+  const { anio_inicio, anio_fin } = req.body;
+ 
+  if (!anio_inicio || !anio_fin) {
+    return res.status(400).json({ error: 'anio_inicio y anio_fin son requeridos' });
+  }
+  if (parseInt(anio_fin) <= parseInt(anio_inicio)) {
+    return res.status(400).json({ error: 'anio_fin debe ser mayor que anio_inicio' });
+  }
+ 
+  const db = require('../config/db');
+ 
+  db.run(
+    `INSERT INTO gestion (anio_inicio, anio_fin, es_activa) VALUES (?, ?, 0)`,
+    [parseInt(anio_inicio), parseInt(anio_fin)],
+    function (err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) {
+          return res.status(400).json({ error: `Ya existe una gestión ${anio_inicio}-${anio_fin}` });
+        }
+        return res.status(500).json({ error: 'Error al crear la gestión' });
+      }
+      res.status(201).json({
+        success: true,
+        mensaje: `Gestión ${anio_inicio}-${anio_fin} creada`,
+        data: { id_gestion: this.lastID, anio_inicio, anio_fin, es_activa: 0 },
+      });
+    }
+  );
+};

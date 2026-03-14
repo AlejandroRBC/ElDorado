@@ -12,6 +12,8 @@ router.use(loginMiddleware);
 router.get('/secretarias',         ctrl.obtenerSecretarias);
 router.get('/gestiones',           ctrl.obtenerGestiones);
 router.get('/gestiones/activa',    ctrl.obtenerGestionActiva);
+router.post('/gestiones', ctrl.crearGestion);
+
 
 // ============================================
 // DIRECTORIO
