@@ -109,6 +109,60 @@ function crearTablas() {
       usuario VARCHAR(255),
       id_tenencia INTEGER,
       id_puesto INTEGER
+    )`,
+    `CREATE TABLE IF NOT EXISTS historial_afiliado (
+      id_historial_af INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_afiliado INTEGER,
+      nom_afiliado TEXT,
+      tipo VARCHAR(20) CHECK(tipo IN ('AFILIACION','MODIFICACION','DESAFILIACION','REAFILIACION')),
+      detalle TEXT,
+      fecha DATE DEFAULT CURRENT_DATE,
+      hora TIME DEFAULT (time('now','localtime')),
+      nom_usuario_master TEXT,
+      nom_afiliado_master TEXT,
+      FOREIGN KEY (id_afiliado) REFERENCES afiliado(id_afiliado)
+    )`,
+ 
+    `CREATE TABLE IF NOT EXISTS gestion (
+      id_gestion INTEGER PRIMARY KEY AUTOINCREMENT,
+      anio_inicio INTEGER NOT NULL,
+      anio_fin INTEGER NOT NULL,
+      es_activa BOOLEAN DEFAULT 0,
+      UNIQUE(anio_inicio, anio_fin)
+    )`,
+ 
+    `CREATE TABLE IF NOT EXISTS secretaria (
+      id_secretaria INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre VARCHAR(100) NOT NULL UNIQUE,
+      orden INTEGER NOT NULL
+    )`,
+ 
+    `CREATE TABLE IF NOT EXISTS directorio (
+      id_directorio INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_gestion INTEGER NOT NULL,
+      id_secretaria INTEGER NOT NULL,
+      id_afiliado INTEGER NOT NULL,
+      fecha_inicio DATE DEFAULT CURRENT_DATE,
+      fecha_fin DATE,
+      FOREIGN KEY (id_gestion)    REFERENCES gestion(id_gestion),
+      FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria),
+      FOREIGN KEY (id_afiliado)   REFERENCES afiliado(id_afiliado),
+      UNIQUE(id_gestion, id_secretaria),
+      UNIQUE(id_gestion, id_afiliado)
+    )`,
+ 
+    `CREATE TABLE IF NOT EXISTS historial_directorio (
+      id_historial_dir INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_directorio INTEGER,
+      nom_afiliado TEXT,
+      nom_secretaria TEXT,
+      gestion_label TEXT,
+      tipo VARCHAR(10) CHECK(tipo IN ('INGRESO','EGRESO')),
+      fecha DATE DEFAULT CURRENT_DATE,
+      hora TIME DEFAULT (time('now','localtime')),
+      nom_usuario_master TEXT,
+      nom_afiliado_master TEXT,
+      FOREIGN KEY (id_directorio) REFERENCES directorio(id_directorio)
     )`
   ];
 
@@ -141,8 +195,12 @@ function afterTablesCreated() {
   crearTriggersPuestos();
   require('./triggers/triggers-usuario');
   require('./triggers/triggers-puestos');
+  require('./triggers/triggers-afiliado');
+  require('./triggers/triggers-directorio');
 
   insertarDatosEjemplo();
+  insertarDatosGestion();
+  insertarDatosSecretaria();
 }
 
 // ============================================
@@ -155,7 +213,11 @@ function crearIndices() {
     `CREATE INDEX IF NOT EXISTS idx_afiliado_ci ON afiliado(ci)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_usuario(fecha)`,
     `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini, fecha_fin)`,
-    `CREATE INDEX IF NOT EXISTS idx_historial_puestos_fecha ON historial_puestos(fecha)`
+    `CREATE INDEX IF NOT EXISTS idx_historial_puestos_fecha ON historial_puestos(fecha)`,
+    `CREATE INDEX IF NOT EXISTS idx_historial_afiliado_id   ON historial_afiliado(id_afiliado)`,
+    `CREATE INDEX IF NOT EXISTS idx_historial_afiliado_fecha ON historial_afiliado(fecha)`,
+    `CREATE INDEX IF NOT EXISTS idx_directorio_gestion       ON directorio(id_gestion)`,
+    `CREATE INDEX IF NOT EXISTS idx_historial_directorio_dir ON historial_directorio(id_directorio)`
   ];
 
   indices.forEach(sql => {
@@ -201,7 +263,7 @@ function insertarDatosEjemplo() {
 }
 
 // ============================================
-// DATOS DE EJEMPLO PARA PUESTOS 
+// DATOS PARA PUESTOS 
 // ============================================
 function insertarPuestosEjemplo() {
   db.get(`SELECT COUNT(*) AS count FROM puesto`, (err, row) => {
@@ -322,4 +384,52 @@ function crearUsuarioAdmin() {
   });
 }
 
+
+
+
+// ============================================
+// USUARIO ADMIN POR DEFECTO
+// ============================================
+function insertarDatosGestion() {
+  db.get(`SELECT COUNT(*) AS count FROM gestion`, (err, row) => {
+    if (err || row.count > 0) return;
+ 
+    db.run(
+      `INSERT OR IGNORE INTO gestion (anio_inicio, anio_fin, es_activa) VALUES (2023, 2025, 1)`,
+      (err2) => {
+        if (err2) console.error('❌ Error insertando gestión inicial:', err2.message);
+        else console.log('✅ Gestión 2023-2025 creada como activa.');
+      }
+    );
+  });
+}
+
+
+// ============================================
+// INSERTAR LAS SECRETARIAS DE LA OFICINA
+// ============================================
+function insertarDatosSecretaria() {
+  const secretarias = [
+    [1,  'STRIA. GENERAL'],
+    [2,  'STRIA. DE RELACIONES'],
+    [3,  'STRIA. DE ACTAS'],
+    [4,  'STRIA. DE HACIENDA'],
+    [5,  'STRIA. DE ORGANIZACIÓN'],
+    [6,  'STRIA. DE CONFLICTOS'],
+    [7,  'PRENSA Y PROPAGANDA'],
+    [8,  'STRIA. DE BENEFICENCIA'],
+    [9,  'STRIA. DE DEPORTES'],
+    [10, 'STRIA. VOCAL'],
+    [11, 'STRIA. PORTA ESTANDARTE'],
+    [12, 'DEL. A LA FEDERACIÓN DE GREMIALES']
+  ];
+ 
+  secretarias.forEach(([orden, nombre]) => {
+    db.run(
+      `INSERT OR IGNORE INTO secretaria (nombre, orden) VALUES (?, ?)`,
+      [nombre, orden],
+      (err) => { if (err) console.error(`❌ Error insertando secretaría ${nombre}:`, err.message); }
+    );
+  });
+}
 module.exports = db;
