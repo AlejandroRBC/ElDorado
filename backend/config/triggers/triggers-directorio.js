@@ -1,21 +1,34 @@
 const db = require('../db');
 
-// ============================================
+// ============================================================
 // TRIGGERS DE HISTORIAL DE DIRECTORIO
-// ============================================
+//
+// Estrategia DELETE:
+//   - trg_directorio_ingreso → AFTER INSERT  (igual que antes)
+//   - trg_directorio_egreso  → BEFORE DELETE (nuevo)
+//     BEFORE en lugar de AFTER para poder leer OLD.* antes
+//     de que la fila desaparezca de la tabla.
+//
+// historial_directorio ahora guarda id_afiliado e id_gestion
+// directamente, así el historial se puede consultar incluso
+// después de que el registro de directorio sea borrado.
+// ============================================================
+
 function crearTriggersDirectorio() {
   db.serialize(() => {
 
     db.run(`DROP TRIGGER IF EXISTS trg_directorio_ingreso`);
     db.run(`DROP TRIGGER IF EXISTS trg_directorio_egreso`);
 
-    // ── Trigger: Ingreso al Directorio (INSERT) ──
+    // ── Trigger: Ingreso al Directorio (AFTER INSERT) ────────
     db.run(`
       CREATE TRIGGER IF NOT EXISTS trg_directorio_ingreso
       AFTER INSERT ON directorio
       BEGIN
         INSERT INTO historial_directorio (
           id_directorio,
+          id_afiliado,
+          id_gestion,
           nom_afiliado,
           nom_secretaria,
           gestion_label,
@@ -25,6 +38,8 @@ function crearTriggersDirectorio() {
         )
         VALUES (
           NEW.id_directorio,
+          NEW.id_afiliado,
+          NEW.id_gestion,
           COALESCE(
             (SELECT nombre || ' ' || paterno || COALESCE(' ' || NULLIF(materno,''), '')
              FROM afiliado WHERE id_afiliado = NEW.id_afiliado),
@@ -46,14 +61,16 @@ function crearTriggersDirectorio() {
       END;
     `, (err) => { if (err) console.error('Error trg_directorio_ingreso:', err.message); });
 
-    // ── Trigger: Egreso del Directorio (UPDATE fecha_fin NULL → fecha) ──
+    // ── Trigger: Egreso del Directorio (BEFORE DELETE) ───────
+    // BEFORE para leer OLD.* antes de que la fila desaparezca.
     db.run(`
       CREATE TRIGGER IF NOT EXISTS trg_directorio_egreso
-      AFTER UPDATE ON directorio
-      WHEN OLD.fecha_fin IS NULL AND NEW.fecha_fin IS NOT NULL
+      BEFORE DELETE ON directorio
       BEGIN
         INSERT INTO historial_directorio (
           id_directorio,
+          id_afiliado,
+          id_gestion,
           nom_afiliado,
           nom_secretaria,
           gestion_label,
@@ -62,19 +79,21 @@ function crearTriggersDirectorio() {
           nom_afiliado_master
         )
         VALUES (
-          NEW.id_directorio,
+          OLD.id_directorio,
+          OLD.id_afiliado,
+          OLD.id_gestion,
           COALESCE(
             (SELECT nombre || ' ' || paterno || COALESCE(' ' || NULLIF(materno,''), '')
-             FROM afiliado WHERE id_afiliado = NEW.id_afiliado),
+             FROM afiliado WHERE id_afiliado = OLD.id_afiliado),
             'SIN AFILIADO'
           ),
           COALESCE(
-            (SELECT nombre FROM secretaria WHERE id_secretaria = NEW.id_secretaria),
+            (SELECT nombre FROM secretaria WHERE id_secretaria = OLD.id_secretaria),
             'SIN SECRETARÍA'
           ),
           COALESCE(
             (SELECT CAST(anio_inicio AS TEXT) || '-' || CAST(anio_fin AS TEXT)
-             FROM gestion WHERE id_gestion = NEW.id_gestion),
+             FROM gestion WHERE id_gestion = OLD.id_gestion),
             'SIN GESTIÓN'
           ),
           'EGRESO',

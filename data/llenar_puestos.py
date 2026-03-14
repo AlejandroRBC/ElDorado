@@ -1,81 +1,89 @@
 import sqlite3
 
-def inicializar_base_de_datos():
-    # Nombre de tu archivo de base de datos
-    nombre_db = 'eldorado.db'
-    conn = sqlite3.connect(nombre_db)
-    cursor = conn.cursor()
-
-    # 1. Crear la tabla (por si no existe)
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS puesto (
-        id_puesto INTEGER PRIMARY KEY AUTOINCREMENT,
-        fila VARCHAR(1) NOT NULL CHECK(fila IN ('A', 'B', 'C', 'D', 'E')),
-        cuadra VARCHAR(50) NOT NULL,
-        nroPuesto INTEGER NOT NULL,
-        ancho INTEGER DEFAULT 0,
-        largo INTEGER DEFAULT 0,
-        tiene_patente BOOLEAN DEFAULT 0,
-        rubro TEXT,
-        UNIQUE(fila, cuadra, nroPuesto)
-    )
-    ''')
-
-    # --- DATOS DE CONFIGURACIÓN ---
-    pasos_a = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 169, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298]
-    pasos_b = [20, 32, 37, 41, 73, 79, 83, 90, 97, 128, 139, 151, 157, 161, 164, 167, 170, 173, 178, 186, 214, 215, 216, 217, 221, 225, 234, 239, 240]
-
-    def obtener_cuadra_a(n):
-        if 1 <= n <= 68: return "Cuadra 1"
-        if 69 <= n <= 118: return "Callejón"
-        if 119 <= n <= 170: return "Cuadra 2"
-        if 171 <= n <= 234: return "Cuadra 3"
-        if 235 <= n <= 299: return "Cuadra 4"
-        return "Desconocido"
-
-    def obtener_cuadra_b(n):
-        if 1 <= n <= 52: return "Cuadra 1"
-        if 53 <= n <= 119: return "Cuadra 2"
-        if 120 <= n <= 185: return "Cuadra 3"
-        if 186 <= n <= 247: return "Cuadra 4"
-        return "Desconocido"
-
+def crear_puestos_db(ruta_db):
     try:
-        print("Iniciando carga de datos...")
-        
-        # --- PROCESAR FILA A (1 a 299) ---
+        conn = sqlite3.connect(ruta_db)
+        cursor = conn.cursor()
+
+        # 1. Crear la tabla si no existe
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS puesto (
+                id_puesto INTEGER PRIMARY KEY AUTOINCREMENT,
+                fila VARCHAR(1) NOT NULL CHECK(fila IN ('A', 'B', 'C', 'D', 'E')),
+                cuadra VARCHAR(50) NOT NULL,
+                nroPuesto INTEGER NOT NULL,
+                ancho REAL DEFAULT 0,
+                largo REAL DEFAULT 0,
+                tiene_patente BOOLEAN DEFAULT 1,
+                rubro TEXT,
+                disponible BOOLEAN DEFAULT 1,
+                UNIQUE(fila, cuadra, nroPuesto)
+            )
+        ''')
+
+        # 2. Limpiar datos previos para asegurar orden de IDs
+        cursor.execute("DELETE FROM puesto")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='puesto'")
+
+        # --- CONFIGURACIÓN DE PASOS ---
+        pasos_a = [1, 8, 11, 19, 47, 55, 60, 67, 91, 113, 117, 122, 126, 130, 131, 132, 136, 142, 153, 167, 168, 171, 172, 182, 185, 211, 224, 245, 252, 277, 279, 281, 293, 298]
+        pasos_b = [20, 32, 37, 41, 73, 79, 83, 90, 97, 128, 139, 151, 157, 161, 164, 167, 170, 173, 178, 186, 214, 215, 216, 217, 221, 225, 234, 239, 240]
+
+        def obtener_cuadra_a(n):
+            if 1 <= n <= 67:   return "Cuadra 1"
+            if 68 <= n <= 117:  return "Callejón"
+            if 118 <= n <= 169: return "Cuadra 2"
+            if 170 <= n <= 233: return "Cuadra 3" # Ajustado según tu corrección
+            if 234 <= n <= 299: return "Cuadra 4" # Ajustado según tu corrección
+            return "Desconocido"
+
+        def obtener_cuadra_b(n):
+            if 1 <= n <= 52:   return "Cuadra 1"
+            if 53 <= n <= 119:  return "Cuadra 2"
+            if 120 <= n <= 185: return "Cuadra 3"
+            if 186 <= n <= 247: return "Cuadra 4"
+            return "Desconocido"
+
+        print("Generando puestos en la base de datos...")
+        contador = 0
+
+        # --- PROCESAR FILA A ---
         for n in range(1, 300):
             cuadra = obtener_cuadra_a(n)
-            # Insertar Puesto Real
-            cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)", ('A', cuadra, n))
+            ancho = 1.5
+            largo = 1.5 if cuadra == "Callejón" else 1.8
             
-            # Si después de este puesto hay un PASO
+            cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)",
+                           ('A', cuadra, n, ancho, largo))
+            contador += 1
+            
             if n in pasos_a:
-                # Usamos 10000 + n para que el nroPuesto sea único en la cuadra
-                cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)", ('A', cuadra, 10000 + n))
+                cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)",
+                               ('A', cuadra, 10000 + n, 0, 0))
+                contador += 1
 
-        # --- PROCESAR FILA B (1 a 247) ---
+        # --- PROCESAR FILA B ---
         for n in range(1, 248):
             cuadra = obtener_cuadra_b(n)
-            # Insertar Puesto Real
-            cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)", ('B', cuadra, n))
+            cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)",
+                           ('B', cuadra, n, 1.5, 1.8))
+            contador += 1
             
-            # Si después de este puesto hay un PASO
             if n in pasos_b:
-                cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto) VALUES (?, ?, ?)", ('B', cuadra, 10000 + n))
+                cursor.execute("INSERT INTO puesto (fila, cuadra, nroPuesto, ancho, largo) VALUES (?, ?, ?, ?, ?)",
+                               ('B', cuadra, 10000 + n, 0, 0))
+                contador += 1
 
         conn.commit()
-        total = cursor.execute("SELECT COUNT(*) FROM puesto").fetchone()[0]
-        print(f"✅ ¡Éxito! Se han creado {total} registros en total.")
+        print(f"✅ ¡Éxito! Se han creado {contador} registros (puestos + pasos).")
 
-    except sqlite3.IntegrityError as e:
-        print(f"❌ Error de integridad (posible duplicado): {e}")
-        conn.rollback()
+    except sqlite3.Error as e:
+        print(f"❌ Error de SQLite: {e}")
     except Exception as e:
-        print(f"❌ Ocurrió un error inesperado: {e}")
-        conn.rollback()
+        print(f"❌ Error inesperado: {e}")
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
-    inicializar_base_de_datos()
+    crear_puestos_db('elDorado.db')

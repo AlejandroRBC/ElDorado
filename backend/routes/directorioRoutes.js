@@ -21,6 +21,7 @@ router.post('/gestiones', ctrl.crearGestion);
 router.get('/gestion/:idGestion',  ctrl.obtenerPorGestion);
 router.get('/:id',                 ctrl.obtenerPorId);
 router.post('/',                   ctrl.asignarCargo);
+router.delete('/:id', ctrl.eliminarCargo);
 router.patch('/:id/cerrar',        ctrl.cerrarCargo);
 router.patch('/:id/reemplazar',    ctrl.reemplazarCargo);
 

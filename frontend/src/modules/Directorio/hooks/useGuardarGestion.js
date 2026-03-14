@@ -3,73 +3,95 @@ import { notifications }         from '@mantine/notifications';
 import { directorioService }     from '../services/directorioService';
 
 // ============================================================
-// HOOK useGuardarGestion
-// Procesa el formulario del modal y aplica las operaciones
-// necesarias (asignar / reemplazar / cerrar) para cada fila.
+// HOOK useGuardarGestion (simplificado con DELETE)
 //
-// Lógica por fila:
-//   - Tiene afiliado + sin cargo previo   → asignarCargo
-//   - Tiene afiliado + cargo previo mismo → sin cambio
-//   - Tiene afiliado + cargo previo distinto → reemplazarCargo
-//   - Sin afiliado  + cargo previo activo  → cerrarCargo
-//   - Sin afiliado  + sin cargo previo     → skip
+// Lógica por fila — solo 4 casos posibles:
+//
+//   nuevo +  sin previo           → asignarCargo (INSERT)
+//   nuevo + mismo previo          → skip
+//   nuevo + distinto previo       → eliminarCargo + asignarCargo
+//   sin nuevo + con previo        → eliminarCargo (DELETE)
+//   sin nuevo + sin previo        → skip
+//
+// Ya no hay cerrarCargo ni reemplazarCargo.
+// El trigger BEFORE DELETE graba el EGRESO automáticamente.
 // ============================================================
 
 export const useGuardarGestion = () => {
   const [guardando, setGuardando] = useState(false);
 
-  /**
-   * @param {Object}   params
-   * @param {number}   params.idGestion     - ID de la gestión objetivo
-   * @param {Array}    params.filasModal     - Estado de las 12 filas del modal
-   *                   cada fila: { id_secretaria, id_directorio, id_afiliado_nuevo }
-   * @param {Function} params.onSuccess     - callback al terminar con éxito
-   */
   const guardar = useCallback(async ({ idGestion, filasModal, onSuccess }) => {
     if (!idGestion) return;
 
     setGuardando(true);
     const errores = [];
-    let cambios  = 0;
+    let cambios   = 0;
 
     try {
       for (const fila of filasModal) {
         const {
+          nom_secretaria,
           id_secretaria,
-          id_directorio,        // null si no existía
-          id_afiliado_prev,     // el que había antes
-          id_afiliado_nuevo,    // el que ingresó el usuario (null = vacío)
+          id_directorio,
+          id_afiliado_prev,
+          id_afiliado_nuevo,
         } = fila;
 
         const tieneNuevo  = !!id_afiliado_nuevo;
-        const teniaPrevio = !!id_directorio;
-        const mismoAfil   = teniaPrevio && id_afiliado_prev === id_afiliado_nuevo;
+        const teniaPrevio = !!id_afiliado_prev;
+        const mismoAfil   = teniaPrevio && Number(id_afiliado_prev) === Number(id_afiliado_nuevo);
 
         try {
-          if (tieneNuevo && !teniaPrevio) {
-            // Caso: asignación nueva
+
+          if (!tieneNuevo && !teniaPrevio) {
+            // Ambos vacíos → nada que hacer
+            continue;
+          }
+
+          if (tieneNuevo && mismoAfil) {
+            // Sin cambio → nada que hacer
+            continue;
+          }
+
+          if (!tieneNuevo && teniaPrevio) {
+            // ── Quitar titular → DELETE ───────────────────────
+            if (!id_directorio) {
+              errores.push(`${nom_secretaria}: no se encontró el ID del cargo`);
+              continue;
+            }
+            await directorioService.eliminarCargo(id_directorio);
+            cambios++;
+            continue;
+          }
+
+          if (tieneNuevo && teniaPrevio && !mismoAfil) {
+            // ── Cambio de titular → DELETE + INSERT ───────────
+            if (!id_directorio) {
+              errores.push(`${nom_secretaria}: no se encontró el ID del cargo`);
+              continue;
+            }
+            await directorioService.eliminarCargo(id_directorio);
             await directorioService.asignarCargo({
               id_gestion:    idGestion,
               id_secretaria,
               id_afiliado:   id_afiliado_nuevo,
             });
             cambios++;
+            continue;
+          }
 
-          } else if (tieneNuevo && teniaPrevio && !mismoAfil) {
-            // Caso: cambio de titular
-            await directorioService.reemplazarCargo(id_directorio, {
-              id_afiliado_nuevo,
+          if (tieneNuevo && !teniaPrevio) {
+            // ── Nuevo cargo → INSERT ──────────────────────────
+            await directorioService.asignarCargo({
+              id_gestion:    idGestion,
+              id_secretaria,
+              id_afiliado:   id_afiliado_nuevo,
             });
             cambios++;
-
-          } else if (!tieneNuevo && teniaPrevio) {
-            // Caso: se dejó vacío lo que antes tenía titular → cerrar
-            await directorioService.cerrarCargo(id_directorio);
-            cambios++;
           }
-          // mismoAfil o ambos vacíos → sin cambio, skip
+
         } catch (err) {
-          errores.push(`${fila.nom_secretaria}: ${err.message}`);
+          errores.push(`${nom_secretaria}: ${err.message}`);
         }
       }
 
@@ -85,13 +107,14 @@ export const useGuardarGestion = () => {
         if (onSuccess) onSuccess();
       } else {
         notifications.show({
-          title:   '⚠️ Guardado parcial',
-          message: `${cambios} ok — ${errores.length} error(es): ${errores.join(' | ')}`,
-          color:   'yellow',
+          title:     '⚠️ Guardado parcial',
+          message:   `${cambios} ok — ${errores.length} error(es): ${errores.join(' | ')}`,
+          color:     'yellow',
           autoClose: 8000,
         });
         if (cambios > 0 && onSuccess) onSuccess();
       }
+
     } catch (err) {
       notifications.show({
         title:   '❌ Error',

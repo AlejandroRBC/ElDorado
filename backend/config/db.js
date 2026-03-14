@@ -139,30 +139,33 @@ function crearTablas() {
  
     `CREATE TABLE IF NOT EXISTS directorio (
       id_directorio INTEGER PRIMARY KEY AUTOINCREMENT,
-      id_gestion INTEGER NOT NULL,
+      id_gestion    INTEGER NOT NULL,
       id_secretaria INTEGER NOT NULL,
-      id_afiliado INTEGER NOT NULL,
-      fecha_inicio DATE DEFAULT CURRENT_DATE,
-      fecha_fin DATE,
+      id_afiliado   INTEGER NOT NULL,
+      fecha_inicio  DATE DEFAULT CURRENT_DATE,
       FOREIGN KEY (id_gestion)    REFERENCES gestion(id_gestion),
       FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria),
       FOREIGN KEY (id_afiliado)   REFERENCES afiliado(id_afiliado),
       UNIQUE(id_gestion, id_secretaria),
       UNIQUE(id_gestion, id_afiliado)
     )`,
- 
-    `CREATE TABLE IF NOT EXISTS historial_directorio (
+    
+ `CREATE TABLE IF NOT EXISTS historial_directorio (
       id_historial_dir INTEGER PRIMARY KEY AUTOINCREMENT,
-      id_directorio INTEGER,
-      nom_afiliado TEXT,
-      nom_secretaria TEXT,
-      gestion_label TEXT,
-      tipo VARCHAR(10) CHECK(tipo IN ('INGRESO','EGRESO')),
-      fecha DATE DEFAULT CURRENT_DATE,
-      hora TIME DEFAULT (time('now','localtime')),
-      nom_usuario_master TEXT,
+      id_directorio    INTEGER,
+      id_afiliado      INTEGER,
+      id_gestion       INTEGER,
+      nom_afiliado     TEXT,
+      nom_secretaria   TEXT,
+      gestion_label    TEXT,
+      tipo             VARCHAR(10) CHECK(tipo IN ('INGRESO','EGRESO')),
+      fecha            DATE DEFAULT CURRENT_DATE,
+      hora             TIME DEFAULT (time('now','localtime')),
+      nom_usuario_master  TEXT,
       nom_afiliado_master TEXT,
-      FOREIGN KEY (id_directorio) REFERENCES directorio(id_directorio)
+      FOREIGN KEY (id_directorio) REFERENCES directorio(id_directorio) ON DELETE SET NULL,
+      FOREIGN KEY (id_afiliado)   REFERENCES afiliado(id_afiliado),
+      FOREIGN KEY (id_gestion)    REFERENCES gestion(id_gestion)
     )`
   ];
 

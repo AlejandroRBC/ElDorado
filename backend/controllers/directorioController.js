@@ -106,6 +106,21 @@ exports.asignarCargo = async (req, res) => {
   }
 };
 
+// ============================================
+// ELIMINAR CARGO
+// ============================================
+exports.eliminarCargo = async (req, res) => {
+  try {
+    const resultado = await Directorio.eliminarCargo(req.params.id);
+    res.json({ success: true, mensaje: 'Cargo eliminado del directorio', ...resultado });
+  } catch (error) {
+    console.error('Error en eliminarCargo:', error);
+    if (error.message === 'Cargo no encontrado') {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
 
 // ============================================
 // CERRAR CARGO
@@ -217,7 +232,7 @@ exports.obtenerHistorialAfiliacion = (req, res) => {
 };
 
 
-/// crear gestion pero despues areglar 
+/// crear gestion pero despues arreglar y mover todo al model 
 exports.crearGestion = async (req, res) => {
   const { anio_inicio, anio_fin } = req.body;
  

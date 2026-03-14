@@ -1,4 +1,3 @@
-// modules/Directorio/services/directorioService.js
 import { API_BASE_URL } from '../../../api/config';
 
 const BASE = `${API_BASE_URL}/directorio`;
@@ -33,7 +32,7 @@ export const directorioService = {
     return data.data || [];
   },
 
-  // ── Crear nueva gestión ────────────────────────────────────
+  // ── Gestiones ──────────────────────────────────────────────
 
   crearGestion: async (anio_inicio, anio_fin) => {
     const res = await fetch(`${BASE}/gestiones`, {
@@ -45,7 +44,7 @@ export const directorioService = {
     return handleResponse(res);
   },
 
-  // ── Directorio por gestión ─────────────────────────────────
+  // ── Directorio ─────────────────────────────────────────────
 
   obtenerPorGestion: async (idGestion) => {
     const res  = await fetch(`${BASE}/gestion/${idGestion}`, { credentials: 'include' });
@@ -53,7 +52,7 @@ export const directorioService = {
     return data.data || [];
   },
 
-  // ── Mutaciones de cargos ───────────────────────────────────
+  // ── Asignar cargo (INSERT) ─────────────────────────────────
 
   asignarCargo: async ({ id_gestion, id_secretaria, id_afiliado, fecha_inicio }) => {
     const res = await fetch(BASE, {
@@ -65,22 +64,14 @@ export const directorioService = {
     return handleResponse(res);
   },
 
-  cerrarCargo: async (idDirectorio, fechaFin) => {
-    const res = await fetch(`${BASE}/${idDirectorio}/cerrar`, {
-      method:      'PATCH',
-      headers:     { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body:        JSON.stringify({ fecha_fin: fechaFin }),
-    });
-    return handleResponse(res);
-  },
+  // ── Eliminar cargo (DELETE) ────────────────────────────────
+  // Reemplaza a cerrarCargo y reemplazarCargo.
+  // El trigger BEFORE DELETE graba el EGRESO en historial.
 
-  reemplazarCargo: async (idDirectorio, { id_afiliado_nuevo, fecha_cambio }) => {
-    const res = await fetch(`${BASE}/${idDirectorio}/reemplazar`, {
-      method:      'PATCH',
-      headers:     { 'Content-Type': 'application/json' },
+  eliminarCargo: async (idDirectorio) => {
+    const res = await fetch(`${BASE}/${idDirectorio}`, {
+      method:      'DELETE',
       credentials: 'include',
-      body:        JSON.stringify({ id_afiliado_nuevo, fecha_cambio }),
     });
     return handleResponse(res);
   },
