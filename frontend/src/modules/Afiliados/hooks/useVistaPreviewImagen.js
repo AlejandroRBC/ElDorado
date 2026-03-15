@@ -1,56 +1,67 @@
+// frontend/src/modules/Afiliados/hooks/useVistaPreviewImagen.js
+
+// ============================================
+// HOOK USE VISTA PREVIEW IMAGEN
+// ============================================
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
+/**
+ * Gestiona la preview de una imagen con soporte para drag & drop,
+ * selección por input file, revocación de blobs y reset.
+ *
+ * urlInicial      - URL inicial de la imagen (puede ser null)
+ * alReportarError - Callback para reportar errores de validación
+ */
 export const useVistaPreviewImagen = ({
-  urlInicial     = null,
+  urlInicial      = null,
   alReportarError = null,
 } = {}) => {
+  const [preview,              setPreview]              = useState(urlInicial);
+  const [archivoSeleccionado,  setArchivoSeleccionado]  = useState(null);
+  const [isDragging,           setIsDragging]           = useState(false);
 
-  const [preview,             setPreview]             = useState(urlInicial);
-  const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
-  const [isDragging,          setIsDragging]          = useState(false);
-
-  // Guardamos la URL "base" a la que revertir al eliminar la foto nueva.
-  // Se usa una ref para poder mutar sin forzar re-renders.
+  // Ref de la URL base a la que revertir al eliminar la foto nueva
   const urlInicialRef = useRef(urlInicial);
 
-  // Ref que siempre apunta al preview actual — necesario para el
-  // cleanup de desmontaje sin capturar el valor del primer render.
+  // Ref que siempre apunta al preview actual para el cleanup de desmontaje
   const previewRef = useRef(preview);
   useEffect(() => { previewRef.current = preview; }, [preview]);
 
-  // Revocar la URL blob al desmontar el componente que usa el hook.
+  // Revocar la URL blob al desmontar
   useEffect(() => {
     return () => {
       if (previewRef.current?.startsWith('blob:')) {
         URL.revokeObjectURL(previewRef.current);
       }
     };
-  }, []); // solo al desmontar
+  }, []);
 
   const fileInputRef = useRef(null);
   const dropZoneRef  = useRef(null);
 
-  // ── Procesar un archivo elegido ────────────────────────────
+  /**
+   * Procesa un archivo de imagen validando su tamaño.
+   * Crea una URL blob y revoca la anterior si existía.
+   */
   const alSeleccionarArchivo = useCallback((file) => {
     if (file.size > MAX_BYTES) {
       alReportarError?.('La imagen es demasiado grande (máximo 5MB)');
       return;
     }
-
-    // Revocar el blob anterior antes de crear uno nuevo
     if (previewRef.current?.startsWith('blob:')) {
       URL.revokeObjectURL(previewRef.current);
     }
-
     const nuevaUrl = URL.createObjectURL(file);
     setPreview(nuevaUrl);
     setArchivoSeleccionado(file);
   }, [alReportarError]);
 
-  // ── Eliminar la foto nueva y revertir a la URL inicial ─────
+  /**
+   * Elimina la foto nueva y revierte a la URL inicial.
+   */
   const alEliminarFoto = useCallback(() => {
     if (previewRef.current?.startsWith('blob:')) {
       URL.revokeObjectURL(previewRef.current);
@@ -59,14 +70,18 @@ export const useVistaPreviewImagen = ({
     setArchivoSeleccionado(null);
   }, []);
 
-  // ── Handler directo para <input type="file" onChange> ──────
+  /**
+   * Handler para el evento onChange de un input type="file".
+   */
   const alCambiarInputArchivo = useCallback((e) => {
     const file = e.target.files?.[0];
     if (file) alSeleccionarArchivo(file);
   }, [alSeleccionarArchivo]);
 
-  // ── Reiniciar todo el estado (útil en resetForm) ───────────
-  // nuevaUrl: la nueva URL inicial tras el reset (null por defecto)
+  /**
+   * Reinicia todo el estado del hook.
+   * Acepta una nueva URL inicial opcional.
+   */
   const reiniciar = useCallback((nuevaUrl = null) => {
     if (previewRef.current?.startsWith('blob:')) {
       URL.revokeObjectURL(previewRef.current);
@@ -77,7 +92,9 @@ export const useVistaPreviewImagen = ({
     setIsDragging(false);
   }, []);
 
-  // ── Props para la zona de drag & drop ─────────────────────
+  /**
+   * Props listos para aplicar a la zona de drag & drop.
+   */
   const propsDragDrop = {
     ref:         dropZoneRef,
     onClick:     () => fileInputRef.current?.click(),
@@ -93,8 +110,8 @@ export const useVistaPreviewImagen = ({
 
   return {
     preview,
-    esBlobNuevo:          preview?.startsWith('blob:') ?? false,
-    esUrlExterna:         Boolean(preview && !preview.startsWith('blob:')),
+    esBlobNuevo:         preview?.startsWith('blob:') ?? false,
+    esUrlExterna:        Boolean(preview && !preview.startsWith('blob:')),
     archivoSeleccionado,
     isDragging,
     fileInputRef,

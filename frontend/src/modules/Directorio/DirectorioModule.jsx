@@ -8,6 +8,7 @@ import { useState, useEffect, useRef }                            from 'react';
 import { Container, Paper, Group, Button, LoadingOverlay, Alert } from '@mantine/core';
 import { IconPlus, IconAlertCircle }                              from '@tabler/icons-react';
 import { useMediaQuery }                                          from 'react-responsive';
+import { useLogin }                                               from '../../context/LoginContext';
 import ModuleHeader       from '../Navegacion/components/ModuleHeader';
 import CuadroDirectorio   from './components/CuadroDirectorio';
 import ModalGestion       from './components/ModalGestion';
@@ -22,7 +23,10 @@ import './styles/directorio.css';
  * Responsive con react-responsive.
  */
 const DirectorioModule = () => {
-  const isMobile  = useMediaQuery({ maxWidth: 640 });
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+
+  const { user } = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   const {
     gestiones, gestionActiva, gestionSeleccionada,
@@ -36,7 +40,7 @@ const DirectorioModule = () => {
   } = useDirectorio(gestionSeleccionada ? parseInt(gestionSeleccionada) : null);
 
   // ── Catálogo de secretarías para el modal ──
-  const [secretarias,     setSecretarias]     = useState([]);
+  const [secretarias, setSecretarias] = useState([]);
   const [cargandoSecrets, setCargandoSecrets] = useState(false);
 
   useEffect(() => {
@@ -64,16 +68,25 @@ const DirectorioModule = () => {
 
   // ── Modal ──
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [modoModal,    setModoModal]    = useState('nueva');
+  const [modoModal, setModoModal] = useState('nueva');
 
   /** Abre el modal en modo nueva gestión. */
-  const abrirNuevaGestion = () => { setModoModal('nueva'); setModalAbierto(true); };
+  const abrirNuevaGestion = () => { 
+    setModoModal('nueva'); 
+    setModalAbierto(true); 
+  };
 
   /** Abre el modal en modo editar gestión. */
-  const abrirEditarGestion = () => { setModoModal('editar'); setModalAbierto(true); };
+  const abrirEditarGestion = () => { 
+    setModoModal('editar'); 
+    setModalAbierto(true); 
+  };
 
   /** Recarga al guardar desde el modal. */
-  const handleGuardado = () => { recargarGestiones(); recargarCuadro(); };
+  const handleGuardado = () => { 
+    recargarGestiones(); 
+    recargarCuadro(); 
+  };
 
   // Label de la gestión seleccionada
   const gestionSeleccionadaObj = gestiones.find((g) => String(g.id_gestion) === String(gestionSeleccionada));
@@ -91,7 +104,9 @@ const DirectorioModule = () => {
       {errorGestiones && (
         <Alert icon={<IconAlertCircle size={16} />} title="Error al cargar gestiones" color="red" mb="md">
           {errorGestiones}
-          <Button variant="subtle" size="xs" onClick={recargarGestiones} style={{ marginLeft: '10px' }}>Reintentar</Button>
+          <Button variant="subtle" size="xs" onClick={recargarGestiones} style={{ marginLeft: '10px' }}>
+            Reintentar
+          </Button>
         </Alert>
       )}
 
@@ -100,20 +115,37 @@ const DirectorioModule = () => {
 
         {/* ── Barra de controles ── */}
         <Group
-          justify="flex-start" align="center" mb="xl" gap="md"
-          style={{ flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center' }}
+          justify="flex-start"
+          align="center"
+          mb="xl"
+          gap="md"
+          style={{
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'stretch' : 'center',
+          }}
         >
-          {/* Botón Nueva Gestión */}
-          <button onClick={abrirNuevaGestion} className="dir-btn-nueva-gestion">
-            <IconPlus size={18} style={{ marginRight: '8px' }} />
-            Nueva Gestión
-          </button>
+          {/* Botón Nueva Gestión SOLO para superadmin */}
+          {esSuperAdmin && (
+            <button onClick={abrirNuevaGestion} className="dir-btn-nueva-gestion">
+              <IconPlus size={18} style={{ marginRight: '8px' }} />
+              Nueva Gestión
+            </button>
+          )}
 
-          {/* Custom select de gestiones (igual al del mapa) */}
-          <div className="dir-custom-select" ref={selectRef} style={{ minWidth: isMobile ? '100%' : '240px' }}>
+          {/* Custom select de gestiones */}
+          <div
+            className="dir-custom-select"
+            ref={selectRef}
+            style={{
+              minWidth: isMobile ? '100%' : '240px',
+              marginLeft: esSuperAdmin ? '0' : '0', // queda alineado a la izquierda si no es superadmin
+            }}
+          >
             <div
               className="dir-custom-select-selected"
-              onClick={() => { if (!cargandoGestiones && gestiones.length > 0) setSelectAbierto(!selectAbierto); }}
+              onClick={() => {
+                if (!cargandoGestiones && gestiones.length > 0) setSelectAbierto(!selectAbierto);
+              }}
             >
               <span>{labelSeleccionado}</span>
               <span className={`dir-custom-select-icon ${selectAbierto ? 'open' : ''}`}>▾</span>
@@ -125,7 +157,10 @@ const DirectorioModule = () => {
                   <div
                     key={value}
                     className="dir-custom-select-option"
-                    onClick={() => { setGestionSeleccionada(value); setSelectAbierto(false); }}
+                    onClick={() => {
+                      setGestionSeleccionada(value);
+                      setSelectAbierto(false);
+                    }}
                   >
                     {label}
                   </div>
@@ -145,7 +180,9 @@ const DirectorioModule = () => {
             onEditarGestion={abrirEditarGestion}
           />
         ) : (
-          !cargandoGestiones && <div className="dir-placeholder">Selecciona una gestión para ver el directorio</div>
+          !cargandoGestiones && (
+            <div className="dir-placeholder">Selecciona una gestión para ver el directorio</div>
+          )
         )}
       </Paper>
 

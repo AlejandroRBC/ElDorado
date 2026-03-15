@@ -5,7 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { useState, useCallback, lazy, Suspense } from 'react';
 
 import { useAfiliado } from '../hooks/useAfiliado';
-import { useDesafiliarAfiliado } from '../hooks/useDesafiliarAfiliado';
+import { useDesafiliarAfiliado } from '../hooks/useDesafiliarAfiliado.JS';
 import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
 import { usePDFExport } from '../hooks/usePDFExport';
 import { useHistorialAfiliado } from '../hooks/useHistorialAfiliado';

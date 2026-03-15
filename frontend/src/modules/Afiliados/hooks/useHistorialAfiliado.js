@@ -1,30 +1,25 @@
-// hooks/useHistorialAfiliado.js
+// frontend/src/modules/Afiliados/hooks/useHistorialAfiliado.js
+
+// ============================================
+// HOOK USE HISTORIAL AFILIADO
+// ============================================
+
 import { useState, useCallback } from 'react';
-import { historialService } from '../services/historialService';
+import { historialService }      from '../services/historialService';
 
-// ============================================================
-// HOOK useHistorialAfiliado
-// Gestiona la carga del historial completo de un afiliado
-// (afiliación + directorio), el estado de carga y los errores.
-//
-// Responsabilidades:
-//   - Llamar a historialService.obtenerHistorialCompleto
-//   - Manejar cargando / error
-//   - Exponer la función de carga para que el modal la llame
-//     solo cuando se abre (lazy fetch)
-// ============================================================
-
+/**
+ * Gestiona la carga lazy del historial completo de un afiliado.
+ * Se llama desde el handler al abrir el modal para evitar
+ * peticiones innecesarias mientras el modal está cerrado.
+ */
 export const useHistorialAfiliado = () => {
-  const [historial,  setHistorial]  = useState([]);
-  const [cargando,   setCargando]   = useState(false);
-  const [error,      setError]      = useState(null);
+  const [historial, setHistorial] = useState([]);
+  const [cargando,  setCargando]  = useState(false);
+  const [error,     setError]     = useState(null);
 
   /**
-   * Carga el historial del afiliado.
-   * Se llama desde el handler al abrir el modal para evitar
-   * peticiones innecesarias mientras el modal está cerrado.
-   *
-   * @param {number|string} idAfiliado
+   * Carga el historial completo del afiliado por su ID.
+   * Limpia el estado anterior antes de cada carga.
    */
   const cargarHistorial = useCallback(async (idAfiliado) => {
     if (!idAfiliado) return;
@@ -42,17 +37,13 @@ export const useHistorialAfiliado = () => {
     }
   }, []);
 
-  /** Limpia el estado al cerrar el modal */
+  /**
+   * Limpia el historial y los errores al cerrar el modal.
+   */
   const limpiarHistorial = useCallback(() => {
     setHistorial([]);
     setError(null);
   }, []);
 
-  return {
-    historial,
-    cargando,
-    error,
-    cargarHistorial,
-    limpiarHistorial,
-  };
+  return { historial, cargando, error, cargarHistorial, limpiarHistorial };
 };

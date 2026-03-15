@@ -1,9 +1,13 @@
 // frontend/src/modules/Afiliados/hooks/useListaAfiliados.js
 
-import { useState, useEffect, useCallback } from 'react';
-import { afiliadosService } from '../services/afiliadosService';
+// ============================================
+// HOOK USE LISTA AFILIADOS
+// ============================================
 
-// ── Filtros iniciales — referencias estables fuera del hook ──
+import { useState, useEffect, useCallback } from 'react';
+import { afiliadosService }                 from '../services/afiliadosService';
+
+// ── Referencias estables fuera del hook para evitar re-renders ──
 const FILTROS_ACTIVOS_INICIALES = {
   search:      '',
   orden:       'alfabetico',
@@ -17,11 +21,15 @@ const FILTROS_DESHABILITADOS_INICIALES = {
   orden:  'alfabetico',
 };
 
-// ============================================================
-// HOOK useListaAfiliados
-// ============================================================
+/**
+ * Hook principal de listado de afiliados.
+ * Soporta dos modos: activos (default) y solo deshabilitados.
+ * En modo activos carga rubros, estadísticas y filtros avanzados.
+ * En modo deshabilitados expone rehabilitar y contador.
+ *
+ * soloDeshabilitados - Si es true, opera en modo deshabilitados
+ */
 export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
-
   const [afiliados,      setAfiliados]      = useState([]);
   const [error,          setError]          = useState(null);
   const [cargando,       setCargando]       = useState(!soloDeshabilitados);
@@ -31,12 +39,9 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
       : { ...FILTROS_ACTIVOS_INICIALES }
   );
 
-  // Solo modo activos
-  const [conexion,          setConexion]          = useState(null);
-  const [rubrosDisponibles, setRubrosDisponibles] = useState([]);
-
-  // Solo modo deshabilitados
-  const [total, setTotal] = useState(0);
+  const [conexion,           setConexion]           = useState(null);
+  const [rubrosDisponibles,  setRubrosDisponibles]  = useState([]);
+  const [total,              setTotal]              = useState(0);
 
   useEffect(() => {
     if (!soloDeshabilitados) {
@@ -47,7 +52,10 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Función principal de carga ────────────────────────────
+  /**
+   * Carga la lista de afiliados aplicando los filtros actuales o nuevos.
+   * Si se pasan nuevosFiltros, los fusiona con los actuales antes de cargar.
+   */
   const cargar = useCallback(async (nuevosFiltros = null) => {
     try {
       setCargando(true);
@@ -57,9 +65,7 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
         ? { ...filtrosActivos, ...nuevosFiltros }
         : filtrosActivos;
 
-      if (nuevosFiltros !== null) {
-        setFiltrosActivos(filtrosAUsar);
-      }
+      if (nuevosFiltros !== null) setFiltrosActivos(filtrosAUsar);
 
       let datos;
       if (soloDeshabilitados) {
@@ -80,7 +86,9 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     }
   }, [filtrosActivos, soloDeshabilitados]);
 
-  // ── Filtros comunes ───────────────────────────────────────
+  /**
+   * Busca afiliados por texto reseteando los filtros específicos.
+   */
   const buscarPorTexto = (termino) => {
     const resetEspecificos = soloDeshabilitados
       ? {}
@@ -88,8 +96,14 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     return cargar({ search: termino, ...resetEspecificos });
   };
 
+  /**
+   * Ordena la lista por el tipo de orden dado.
+   */
   const ordenarPor = (tipoOrden) => cargar({ orden: tipoOrden });
 
+  /**
+   * Limpia todos los filtros y recarga la lista.
+   */
   const limpiarFiltros = () => {
     const filtrosLimpios = soloDeshabilitados
       ? { ...FILTROS_DESHABILITADOS_INICIALES }
@@ -98,7 +112,9 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     return cargar(filtrosLimpios);
   };
 
-  // ── Solo modo activos ─────────────────────────────────────
+  /**
+   * Prueba la conexión con el servidor.
+   */
   const probarConexion = async () => {
     try {
       const resultado = await afiliadosService.probarConexion();
@@ -108,6 +124,9 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     }
   };
 
+  /**
+   * Carga los rubros disponibles para el filtro.
+   */
   const cargarRubros = async () => {
     try {
       const rubros = await afiliadosService.obtenerRubros();
@@ -117,15 +136,26 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     }
   };
 
+  /**
+   * Filtra por cantidad de puestos asignados.
+   */
   const filtrarPorCantidadPuestos = (cantidad) =>
     cargar({ puestoCount: cantidad, search: '' });
 
+  /**
+   * Filtra por si el afiliado tiene o no patente.
+   */
   const filtrarPorPatente = (tienePatente) =>
     cargar({ conPatente: tienePatente, search: '' });
 
-  const filtrarPorRubro = (rubro) =>
-    cargar({ rubro });
+  /**
+   * Filtra por rubro.
+   */
+  const filtrarPorRubro = (rubro) => cargar({ rubro });
 
+  /**
+   * Crea un nuevo afiliado y recarga la lista.
+   */
   const crearAfiliado = async (afiliadoData) => {
     try {
       const resultado = await afiliadosService.crear(afiliadoData);
@@ -137,12 +167,10 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     }
   };
 
-  // ── Solo modo deshabilitados ──────────────────────────────
-  // useCallback es necesario aquí porque esta función se pasa
-  // como prop `onRehabilitar` a ListaCards y TablaAfiliados,
-  // que están envueltos en React.memo (Tarea 8).
-  // Sin useCallback, cada render del hook crea una referencia
-  // nueva → memo detecta cambio de prop → re-render innecesario.
+  /**
+   * Rehabilita un afiliado deshabilitado y recarga la lista.
+   * Usa useCallback porque se pasa como prop a componentes memorizados.
+   */
   const rehabilitarAfiliado = useCallback(async (id) => {
     try {
       setCargando(true);
@@ -157,6 +185,9 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     }
   }, [cargar]);
 
+  /**
+   * Actualiza el contador de afiliados deshabilitados.
+   */
   const actualizarContador = async () => {
     try {
       const count = await afiliadosService.contarDeshabilitados();
@@ -169,7 +200,6 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
   };
 
   return {
-    // Común
     afiliados,
     cargando,
     error,
@@ -178,7 +208,6 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     buscarPorTexto,
     ordenarPor,
     limpiarFiltros,
-    // Solo activos
     conexion,
     rubrosDisponibles,
     filtrarPorCantidadPuestos,
@@ -186,7 +215,6 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
     filtrarPorRubro,
     crearAfiliado,
     cargarRubros,
-    // Solo deshabilitados
     total,
     rehabilitarAfiliado,
     actualizarContador,

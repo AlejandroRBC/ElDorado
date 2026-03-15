@@ -4,11 +4,11 @@
 // COMPONENTE MODAL ASIGNAR PUESTO
 // ============================================
 
-import { useState, useEffect }                                    from 'react';
+import { useState, useEffect, useRef }                            from 'react';
 import { Modal, Group, Stack, Text, Loader, Box,
          Badge, Alert, Avatar }                                   from '@mantine/core';
 import { IconSearch, IconUserPlus, IconX, IconCheck,
-         IconChevronDown, IconAlertTriangle }                     from '@tabler/icons-react';
+        IconAlertTriangle }                     from '@tabler/icons-react';
 import { useDebouncedValue }                                      from '@mantine/hooks';
 import { notifications }                                          from '@mantine/notifications';
 import { afiliadosService }                                       from '../service/afiliadosService';
@@ -142,6 +142,41 @@ export function ModalAsignarPuesto({ opened, close, puesto, onAsignado }) {
       setLoading(false);
     }
   };
+
+
+const CustomSelect = ({ value, onChange, opciones, label }) => {
+  const [abierto, setAbierto] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setAbierto(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const labelActual = opciones.find(o => o.value === value)?.label || '';
+
+  return (
+    <div className="gp-field-group">
+      {label && <label className="gp-field-label">{label}</label>}
+      <div className="gp-custom-select" ref={ref}>
+        <div className="gp-custom-select-selected" onClick={() => setAbierto(!abierto)}>
+          <span>{labelActual}</span>
+          <span className={`gp-custom-select-icon ${abierto ? 'open' : ''}`}>▾</span>
+        </div>
+        {abierto && (
+          <div className="gp-custom-select-dropdown">
+            {opciones.map(({ value: v, label: l }) => (
+              <div key={v} className="gp-custom-select-option" onClick={() => { onChange(v); setAbierto(false); }}>
+                {l}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
   if (!puesto) return null;
 
@@ -296,23 +331,15 @@ export function ModalAsignarPuesto({ opened, close, puesto, onAsignado }) {
                   </div>
 
                   {/* Patente: Select nativo con estilo gp */}
-                  <div className="gp-field-group">
-                    <label className="gp-field-label" htmlFor="asignar-patente">
-                      Estado de patente
-                    </label>
-                    <div className="gp-select-wrapper">
-                      <select
-                        id="asignar-patente"
-                        value={formPuesto.tiene_patente ? 'true' : 'false'}
-                        onChange={(e) => handleFormPuesto('tiene_patente', e.target.value === 'true')}
-                        className="gp-select"
-                      >
-                        <option value="true">Con patente</option>
-                        <option value="false">Sin patente</option>
-                      </select>
-                      <IconChevronDown size={14} className="gp-select-icon" />
-                    </div>
-                  </div>
+                  <CustomSelect
+                    label="Estado de patente"
+                    value={formPuesto.tiene_patente ? 'true' : 'false'}
+                    onChange={(v) => handleFormPuesto('tiene_patente', v === 'true')}
+                    opciones={[
+                      { value: 'true',  label: 'Con patente' },
+                      { value: 'false', label: 'Sin patente' },
+                    ]}
+                  />
 
                   {/* Nro de patente — solo visible si tiene_patente = true */}
                   {formPuesto.tiene_patente && (

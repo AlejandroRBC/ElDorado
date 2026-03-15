@@ -213,11 +213,13 @@
 .gp-tabla-scroll {
   overflow-x: auto;
   padding-bottom: 60px;
+  width: 100%;
 }
 
-.gp-tabla table {
+.gp-tabla {
   border-collapse: collapse;
   width:           100%;
+  table-layout:    auto;
   font-family:     var(--font-body);
 }
 
@@ -232,7 +234,7 @@
   color:          var(--gp-primary);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  padding:        12px 16px;
+  padding:        17px 1.8%;
   text-align:     center;
   white-space:    nowrap;
 }
@@ -252,12 +254,11 @@
 
 .gp-tabla tbody td {
   font-family:    var(--font-body);
-  font-size:      13px;
+  font-size:      11px;
   color:          var(--gp-primary);
-  padding:        12px 16px;
+  padding:        17px 1.8%;
   text-align:     center;
   vertical-align: middle;
-  
 }
 
 .gp-tabla-paso {
@@ -345,7 +346,6 @@
 
 .gp-resultado-item:hover {
   background-color: var(--gp-bg-input);
-  border-color:     var(--gp-accent);
 }
 
 .gp-btn-volver {
@@ -651,30 +651,22 @@
   box-shadow:       0 8px 24px rgba(0,0,0,0.12);
   font-family:      var(--font-body);
 }
-
-
-
 /* ============================================================
-   AGREGAR al final de:
-   frontend/src/modules/GestionPatentesPuestos/Styles/gestionpatentespuestos.css
-   ============================================================ */
-
-/* ── Grupo de campo (label + input) ─────────────────────── */
+   MODAL ASIGNAR — CAMPOS EDITABLES
+============================================================ */
 .gp-field-group {
   display:        flex;
   flex-direction: column;
-  gap:            5px;
+  gap:            4px;
 }
 
 .gp-field-label {
-  font-family: 'Poppins', sans-serif;
-  font-size:   12px;
-  font-weight: 600;
-  color:       #555;
-  letter-spacing: 0.3px;
+  font-family:  var(--font-body);
+  font-size:    12px;
+  font-weight:  600;
+  color:        var(--gp-primary);
 }
 
-/* ── Select nativo estilizado ────────────────────────────── */
 .gp-select-wrapper {
   position:    relative;
   display:     flex;
@@ -683,43 +675,45 @@
 
 .gp-select {
   width:            100%;
-  height:           40px;
-  padding:          0 36px 0 12px;
-  font-family:      'Poppins', sans-serif;
-  font-size:        13px;
-  color:            #0f0f0f;
-  background-color: #f6f8fe;
-  border:           1px solid #e8eaf0;
-  border-radius:    8px;
+  padding:          7px 32px 7px 12px;
   appearance:       none;
-  -webkit-appearance: none;
+  background-color: var(--gp-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  font-family:      var(--font-body);
+  font-size:        13px;
+  color:            var(--gp-primary);
   cursor:           pointer;
   outline:          none;
-  transition:       border-color 0.15s ease;
+  transition:       border-color 0.2s;
+  height:           38px;
 }
 
 .gp-select:focus {
-  border-color: #0f0f0f;
+  border-color: var(--gp-primary);
+}
+
+.gp-select option {
+  background-color: var(--gp-bg-option);
+  color:            var(--gp-primary);
 }
 
 .gp-select-icon {
   position:       absolute;
-  right:          12px;
+  right:          10px;
   pointer-events: none;
-  color:          #999;
+  color:          #666;
 }
 
-/* ── Aviso de patente eliminada ──────────────────────────── */
 .gp-aviso-patente {
-  display:        flex;
-  align-items:    flex-start;
-  gap:            7px;
-  padding:        8px 12px;
-  border-radius:  8px;
-  background:     #fff8ed;
-  border:         1px solid #f5c842;
-  color:          #8a6200;
-  font-family:    'Poppins', sans-serif;
-  font-size:      12px;
-  line-height:    1.4;
+  display:      flex;
+  align-items:  flex-start;
+  gap:          8px;
+  padding:      10px 12px;
+  background:   #fff8e1;
+  border:       1.5px solid #f0c040;
+  border-radius:var(--radius-sm);
+  font-family:  var(--font-body);
+  font-size:    12px;
+  color:        #7a5c00;
 }

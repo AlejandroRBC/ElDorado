@@ -4,15 +4,17 @@
 // COMPONENTE TABLA PUESTOS
 // ============================================
 
-import { Text, Badge, ActionIcon, Menu, Stack, Loader } from '@mantine/core';
+import { Badge, ActionIcon, Menu, Stack, Loader, Text } from '@mantine/core';
 import { IconUserPlus, IconDotsVertical, IconEye,
-         IconArrowsExchange, IconEdit } from '@tabler/icons-react';
+         IconArrowsExchange, IconEdit }                 from '@tabler/icons-react';
+import { useLogin }                                     from '../../../context/LoginContext';
 import '../Styles/gestionpatentespuestos.css';
 
 /**
  * Tabla de puestos con diseño unificado estilo TablaAfiliados.
  * Las filas con nroPuesto > 10000 son pasos y se muestran en gris.
- * El menú de acciones usa un botón amarillo con hover negro.
+ * Los ADMIN solo pueden ver el historial.
+ * Los superadmin pueden asignar, traspasar y editar.
  *
  * puestos        - Lista de puestos a renderizar
  * loading        - Muestra loader mientras carga
@@ -29,12 +31,14 @@ export function TablaPuestos({
   onTraspaso,
   onAsignar,
 }) {
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   if (loading) {
     return (
       <Stack align="center" p="xl">
         <Loader color="yellow" />
-        <Text size="sm" style={{ fontFamily: 'Poppins, sans-serif' }}>Actualizando datos...</Text>
+        <Text size="sm" className="gp-tabla-loading">Actualizando datos...</Text>
       </Stack>
     );
   }
@@ -45,27 +49,12 @@ export function TablaPuestos({
   ];
 
   return (
-    <div style={{ overflowX: 'auto', paddingBottom: '60px' }}>
-      <table style={{ width: '100%', minWidth: '1100px', borderCollapse: 'collapse', fontFamily: 'Poppins, sans-serif' }}>
+    <div className="gp-tabla-scroll">
+      <table className="gp-tabla">
         <thead>
-          <tr style={{ backgroundColor: '#F6F9FF' }}>
-            {columnas.map((col, i) => (
-              <th
-                key={col}
-                style={{
-                  fontFamily:     'Poppins, sans-serif',
-                  fontWeight:     600,
-                  fontSize:       '11px',
-                  color:          '#0f0f0f',
-                  textTransform:  'uppercase',
-                  letterSpacing:  '0.07em',
-                  padding:        '12px 16px',
-                  textAlign:      'center',
-                  whiteSpace:     'nowrap',          
-                }}
-              >
-                {col}
-              </th>
+          <tr>
+            {columnas.map((col) => (
+              <th key={col}>{col}</th>
             ))}
           </tr>
         </thead>
@@ -73,54 +62,36 @@ export function TablaPuestos({
           {puestos.map((puesto, i) => {
             const esPaso = Number(puesto.nroPuesto) > 10000;
 
-            // ── Filas paso: siempre gris oscuro, sin hover ──
             if (esPaso) {
               return (
-                <tr key={puesto.id_puesto} style={{ backgroundColor: '#b0b0b0' }}>
-                  <td colSpan={10} style={{ padding: '6px 0' }} />
+                <tr key={puesto.id_puesto} className="gp-tabla-paso">
+                  <td colSpan={10} />
                 </tr>
               );
             }
 
-            // ── Filas normales ──
             const bgBase = i % 2 === 0 ? 'white' : '#fafafa';
             return (
               <tr
                 key={puesto.id_puesto}
-                style={{ backgroundColor: bgBase, borderBottom: '1px solid #f0f0f0' }}
+                style={{ backgroundColor: bgBase }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#eee'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgBase}
               >
-                <td style={{ fontWeight: 700, padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.nroPuesto}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.nro_patente || '—'}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.fila} - {puesto.cuadra}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                <td className="gp-tabla-td-bold">{puesto.nroPuesto}</td>
+                <td>{puesto.nro_patente || '—'}</td>
+                <td>{puesto.fila} - {puesto.cuadra}</td>
+                <td>
                   <Badge color={puesto.tiene_patente ? 'green' : 'yellow'} variant="dot">
                     {puesto.tiene_patente ? 'CON PATENTE' : 'SIN PATENTE'}
                   </Badge>
                 </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.ancho}m - {puesto.largo}m
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.apoderado || 'VACANTE'}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.ci || '—'}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.fecha_adquisicion || '—'}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontFamily: 'Poppins, sans-serif', fontSize: '13px' }}>
-                  {puesto.rubro || '—'}
-                </td>
-                <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                <td>{puesto.ancho}m - {puesto.largo}m</td>
+                <td>{puesto.apoderado || 'VACANTE'}</td>
+                <td>{puesto.ci || '—'}</td>
+                <td>{puesto.fecha_adquisicion || '—'}</td>
+                <td>{puesto.rubro || '—'}</td>
+                <td>
                   <Menu shadow="md" width={200} position="left-start">
                     <Menu.Target>
                       <ActionIcon className="gp-action-btn" radius="xl">
@@ -128,22 +99,31 @@ export function TablaPuestos({
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
+
+                      {/* Historial — siempre visible */}
                       <Menu.Item leftSection={<IconEye size={14} />} onClick={() => onVerHistorial(puesto)}>
                         Ver Historial
                       </Menu.Item>
-                      <Menu.Item
-                        leftSection={<IconUserPlus size={14} />}
-                        onClick={() => onAsignar(puesto)}
-                        description="Asignar este puesto a un afiliado"
-                      >
-                        Asignar Afiliado
-                      </Menu.Item>
-                      <Menu.Item leftSection={<IconArrowsExchange size={14} />} onClick={() => onTraspaso(puesto)}>
-                        Hacer Traspaso
-                      </Menu.Item>
-                      <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEditar(puesto)}>
-                        Editar
-                      </Menu.Item>
+
+                      {/* Asignar, traspasar, editar — solo superadmin */}
+                      {esSuperAdmin && (
+                        <>
+                          <Menu.Item
+                            leftSection={<IconUserPlus size={14} />}
+                            onClick={() => onAsignar(puesto)}
+                            description="Asignar este puesto a un afiliado"
+                          >
+                            Asignar Afiliado
+                          </Menu.Item>
+                          <Menu.Item leftSection={<IconArrowsExchange size={14} />} onClick={() => onTraspaso(puesto)}>
+                            Hacer Traspaso
+                          </Menu.Item>
+                          <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEditar(puesto)}>
+                            Editar
+                          </Menu.Item>
+                        </>
+                      )}
+
                     </Menu.Dropdown>
                   </Menu>
                 </td>

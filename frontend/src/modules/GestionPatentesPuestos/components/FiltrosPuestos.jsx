@@ -9,6 +9,7 @@ import { Group, Stack, Paper, Button }                   from '@mantine/core';
 import { IconSearch, IconX, IconArrowsExchange,
          IconFileExport, IconMapPin }                    from '@tabler/icons-react';
 import { useMediaQuery }                                 from 'react-responsive';
+import { useLogin }                                      from '../../../context/LoginContext';
 import { exportarPuestosExcel }                          from '../exports/puestosExport';
 import '../Styles/gestionpatentespuestos.css';
 
@@ -70,6 +71,7 @@ const CustomSelect = ({ value, onChange, opciones, placeholder }) => {
 /**
  * Panel de filtros con buscador dropdown (apoderado, CI, N° puesto),
  * selects custom y botones de acción unificados.
+ * El botón "Realizar Traspaso" solo es visible para usuarios con rol superadmin.
  */
 export function FiltrosPuestos({
   puestos,
@@ -80,10 +82,13 @@ export function FiltrosPuestos({
   limpiarFiltros,
   onTraspaso,
 }) {
-  const isMobile   = useMediaQuery({ maxWidth: 640 });
-  const hayFiltros = search || filtroPatente || filtroFila || filtroCuadra;
-  const wrapperRef = useRef(null);
+  const isMobile    = useMediaQuery({ maxWidth: 640 });
+  const hayFiltros  = search || filtroPatente || filtroFila || filtroCuadra;
+  const wrapperRef  = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const { user }    = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   // Cerrar dropdown al click fuera
   useEffect(() => {
@@ -93,25 +98,25 @@ export function FiltrosPuestos({
   }, []);
 
   // Resultados para el dropdown
-const resultadosDropdown = search.trim().length >= 1
-  ? puestos
-      .filter(p => {
-        if (Number(p.nroPuesto) > 10000) return false;
-        const t = search.toLowerCase().trim();
-        return (
-          String(p.nroPuesto).includes(t) ||
-          (p.apoderado || '').toLowerCase().includes(t) ||
-          (p.ci || '').includes(t)
-        );
-      })
-      .sort((a, b) => {
-        const nroA = Number(a.nroPuesto);
-        const nroB = Number(b.nroPuesto);
-        if (nroA !== nroB) return nroA - nroB;
-        return (a.fila || '').localeCompare(b.fila || '');
-      })
-      .slice(0, 10)
-  : [];
+  const resultadosDropdown = search.trim().length >= 1
+    ? puestos
+        .filter(p => {
+          if (Number(p.nroPuesto) > 10000) return false;
+          const t = search.toLowerCase().trim();
+          return (
+            String(p.nroPuesto).includes(t) ||
+            (p.apoderado || '').toLowerCase().includes(t) ||
+            (p.ci || '').includes(t)
+          );
+        })
+        .sort((a, b) => {
+          const nroA = Number(a.nroPuesto);
+          const nroB = Number(b.nroPuesto);
+          if (nroA !== nroB) return nroA - nroB;
+          return (a.fila || '').localeCompare(b.fila || '');
+        })
+        .slice(0, 10)
+    : [];
 
   return (
     <Paper className="gp-filtros-paper" p="lg" mb="xl">
@@ -138,6 +143,7 @@ const resultadosDropdown = search.trim().length >= 1
               )}
             </div>
 
+            {/* Dropdown resultados */}
             {showDropdown && resultadosDropdown.length > 0 && (
               <div className="gp-search-dropdown">
                 {resultadosDropdown.map((p) => (
@@ -161,10 +167,11 @@ const resultadosDropdown = search.trim().length >= 1
                 ))}
               </div>
             )}
-            {/* Sin resultados ← NUEVO */}
+
+            {/* Sin resultados */}
             {showDropdown && search.trim().length >= 1 && resultadosDropdown.length === 0 && (
               <div className="buscador-sin-resultados">
-                Sin resultados para "{search}"
+                Sin resultados para &ldquo;{search}&rdquo;
               </div>
             )}
           </div>
@@ -176,19 +183,28 @@ const resultadosDropdown = search.trim().length >= 1
 
         <Group justify="space-between" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
           <Group gap="md" style={{ flexWrap: 'wrap' }}>
-            <Button leftSection={<IconArrowsExchange size={18} />} className="gp-btn-traspaso" onClick={onTraspaso}>
-              Realizar Traspaso
-            </Button>
+
+            {/* Traspaso — solo superadmin */}
+            {esSuperAdmin && (
+              <Button leftSection={<IconArrowsExchange size={18} />} className="gp-btn-traspaso" onClick={onTraspaso}>
+                Realizar Traspaso
+              </Button>
+            )}
+
+            {/* Reporte — siempre visible */}
             <Button leftSection={<IconFileExport size={18} />} className="gp-btn-exportar" onClick={() => exportarPuestosExcel(puestos)}>
               Generar Reporte General
             </Button>
+
           </Group>
+
           {hayFiltros && (
             <Button variant="subtle" size="xs" onClick={limpiarFiltros} leftSection={<IconX size={14} />} className="gp-btn-limpiar">
               Limpiar Filtros
             </Button>
           )}
         </Group>
+
       </Stack>
     </Paper>
   );

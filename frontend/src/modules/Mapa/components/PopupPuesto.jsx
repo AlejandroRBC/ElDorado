@@ -1,26 +1,30 @@
 // src/modules/Mapa/components/PopupPuesto.jsx
-import React, { useEffect, useRef } from 'react';
-import { IconUser, IconHistory, IconX, IconUserPlus } from '@tabler/icons-react';
-import '../Styles/mapa.css';
 
 // ============================================
 // COMPONENTE POPUP PUESTO
 // ============================================
 
+import React, { useEffect, useRef }                    from 'react';
+import { IconUser, IconHistory, IconX, IconUserPlus }  from '@tabler/icons-react';
+import { useLogin }                                     from '../../../context/LoginContext';
+import '../Styles/mapa.css';
+
 /**
  * Popup flotante que aparece al hacer click en un puesto del mapa.
  * Muestra acciones según si el puesto tiene afiliado asignado o no.
- * - Con afiliado: botón "Afiliado" (amarillo) + "Historial Puesto" (amarillo)
- * - Sin afiliado: botón "Asignar Afiliado" (rojo) + "Historial Puesto" (amarillo)
  *
- * @param {Object}   puesto            - Datos del puesto seleccionado
- * @param {boolean}  opened            - Si el popup está visible
- * @param {Function} onClose           - Callback para cerrar el popup
- * @param {Function} onVerAfiliado     - Callback para ver el afiliado
- * @param {Function} onVerHistorial    - Callback para ver el historial
- * @param {Function} onAsignarAfiliado - Callback para asignar afiliado
- * @param {number}   zoom              - Zoom actual del mapa
- * @param {Object}   posicion          - Posición actual del mapa {x, y}
+ * Con afiliado:    botón "Afiliado" (amarillo) + "Historial Puesto" (amarillo)
+ * Sin afiliado:    botón "Asignar Afiliado" (rojo) solo si es SUPERADMIN
+ *                  + "Historial Puesto" (amarillo) siempre
+ *
+ * puesto            - Datos del puesto seleccionado
+ * opened            - Si el popup está visible
+ * onClose           - Callback para cerrar el popup
+ * onVerAfiliado     - Callback para ver el afiliado
+ * onVerHistorial    - Callback para ver el historial
+ * onAsignarAfiliado - Callback para asignar afiliado
+ * zoom              - Zoom actual del mapa
+ * posicion          - Posición actual del mapa {x, y}
  */
 const PopupPuesto = ({
   puesto,
@@ -33,13 +37,12 @@ const PopupPuesto = ({
   posicion,
 }) => {
   const popupRef = useRef(null);
+  const { user } = useLogin();
+
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   // ── Cerrar al click fuera ──
   useEffect(() => {
-    /**
-     * Cierra el popup si se hace click fuera de él.
-     * @param {MouseEvent} e
-     */
     const handleClickOutside = (e) => {
       if (popupRef.current && !popupRef.current.contains(e.target)) {
         onClose();
@@ -56,8 +59,8 @@ const PopupPuesto = ({
   // ── Calcular posición en pantalla ──
   const puestoCentroX = puesto.x + puesto.width / 2;
   const puestoCentroY = puesto.y;
-  const screenX = posicion.x + puestoCentroX * zoom;
-  const screenY = posicion.y + puestoCentroY * zoom;
+  const screenX       = posicion.x + puestoCentroX * zoom;
+  const screenY       = posicion.y + puestoCentroY * zoom;
 
   const popupWidth  = 180;
   const offsetY     = 12;
@@ -91,7 +94,7 @@ const PopupPuesto = ({
         animation:       'popupFadeIn 0.15s ease',
       }}
     >
-      {/* ── Header del popup ── */}
+      {/* ── Header ── */}
       <div className="popup-header">
         <span className="popup-header-titulo">
           P.{puesto.nroPuesto} · {puesto.cuadra === 'Callejón' ? 'FILA A - CALLEJÓN' : `F.${puesto.fila} · ${puesto.cuadra}`}
@@ -104,36 +107,28 @@ const PopupPuesto = ({
       {/* ── Botones de acción ── */}
       <div className="popup-body">
 
-        {/* Con afiliado → botón amarillo */}
+        {/* Ver afiliado — solo si el puesto tiene afiliado */}
         {puesto?.id_afiliado && (
-          <button
-            onClick={onVerAfiliado}
-            className="popup-btn popup-btn-amarillo"
-          >
+          <button onClick={onVerAfiliado} className="popup-btn popup-btn-amarillo">
             <IconUser size={14} />
             Afiliado
           </button>
         )}
 
-        {/* Sin afiliado → botón ROJO */}
-        {!puesto?.id_afiliado && (
-          <button
-            onClick={onAsignarAfiliado}
-            className="popup-btn popup-btn-rojo"
-          >
+        {/* Asignar afiliado — solo si NO tiene afiliado Y es SUPERADMIN */}
+        {!puesto?.id_afiliado && esSuperAdmin && (
+          <button onClick={onAsignarAfiliado} className="popup-btn popup-btn-rojo">
             <IconUserPlus size={14} />
             Asignar Afiliado
           </button>
         )}
 
-        {/* Historial → siempre amarillo */}
-        <button
-          onClick={onVerHistorial}
-          className="popup-btn popup-btn-amarillo"
-        >
+        {/* Historial — siempre visible */}
+        <button onClick={onVerHistorial} className="popup-btn popup-btn-amarillo">
           <IconHistory size={14} />
           Historial Puesto
         </button>
+
       </div>
     </div>
   );
