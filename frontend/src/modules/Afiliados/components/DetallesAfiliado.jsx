@@ -221,9 +221,19 @@ const DetallesAfiliado = () => {
                       <Group gap={6} wrap="wrap">
                         {afiliado.patentes?.length > 0 ? (
                           afiliado.patentes.map((puesto, index) => (
-                            <Badge key={index} size="sm" style={{ backgroundColor: '#EDBE3C', color: '#0f0f0f', fontWeight: 700, padding: '4px 10px', borderRadius: '4px' }}>
-                              {puesto}
-                            </Badge>
+                            <Badge
+                          key={index}
+                          size="sm"
+                          style={{
+                            backgroundColor: puesto.tienePatente ? '#EDBE3C' : '#C4C4C4',
+                            color:            puesto.tienePatente ? '#0f0f0f' : '#5a5a5a',
+                            fontWeight:       700,
+                            padding:          '4px 10px',
+                            borderRadius:     '4px',
+                          }}
+                        >
+                          {puesto.label}
+                        </Badge>
                           ))
                         ) : (
                           <Text size="sm" style={{ color: '#999', fontStyle: 'italic' }}>Sin puestos asignados</Text>

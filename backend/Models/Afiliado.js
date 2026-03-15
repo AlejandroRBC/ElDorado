@@ -37,8 +37,12 @@ const Afiliado = {
           SELECT
             a.*,
             COUNT(DISTINCT tp.id_tenencia)                                     AS total_puestos,
-            SUM(CASE WHEN p.tiene_patente = 1 THEN 1 ELSE 0 END)              AS puestos_con_patente,
+            SUM(CASE WHEN (p.tiene_patente = 1 OR p.nro_patente IS NOT NULL) THEN 1 ELSE 0 END) AS puestos_con_patente,
             GROUP_CONCAT(DISTINCT p.nroPuesto || '-' || p.fila || '-' || p.cuadra) AS puestos_codes,
+            GROUP_CONCAT(
+              p.nroPuesto || '-' || p.fila || '-' || p.cuadra || ':' ||
+              CASE WHEN (p.tiene_patente = 1 OR p.nro_patente IS NOT NULL) THEN '1' ELSE '0' END
+            ) AS puestos_patente_codes,
             GROUP_CONCAT(DISTINCT p.rubro)                                     AS rubros
           FROM afiliado a
           LEFT JOIN tenencia_puesto tp ON a.id_afiliado = tp.id_afiliado
@@ -114,6 +118,7 @@ const Afiliado = {
               ci:                  `${row.ci} ${row.extension}`,
               ocupacion:           row.ocupacion,
               puestos:             row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
+              puestosDetalle: parsePuestosDetalle(row.puestos_patente_codes),
               total_puestos:       row.total_puestos || 0,
               puestos_con_patente: row.puestos_con_patente || 0,
               estado:              'Activo',
@@ -225,6 +230,10 @@ const Afiliado = {
               fecha_afiliacion:afiliado.fecha_afiliacion,
               es_habilitado:   afiliado.es_habilitado,
               puestos:        puestos.map(p => `${p.nroPuesto}-${p.fila}-${p.cuadra}`),
+              patentes: puestos.map(p => ({
+                label:        `${p.nroPuesto}-${p.fila}-${p.cuadra}`,
+                tienePatente: p.tiene_patente === 1 || p.nro_patente != null,
+              })),
               historial_puestos: puestos.map(p => ({
                 id_puesto:     p.id_puesto,
                 id_tenencia:   p.id_tenencia,
@@ -613,5 +622,16 @@ function calcularEdad(fecNac) {
   if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
   return edad;
 }
-
+function parsePuestosDetalle(codes) {
+  if (!codes) return [];
+  const seen = new Set();
+  return codes.split(',').filter(Boolean).reduce((acc, code) => {
+    const i     = code.lastIndexOf(':');
+    const label = code.substring(0, i);
+    if (seen.has(label)) return acc;
+    seen.add(label);
+    acc.push({ label, tienePatente: code.substring(i + 1) === '1' });
+    return acc;
+  }, []);
+}
 module.exports = Afiliado;

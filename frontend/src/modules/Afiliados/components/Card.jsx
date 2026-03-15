@@ -89,16 +89,20 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
 
           <Group gap={3}>
             {afiliado.puestos?.length > 0 ? (
-              afiliado.puestos.map((puesto, index) => (
+              (afiliado.puestosDetalle ?? afiliado.puestos?.map(p => ({ label: p, tienePatente: false })) ?? [])
+              .map((puesto, i) => (
                 <Badge
-                  key={index}
+                  key={i}
+                  size="sm"
                   style={{
-                    backgroundColor: esDeshabilitado ? '#F44336' : '#EDBE3C',
-                    color: esDeshabilitado ? 'white' : '#0f0f0f',
-                    padding: '4px 10px', borderRadius: '4px',
+                    backgroundColor: puesto.tienePatente ? '#EDBE3C' : '#C4C4C4',
+                    color:            puesto.tienePatente ? '#0f0f0f' : '#5a5a5a',
+                    fontWeight:       700,
+                    padding:          '4px 10px',
+                    borderRadius:     '4px',
                   }}
                 >
-                  {puesto}
+                  {puesto.label}
                 </Badge>
               ))
             ) : (

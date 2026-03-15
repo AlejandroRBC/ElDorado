@@ -12,7 +12,7 @@
 const CAMPOS_TEXTO = [
     'rubro',
     'fila',
-    'cuadra',
+
   ];
   
   /**
