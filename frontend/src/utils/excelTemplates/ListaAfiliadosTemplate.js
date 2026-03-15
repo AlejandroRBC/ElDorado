@@ -19,9 +19,9 @@ export const prepararDatosAfiliados = (lista) => {
     return { nro, fila, cuadra: resto.join('-') };
   };
 
-  const joinCol = (patentes, key) =>
-    patentes?.length
-      ? patentes.map((p) => parsePuesto(p)[key]).join('\n')
+  const joinCol = (puestos, key) =>
+    puestos?.length
+      ? puestos.map((p) => parsePuesto(p)[key]).join('\n')
       : '—';
   // ─────────────────────────────────────────────────────────
 
@@ -64,19 +64,19 @@ export const prepararDatosAfiliados = (lista) => {
     {
       header: 'NRO PUESTO',
       key:    'nro_puesto',
-      format: (r) => joinCol(r.patentes, 'nro'),
+      format: (r) => joinCol(r.puestos, 'nro'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     {
       header: 'FILA',
       key:    'fila',
-      format: (r) => joinCol(r.patentes, 'fila'),
+      format: (r) => joinCol(r.puestos, 'fila'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     {
       header: 'CUADRA',
       key:    'cuadra',
-      format: (r) => joinCol(r.patentes, 'cuadra'),
+      format: (r) => joinCol(r.puestos, 'cuadra'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     // ─────────────────────────────────────────────────────

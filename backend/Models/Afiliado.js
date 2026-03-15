@@ -141,7 +141,7 @@ const Afiliado = {
               materno: row.materno,
               ci: `${row.ci} ${row.extension}`,
               ocupacion: row.ocupacion,
-              patentes: row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
+              puestos: row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
               total_puestos: row.total_puestos || 0,
               puestos_con_patente: row.puestos_con_patente || 0,
               estado: 'Activo',
@@ -209,7 +209,7 @@ const Afiliado = {
           nombre: `${row.nombre} ${row.paterno} ${row.materno || ''}`.trim(),
           ci: `${row.ci}-${row.extension}`,
           ocupacion: row.ocupacion,
-          patentes: row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
+          puestos: row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
           total_puestos: row.total_puestos || 0,
           puestos_con_patente: row.puestos_con_patente || 0,
           estado: 'Deshabilitado',
@@ -277,8 +277,8 @@ const Afiliado = {
               url_perfil: afiliado.url_perfil || '/assets/perfiles/sinPerfil.png',
               fecha_afiliacion: afiliado.fecha_afiliacion,
               es_habilitado: afiliado.es_habilitado,
-              patentes: puestos.map(p => `${p.nroPuesto}-${p.fila}-${p.cuadra}`),
-              puestos: historialPuestos.map(p => ({
+              puestos: puestos.map(p => `${p.nroPuesto}-${p.fila}-${p.cuadra}`),
+              historial_puestos: historialPuestos.map(p => ({
                 id: p.id_puesto,
                 nro: p.nroPuesto,
                 fila: p.fila,

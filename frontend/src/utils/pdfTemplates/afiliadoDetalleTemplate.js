@@ -246,7 +246,7 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     // ─────────────────────────────────────────────
     // PUESTOS ASIGNADOS
     // ─────────────────────────────────────────────
-    const puestosActivos = afiliado.puestos?.filter(p => p.estado === 'Activo') || [];
+    const puestosActivos = afiliado.historial_puestos?.filter(p => p.estado === 'Activo') || [];
 
     drawSectionTitle('PUESTOS ASIGNADOS', pdf.currentY);
     pdf.currentY += 8;

@@ -49,10 +49,10 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
 
       <Table.Td>
         <Group gap={4} wrap="wrap">
-          {afiliado.patentes?.length > 0 ? (
-            afiliado.patentes.slice(0, 10).map((patente, index) => (
+          {afiliado.puestos?.length > 0 ? (
+            afiliado.puestos.slice(0, 10).map((puesto, index) => (
               <Badge key={index} size="xs" variant="outline" style={{ borderColor: '#0f0f0f', color: '#0f0f0f', fontWeight: 500 }}>
-                {patente}
+                {puesto}
               </Badge>
             ))
           ) : (

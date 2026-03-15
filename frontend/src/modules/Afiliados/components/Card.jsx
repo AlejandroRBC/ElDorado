@@ -88,8 +88,8 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
           <Text fw={600} size="sm" style={{ color: '#0f0f0f', marginTop: '8px' }}>Puestos:</Text>
 
           <Group gap={3}>
-            {afiliado.patentes?.length > 0 ? (
-              afiliado.patentes.map((puesto, index) => (
+            {afiliado.puestos?.length > 0 ? (
+              afiliado.puestos.map((puesto, index) => (
                 <Badge
                   key={index}
                   style={{
