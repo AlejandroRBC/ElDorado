@@ -1,266 +1,581 @@
 /* ============================================================
-   MÓDULO DIRECTORIO
-   Paleta: #FFFFFF #C4C4C4 #0F0F0F #EDBE3C
-           #F6F9FF #E2ECFF #374567 #0E1528
-   Fuente: Poppins
-   ============================================================ */
+   FUENTES GOOGLE
+============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* ── Cuadro principal ───────────────────────────────────────── */
+/* ============================================================
+   VARIABLES
+============================================================ */
+:root {
+  --dir-primary:   #0f0f0f;
+  --dir-accent:    #EDBE3C;
+  --dir-bg-input:  #F6F9FF;
+  --dir-bg-option: #E2ECFF;
+  --dir-white:     #ffffff;
+  --dir-border:    #dde3f0;
+  --dir-dimmed:    #C4C4C4;
+  --dir-dark:      #0E1528;
+  --dir-shadow:    rgba(0,0,0,0.08);
+  --font-title:    'Bebas Neue', sans-serif;
+  --font-body:     'Poppins', sans-serif;
+  --radius-sm:     8px;
+  --radius-md:     12px;
+  --radius-xl:     100px;
+}
+
+/* ============================================================
+   PAPER CONTENEDOR
+============================================================ */
+.dir-paper {
+  background-color: var(--dir-white);
+  min-height:       70vh;
+  box-shadow:       0 4px 20px var(--dir-shadow);
+  position:         relative;
+}
+
+.dir-placeholder {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  height:          300px;
+  font-family:     var(--font-body);
+  font-size:       14px;
+  color:           var(--dir-dimmed);
+}
+
+/* ============================================================
+   BOTÓN NUEVA GESTIÓN
+============================================================ */
+.dir-btn-nueva-gestion {
+  background-color: var(--dir-primary) !important;
+  color:            var(--dir-white) !important;
+  border-radius:    var(--radius-xl) !important;
+  height:           40px !important;
+  font-weight:      500 !important;
+  padding:          0 24px !important;
+  font-family:      var(--font-body) !important;
+  border:           none !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.dir-btn-nueva-gestion:hover {
+  background-color: var(--dir-accent) !important;
+  color:            var(--dir-primary) !important;
+}
+
+/* ============================================================
+   CUSTOM SELECT (igual al mapa)
+============================================================ */
+.dir-custom-select {
+  position:    relative;
+  min-width:   200px;
+  font-family: var(--font-body);
+}
+
+.dir-custom-select-selected {
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      center;
+  background-color: var(--dir-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  padding:          7px 12px;
+  font-size:        13px;
+  font-family:      var(--font-body);
+  color:            var(--dir-primary);
+  cursor:           pointer;
+  transition:       border-color 0.2s;
+  height:           40px;
+}
+
+.dir-custom-select-selected:hover {
+  border-color: var(--dir-primary);
+}
+
+.dir-custom-select-icon {
+  font-size:  12px;
+  transition: transform 0.2s ease;
+}
+
+.dir-custom-select-icon.open {
+  transform: rotate(180deg);
+}
+
+.dir-custom-select-dropdown {
+  position:      absolute;
+  top:           110%;
+  left:          0;
+  width:         100%;
+  background:    var(--dir-white);
+  border-radius: var(--radius-sm);
+  overflow:      hidden;
+  box-shadow:    0 8px 20px rgba(0,0,0,0.15);
+  z-index:       300;
+}
+
+.dir-custom-select-option {
+  padding:          8px 12px;
+  font-size:        13px;
+  font-family:      var(--font-body);
+  cursor:           pointer;
+  background-color: var(--dir-bg-option);
+  color:            var(--dir-primary);
+  transition:       background 0.15s;
+}
+
+.dir-custom-select-option:hover {
+  background-color: var(--dir-primary);
+  color:            var(--dir-white);
+}
+
+/* ============================================================
+   CUADRO DIRECTORIO
+============================================================ */
 .dir-cuadro {
-    background-color: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-  }
-  
-  /* ── Barra superior del cuadro ──────────────────────────────── */
-  .dir-cuadro-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-    background-color: #0E1528;
-    gap: 12px;
-  }
-  
-  .dir-cuadro-titulo {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    color: #FFFFFF;
-    margin: 0;
-    letter-spacing: 0.04em;
-  }
-  
-  .dir-cuadro-gestion {
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    color: #EDBE3C;
-    font-weight: 500;
-  }
-  
-  /* ── Tabla del cuadro ───────────────────────────────────────── */
-  .dir-tabla table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  .dir-tabla th,
-  .dir-tabla td {
-    border: none !important;
-    box-shadow: none !important;
-  }
-  
-  .dir-tabla thead tr {
-    background-color: #F6F9FF;
-  }
-  
-  .dir-tabla thead th {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 11px;
-    color: #374567;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    padding: 12px 24px;
-    background-color: #F6F9FF;
-  }
-  
-  .dir-tabla tbody tr {
-    transition: background-color 0.15s ease;
-    border-bottom: 1px solid #F6F9FF !important;
-  }
-  
-  .dir-tabla tbody tr:last-child {
-    border-bottom: none !important;
-  }
-  
-  .dir-tabla tbody tr:hover {
-    background-color: #F6F9FF;
-  }
-  
-  .dir-tabla tbody td {
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    color: #0F0F0F;
-    padding: 14px 24px;
-    vertical-align: middle;
-  }
-  
-  /* ── Número de orden del cargo ──────────────────────────────── */
-  .dir-cargo-orden {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: #E2ECFF;
-    color: #374567;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  
-  /* ── Nombre del cargo ───────────────────────────────────────── */
-  .dir-cargo-nombre {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    color: #0E1528;
-  }
-  
-  /* ── Estado vacante ─────────────────────────────────────────── */
-  .dir-vacante {
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    color: #C4C4C4;
-    font-style: italic;
-  }
-  
-  /* ── Nombre afiliado ────────────────────────────────────────── */
-  .dir-afiliado-nombre {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    color: #0F0F0F;
-  }
-  
-  .dir-afiliado-ci {
-    font-size: 11px;
-    color: #C4C4C4;
-    margin-top: 2px;
-  }
-  
-  /* ── Estado vacío (no hay directorio cargado) ───────────────── */
-  .dir-vacio {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 64px 24px;
-    color: #C4C4C4;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-  }
-  
-  /* ── Modal gestión — tabla interna ──────────────────────────── */
-  .dir-modal-tabla table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  .dir-modal-tabla th,
-  .dir-modal-tabla td {
-    border: none !important;
-  }
-  
-  .dir-modal-tabla thead tr {
-    background-color: #F6F9FF;
-  }
-  
-  .dir-modal-tabla thead th {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 11px;
-    color: #374567;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 10px 16px;
-    background-color: #F6F9FF;
-  }
-  
-  .dir-modal-tabla tbody tr {
-    border-bottom: 1px solid #F6F9FF !important;
-  }
-  
-  .dir-modal-tabla tbody td {
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    padding: 10px 16px;
-    vertical-align: middle;
-  }
-  
-  /* ── Header del modal con título + línea ────────────────────── */
-  .dir-modal-header-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding-bottom: 16px;
-  }
-  
-  .dir-modal-titulo {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 22px;
-    line-height: 112.9%;
-    color: #0E1528;
-    margin: 0;
-    white-space: nowrap;
-  }
-  
-  .dir-modal-linea {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(to right, #E2ECFF, transparent);
-    border: none;
-    margin: 0;
-  }
-  
-  /* ── Buscador de afiliado (dentro del modal) ────────────────── */
-  .dir-buscador-wrap {
-    position: relative;
-  }
-  
-  .dir-buscador-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    background: #FFFFFF;
-    border: 1px solid #E2ECFF;
-    border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
-    z-index: 9999;
-    max-height: 220px;
-    overflow-y: auto;
-  }
-  
-  .dir-buscador-item {
-    display: flex;
-    flex-direction: column;
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: background-color 0.12s ease;
-    border-bottom: 1px solid #F6F9FF;
-  }
-  
-  .dir-buscador-item:last-child {
-    border-bottom: none;
-  }
-  
-  .dir-buscador-item:hover {
-    background-color: #F6F9FF;
-  }
-  
-  .dir-buscador-item-nombre {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    color: #0F0F0F;
-  }
-  
-  .dir-buscador-item-ci {
-    font-size: 11px;
-    color: #C4C4C4;
-    margin-top: 1px;
-  }
-  
-  .dir-buscador-vacio {
-    padding: 16px;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    color: #C4C4C4;
-  }
+  background-color: var(--dir-white);
+  border-radius:    var(--radius-md);
+  box-shadow:       0 4px 20px var(--dir-shadow);
+  overflow:         hidden;
+}
+
+.dir-cuadro-header {
+  display:          flex;
+  align-items:      center;
+  justify-content:  space-between;
+  padding:          18px 24px;
+  background-color: var(--dir-dark);
+  gap:              12px;
+}
+
+.dir-cuadro-header-left {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
+.dir-cuadro-titulo {
+  font-family:    var(--font-title);
+  font-size:      22px;
+  color:          var(--dir-white);
+  margin:         0;
+  letter-spacing: 0.06em;
+}
+
+.dir-cuadro-gestion {
+  font-family: var(--font-body);
+  font-size:   13px;
+  color:       var(--dir-accent);
+  font-weight: 500;
+}
+
+.dir-cuadro-btn-editar {
+  background-color: var(--dir-accent) !important;
+  color:            var(--dir-primary) !important;
+  border-radius:    var(--radius-sm) !important;
+  width:            36px !important;
+  height:           36px !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.dir-cuadro-btn-editar:hover {
+  background-color: var(--dir-primary) !important;
+  color:            var(--dir-white) !important;
+}
+
+/* ============================================================
+   TABLA — ESTILO TABLAAFILIADOS
+============================================================ */
+.dir-tabla {
+  overflow-x: auto;
+}
+
+.dir-tabla table {
+  border-collapse: collapse;
+  width:           100%;
+  min-width:       600px;
+}
+
+.dir-tabla th,
+.dir-tabla td {
+  border:     none !important;
+  box-shadow: none !important;
+}
+
+.dir-tabla thead tr {
+  background-color: var(--dir-bg-input);
+}
+
+.dir-tabla thead th {
+  font-family:    var(--font-body);
+  font-weight:    600;
+  font-size:      11px;
+  color:          var(--dir-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding:        12px 24px;
+  text-align:     center;
+}
+
+.dir-tabla tbody tr {
+  border-bottom: 1px solid #f0f0f0 !important;
+  transition:    background-color 0.15s ease;
+}
+
+.dir-tabla tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.dir-tabla tbody tr:hover {
+  background-color: var(--dir-bg-input);
+}
+
+.dir-tabla tbody td {
+  font-family:    var(--font-body);
+  font-size:      13px;
+  color:          var(--dir-primary);
+  padding:        14px 24px;
+  vertical-align: middle;
+  text-align:     center;
+}
+
+/* ── Elementos de la tabla ── */
+.dir-cargo-orden {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  width:           24px;
+  height:          24px;
+  background-color:var(--dir-bg-option);
+  color:           #374567;
+  border-radius:   50%;
+  font-size:       11px;
+  font-weight:     700;
+  flex-shrink:     0;
+}
+
+.dir-cargo-nombre {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size:   13px;
+  color:       var(--dir-dark);
+  text-align:  left;
+}
+
+.dir-vacante {
+  font-family: var(--font-body);
+  font-size:   12px;
+  color:       var(--dir-dimmed);
+  font-style:  italic;
+}
+
+.dir-afiliado-nombre {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size:   13px;
+  color:       var(--dir-primary);
+}
+
+.dir-afiliado-ci {
+  font-size:  11px;
+  color:      var(--dir-dimmed);
+  margin-top: 2px;
+}
+
+.dir-fecha {
+  font-family: var(--font-body);
+  font-size:   12px;
+  color:       var(--dir-dimmed);
+}
+
+.dir-texto-dimmed {
+  color:       var(--dir-dimmed);
+  font-family: var(--font-body);
+}
+
+.dir-vacio {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             10px;
+  padding:         64px 24px;
+  color:           var(--dir-dimmed);
+  font-family:     var(--font-body);
+  font-size:       14px;
+}
+
+/* ============================================================
+   BUSCADOR AFILIADO (estilo BuscadorMapa)
+============================================================ */
+.dir-buscador-wrapper {
+  display:          flex;
+  align-items:      center;
+  background-color: var(--dir-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  padding:          6px 10px;
+  gap:              8px;
+  transition:       border-color 0.2s;
+}
+
+.dir-buscador-wrapper:focus-within {
+  border-color: var(--dir-primary);
+}
+
+.dir-buscador-input {
+  border:           none;
+  outline:          none;
+  flex:             1;
+  font-size:        13px;
+  color:            var(--dir-primary);
+  background-color: transparent;
+  font-family:      var(--font-body);
+}
+
+.dir-buscador-input::placeholder {
+  color:       var(--dir-dimmed);
+  font-family: var(--font-body);
+}
+
+.dir-buscador-clear-btn {
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  padding:     2px;
+  display:     flex;
+  align-items: center;
+  color:       #999;
+}
+
+.dir-buscador-dropdown {
+  position:      absolute;
+  top:           calc(100% + 4px);
+  left:          0;
+  right:         0;
+  background:    var(--dir-white);
+  border:        1.5px solid var(--dir-border);
+  border-radius: var(--radius-sm);
+  box-shadow:    0 8px 24px rgba(0,0,0,0.12);
+  z-index:       9999;
+  max-height:    220px;
+  overflow-y:    auto;
+}
+
+.dir-buscador-item {
+  display:        flex;
+  flex-direction: column;
+  padding:        10px 14px;
+  cursor:         pointer;
+  transition:     background-color 0.12s ease;
+  border-bottom:  1px solid #f0f0f0;
+}
+
+.dir-buscador-item:last-child { border-bottom: none; }
+
+.dir-buscador-item:hover { background-color: var(--dir-bg-input); }
+
+.dir-buscador-item-nombre {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size:   13px;
+  color:       var(--dir-primary);
+  line-height: 1;
+}
+
+.dir-buscador-item-ci {
+  font-size:  11px;
+  color:      var(--dir-dimmed);
+  line-height: 1;
+  margin-top: 0;
+
+}
+
+.dir-buscador-vacio {
+  padding:     16px;
+  text-align:  center;
+  font-family: var(--font-body);
+  font-size:   12px;
+  color:       var(--dir-dimmed);
+}
+
+/* ============================================================
+   MODAL — HEADER
+============================================================ */
+.dir-modal-mantine-header {
+  padding-bottom: 0 !important;
+  border-bottom:  none !important;
+}
+
+.dir-modal-mantine-body {
+  padding: 8px 24px 16px !important;
+}
+
+.dir-modal-close { color: var(--dir-primary) !important; }
+
+.dir-modal-header-row {
+  display:        flex;
+  align-items:    center;
+  gap:            14px;
+  padding-bottom: 16px;
+}
+
+.dir-modal-titulo {
+  font-family: var(--font-title);
+  font-size:   26px;
+  line-height: 1;
+  color:       var(--dir-dark);
+  margin:      0;
+  white-space: nowrap;
+}
+
+.dir-modal-linea {
+  flex:       1;
+  height:     2px;
+  background: linear-gradient(to right, var(--dir-bg-option), transparent);
+  border:     none;
+  margin:     0;
+}
+
+/* ============================================================
+   MODAL — SELECTOR AÑO
+============================================================ */
+.dir-modal-selector-anio {
+  display:        flex;
+  align-items:    flex-end;
+  gap:            16px;
+  padding-bottom: 14px;
+  border-bottom:  1px solid var(--dir-bg-input);
+  margin-bottom:  12px;
+  flex-wrap:      wrap;
+}
+
+.dir-modal-label-anio {
+  font-family:    var(--font-body) !important;
+  font-size:      11px !important;
+  font-weight:    600 !important;
+  color:          var(--dir-primary) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom:  4px;
+}
+
+.dir-modal-input-anio {
+  width:            130px !important;
+  font-family:      var(--font-body) !important;
+  font-size:        14px !important;
+  background-color: var(--dir-bg-input) !important;
+  border: 1.5px solid transparent !important;
+  border-radius:    var(--radius-sm) !important;
+}
+
+.dir-modal-input-anio:focus {
+  border-color: var(--dir-primary) !important;
+  box-shadow:   none !important;
+  outline:      none !important;
+}
+
+.dir-modal-flecha {
+  padding-bottom: 8px;
+  color:          var(--dir-dimmed);
+  font-size:      20px;
+}
+
+.dir-modal-anio-fin {
+  width:            130px;
+  height:           36px;
+  display:          flex;
+  align-items:      center;
+  padding:          0 12px;
+  background-color: var(--dir-bg-option);
+  border-radius:    var(--radius-sm);
+  font-family:      var(--font-body);
+  font-weight:      600;
+  font-size:        14px;
+  color:            #374567;
+}
+
+.dir-modal-badge-gestion {
+  background-color: var(--dir-dark) !important;
+  color:            var(--dir-accent) !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+}
+
+/* ============================================================
+   MODAL — TABLA INTERNA
+============================================================ */
+.dir-modal-tabla table {
+  border-collapse: collapse;
+  width:           100%;
+}
+
+.dir-modal-tabla th,
+.dir-modal-tabla td { border: none !important; }
+
+.dir-modal-tabla thead tr { background-color: var(--dir-bg-input); }
+
+.dir-modal-tabla thead th {
+  font-family:    var(--font-body);
+  font-weight:    600;
+  font-size:      11px;
+  color:          var(--dir-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding:        10px 16px;
+}
+
+.dir-modal-tabla tbody tr { border-bottom: 1px solid #f0f0f0 !important; }
+
+.dir-modal-tabla tbody td {
+  font-family:    var(--font-body);
+  font-size:      13px;
+  padding:        10px 16px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   MODAL — FOOTER Y BOTONES
+============================================================ */
+.dir-modal-footer {
+  border-top:  1px solid var(--dir-bg-input);
+  padding-top: 1rem;
+  margin-top:  0.5rem;
+}
+
+/* Cancelar: negro → hover amarillo */
+.dir-modal-btn-cancelar {
+  background-color: var(--dir-primary) !important;
+  color:            var(--dir-white) !important;
+  border:           none !important;
+  border-radius:    var(--radius-xl) !important;
+  padding:          0 28px !important;
+  height:           42px !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      500 !important;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.dir-modal-btn-cancelar:hover:not(:disabled) {
+  background-color: var(--dir-accent) !important;
+  color:            var(--dir-primary) !important;
+}
+
+/* Guardar: amarillo → hover negro */
+.dir-modal-btn-guardar {
+  background-color: var(--dir-accent) !important;
+  color:            var(--dir-primary) !important;
+  border:           none !important;
+  border-radius:    var(--radius-xl) !important;
+  padding:          0 28px !important;
+  height:           42px !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.dir-modal-btn-guardar:hover:not(:disabled) {
+  background-color: var(--dir-primary) !important;
+  color:            var(--dir-white) !important;
+}

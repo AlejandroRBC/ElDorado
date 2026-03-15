@@ -30,7 +30,7 @@ npm install --save-dev concurrently wait-on
 ## Frontend
     cd frontend
     npm install axios
-    npm install @mantine/core @mantine/hooks @mantine/form @mantine/notifications
+    npm install @mantine/core @mantine/hooks @mantine/form @mantine/            notifications
     npm install exceljs
     npm install vite-plugin-svgr
     npm install jspdf jspdf-autotable

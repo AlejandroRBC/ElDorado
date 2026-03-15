@@ -242,21 +242,43 @@ function listarHistorialBD(id_usuario, desde, hasta, limite) {
  */
 function buscarAfiliadosParaSelect(search) {
   let query = `
-    SELECT a.id_afiliado, a.ci, a.extension, a.nombre, a.paterno, a.materno,
-           a.nombre || ' ' || a.paterno || COALESCE(' ' || a.materno, '') AS nombre_completo
+    SELECT 
+      a.id_afiliado, 
+      a.ci, 
+      a.extension, 
+      a.nombre, 
+      a.paterno, 
+      a.materno,
+      a.nombre || ' ' || a.paterno || COALESCE(' ' || a.materno, '') AS nombre_completo
     FROM afiliado a
     WHERE a.es_habilitado = 1
   `;
+
   let params = [];
+
   if (search?.trim()) {
-    query += ` AND (a.nombre LIKE ? OR a.paterno LIKE ? OR a.materno LIKE ? OR a.ci LIKE ?)`;
-    const t = `%${search.trim()}%`;
-    params.push(t, t, t, t);
+    const termino = `%${search.trim()}%`;
+
+    query += `
+      AND (
+        a.nombre LIKE ?
+        OR a.paterno LIKE ?
+        OR a.materno LIKE ?
+        OR a.ci LIKE ?
+        OR (a.nombre || ' ' || a.paterno || COALESCE(' ' || a.materno, '')) LIKE ?
+      )
+    `;
+
+    params.push(termino, termino, termino, termino, termino);
   }
+
   query += ` ORDER BY a.nombre ASC, a.paterno ASC LIMIT 100`;
 
   return new Promise((resolve, reject) => {
-    db.all(query, params, (err, rows) => { if (err) reject(err); else resolve(rows); });
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
   });
 }
 

@@ -54,11 +54,21 @@ const Afiliado = {
 
         if (params.search) {
           query += ` AND (
-            a.paterno LIKE ? OR a.nombre LIKE ? OR a.materno LIKE ? OR
-            a.ci LIKE ? OR a.ocupacion LIKE ? OR p.rubro LIKE ? OR p.nroPuesto LIKE ?
+            a.paterno LIKE ? OR 
+            a.nombre LIKE ? OR 
+            a.materno LIKE ? OR
+            a.ci LIKE ? OR
+            a.ocupacion LIKE ? OR
+            p.rubro LIKE ? OR
+            p.nroPuesto LIKE ? OR
+            TRIM(a.nombre || ' ' || a.paterno || ' ' || IFNULL(a.materno, '')) LIKE ? OR
+            TRIM(a.paterno || ' ' || IFNULL(a.materno, '') || ' ' || a.nombre) LIKE ?
           )`;
-          const t = `%${params.search}%`;
-          queryParams.push(t, t, t, t, t, t, t);
+          const termino = `%${params.search.trim()}%`;
+          queryParams.push(
+            termino, termino, termino, termino, termino, termino, termino,
+            termino, termino
+          );
         }
 
         if (params.conPatente !== null && params.conPatente !== undefined) {
@@ -347,21 +357,35 @@ const Afiliado = {
   // ============================================
   // BUSCAR (para selector de traspaso)
   // ============================================
-  buscar: (termino) => {
-    return new Promise((resolve, reject) => {
-      const like = `%${termino}%`;
-      db.all(`
-        SELECT id_afiliado, ci, nombre, paterno, url_perfil
-        FROM afiliado
-        WHERE es_habilitado = 1
-          AND (ci LIKE ? OR nombre LIKE ? OR paterno LIKE ?)
-        LIMIT 10
-      `, [like, like, like], (err, rows) => {
-        if (err) { reject(err); return; }
-        resolve(rows);
-      });
+buscar: (termino) => {
+  return new Promise((resolve, reject) => {
+    if (!termino || !termino.trim()) return resolve([]);
+
+    const palabras = termino.trim().split(/\s+/); // separa por espacios
+    const queryParams = [];
+    let whereClauses = palabras.map(() => 
+      `(nombre LIKE ? OR paterno LIKE ? OR IFNULL(materno,'') LIKE ? OR ci LIKE ?)`
+    ).join(' AND '); // todas las palabras deben coincidir
+
+    palabras.forEach(p => {
+      const like = `%${p}%`;
+      queryParams.push(like, like, like, like); // nombre, paterno, materno, ci
     });
-  },
+
+    const sql = `
+      SELECT id_afiliado, ci, nombre, paterno, materno, url_perfil
+      FROM afiliado
+      WHERE es_habilitado = 1
+        AND ${whereClauses}
+      LIMIT 10
+    `;
+
+    db.all(sql, queryParams, (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+  });
+},
 
 
   // ============================================
