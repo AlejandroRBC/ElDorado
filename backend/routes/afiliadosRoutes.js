@@ -1,9 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const ctrl = require('../controllers/afiliadosController');
+const { normalizeAfiliado } = require('../middleware/normalizeAfiliado');
 
 // ============================================
 // CONFIGURACIÓN DE MULTER (subida de imágenes)
@@ -47,18 +47,20 @@ router.post('/despojar-puesto',      ctrl.despojarPuesto);
 // ============================================
 // RUTAS CON PARÁMETRO /:id
 // ============================================
-router.get('/',       ctrl.obtenerTodos);
-router.post('/',      ctrl.crear);
+router.get('/',  ctrl.obtenerTodos);
+
+// normalizeAfiliado se aplica SOLO en crear y actualizar
+router.post('/',     normalizeAfiliado, ctrl.crear);
 
 router.get('/:id',              ctrl.obtenerPorId);
-router.put('/:id',              ctrl.actualizar);
+router.put('/:id',              normalizeAfiliado, ctrl.actualizar);
 router.put('/:id/deshabilitar', ctrl.deshabilitar);
 router.put('/:id/rehabilitar',  ctrl.rehabilitar);
 
-router.get('/:id/puestos',      ctrl.obtenerPuestos);
-router.post('/:id/asignar-puesto', ctrl.asignarPuesto);
+router.get('/:id/puestos',         ctrl.obtenerPuestos);
+router.post('/:id/asignar-puesto',normalizeAfiliado,ctrl.asignarPuesto);
 
-router.get('/:id/pdf-data',     ctrl.obtenerDatosPdf);
+router.get('/:id/pdf-data',        ctrl.obtenerDatosPdf);
 
 router.post('/:id/upload-perfil', upload.single('foto'), ctrl.subirFotoPerfil);
 

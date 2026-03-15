@@ -86,6 +86,7 @@ const listar = (req, res) => {
       t.fecha_ini AS fecha_adquisicion,
       a.id_afiliado,
       a.ci,
+      a.nombre, a.paterno,a.materno,
       (a.nombre || ' ' || a.paterno || ' ' || a.materno) AS apoderado
     FROM puesto p
     LEFT JOIN tenencia_puesto t ON p.id_puesto = t.id_puesto

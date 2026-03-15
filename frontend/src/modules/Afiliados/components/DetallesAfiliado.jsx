@@ -1,55 +1,73 @@
 import { Paper, Container, Title, Text, Button, Group, Stack, Box, Badge, LoadingOverlay, Alert, Loader } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IconHistory,IconFilePencil, IconArrowLeft, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck } from '@tabler/icons-react';
+import { IconHistory, IconFilePencil, IconArrowLeft, IconEdit, IconPlus, IconTransfer, IconAlertCircle, IconUserOff, IconUserCheck } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { useAfiliado } from '../hooks/useAfiliado';
 import { useState, useCallback, lazy, Suspense } from 'react';
+
+import { useAfiliado } from '../hooks/useAfiliado';
 import { useDesafiliarAfiliado } from '../hooks/useDesafiliarAfiliado';
+import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
+import { usePDFExport } from '../hooks/usePDFExport';
+import { useHistorialAfiliado } from '../hooks/useHistorialAfiliado';
 import { getPerfilUrl } from '../../../utils/imageHelper';
+
 import TablaPuestos from './TablaPuestos';
 import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 import { ModalTraspaso } from '../../GestionPatentesPuestos/components/ModalTraspaso';
-import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
-import { usePDFExport } from '../hooks/usePDFExport';
-
 import ModalHistorialAfiliado from './ModalHistorialAfiliado';
-import { useHistorialAfiliado }from '../hooks/useHistorialAfiliado';
-import {handleAbrirHistorial,handleCerrarHistorial,} from '../handlers/historialHandlers';
- 
-//Con lazy(), el chunk no se
-// descarga hasta que el usuario pulsa "Añadir Puesto".
+
+import '../styles/Estilos.css'; // Archivo acumulador de estilos
+
+// ==============================================
+// HANDLERS DE NAVEGACIÓN Y MODALES
+// ==============================================
+
+const handleAbrirHistorial = (setModalHistorialAbierto, cargarHistorial, id) => {
+  setModalHistorialAbierto(true);
+  cargarHistorial(id);
+};
+
+const handleCerrarHistorial = (setModalHistorialAbierto, limpiarHistorial) => {
+  setModalHistorialAbierto(false);
+  limpiarHistorial();
+};
+
+// ==============================================
+// COMPONENTES AUXILIARES
+// ==============================================
+
+// Con lazy(), el chunk no se descarga hasta que el usuario pulsa "Añadir Puesto"
 const ModalAsignarPuesto = lazy(() => import('./ModalAsignarPuesto'));
+
 const CargandoModal = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+  <div className="modal-cargando-contenedor">
     <Loader size="sm" />
   </div>
 );
+
+// ==============================================
+// COMPONENTE PRINCIPAL
+// ==============================================
 
 const DetallesAfiliado = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { afiliado, cargando, error, cargarAfiliado } = useAfiliado(id);
+  // ==============================================
+  // ESTADOS LOCALES
+  // ==============================================
   const [modalPuestoAbierto, setModalPuestoAbierto] = useState(false);
   const [modalDesafiliarAbierto, setModalDesafiliarAbierto] = useState(false);
-  const { desafiliar, cargando: cargandoDesafiliar } = useDesafiliarAfiliado();
   const [refreshPuestos, setRefreshPuestos] = useState(0);
-  const { exportando, exportarDetalleAfiliado } = usePDFExport();
-
   const [modalHistorialAbierto, setModalHistorialAbierto] = useState(false);
+
+  // ==============================================
+  // HOOKS PERSONALIZADOS
+  // ==============================================
+  const { afiliado, cargando, error, cargarAfiliado } = useAfiliado(id);
+  const { desafiliar, cargando: cargandoDesafiliar } = useDesafiliarAfiliado();
+  const { exportando, exportarDetalleAfiliado } = usePDFExport();
   const { historial, cargando: cargandoHistorial, error: errorHistorial, cargarHistorial, limpiarHistorial } = useHistorialAfiliado();
- 
-
-
-
-  const handleGenerarPDF = () => exportarDetalleAfiliado(id);
-
-  const handlePuestoAsignado = useCallback(() => {
-    cargarAfiliado();
-    setRefreshPuestos((prev) => prev + 1);
-    setModalPuestoAbierto(false);
-  }, [cargarAfiliado]);
-
   const {
     modalTraspasoAbierto,
     puestoParaTraspaso,
@@ -58,68 +76,143 @@ const DetallesAfiliado = () => {
     ejecutarTraspaso,
   } = useTraspasoDesdeAfiliado();
 
-  const handleTraspaso = (puesto, onSuccess) => {
+  // ==============================================
+  // HANDLERS DEL COMPONENTE (memoizados)
+  // ==============================================
+
+  const handleGenerarPDF = useCallback(() => {
+    exportarDetalleAfiliado(id);
+  }, [exportarDetalleAfiliado, id]);
+
+  const handlePuestoAsignado = useCallback(() => {
+    cargarAfiliado();
+    setRefreshPuestos((prev) => prev + 1);
+    setModalPuestoAbierto(false);
+  }, [cargarAfiliado]);
+
+  const handleTraspaso = useCallback((puesto, onSuccess) => {
     if (!puesto?.id_puesto) {
-      notifications.show({ title: '❌ Error', message: 'El puesto seleccionado no es válido', color: 'red' });
+      notifications.show({
+        title: '❌ Error',
+        message: 'El puesto seleccionado no es válido',
+        color: 'red'
+      });
       return;
     }
     abrirModalTraspaso({
-      id_puesto:     puesto.id_puesto,
-      nroPuesto:     puesto.nroPuesto,
-      fila:          puesto.fila,
-      cuadra:        puesto.cuadra,
-      rubro:         puesto.rubro,
+      id_puesto: puesto.id_puesto,
+      nroPuesto: puesto.nroPuesto,
+      fila: puesto.fila,
+      cuadra: puesto.cuadra,
+      rubro: puesto.rubro,
       tiene_patente: puesto.tiene_patente,
     }, onSuccess);
-  };
+  }, [abrirModalTraspaso]);
 
-  const refrescarDatosAfiliado = () => {
+  const refrescarDatosAfiliado = useCallback(() => {
     cargarAfiliado();
     setRefreshPuestos((prev) => prev + 1);
-    notifications.show({ title: '🔄 Actualizado', message: 'Los datos se han actualizado', color: 'blue', autoClose: 2000 });
-  };
+    notifications.show({
+      title: '🔄 Actualizado',
+      message: 'Los datos se han actualizado',
+      color: 'blue',
+      autoClose: 2000
+    });
+  }, [cargarAfiliado]);
 
-  const handleDesafiliar = async () => {
+  const handleDesafiliar = useCallback(async () => {
     const resultado = await desafiliar(id);
     if (resultado.exito) {
       setModalDesafiliarAbierto(false);
       setTimeout(() => navigate('/afiliados'), 100);
     }
-  };
+  }, [desafiliar, id, navigate]);
 
+  const handleAbrirHistorialClick = useCallback(() => {
+    handleAbrirHistorial(setModalHistorialAbierto, cargarHistorial, id);
+  }, [cargarHistorial, id]);
+
+  const handleCerrarHistorialClick = useCallback(() => {
+    handleCerrarHistorial(setModalHistorialAbierto, limpiarHistorial);
+  }, [limpiarHistorial]);
+
+  const handleImageError = useCallback((e) => {
+    e.target.style.display = 'none';
+    e.target.parentElement.innerHTML = `
+      <div class="foto-perfil-fallback">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+    `;
+  }, []);
+
+  const handleVolverClick = useCallback(() => {
+    navigate('/afiliados');
+  }, [navigate]);
+
+  const handleRehabilitarClick = useCallback(() => {
+    // Implementar rehabilitación
+  }, []);
+
+  // ==============================================
+  // RENDERIZADO CONDICIONAL - Afiliado no encontrado
+  // ==============================================
   if (!cargando && !afiliado && !error) {
     return (
       <Container fluid p="md">
         <Group justify="space-between" mb="xl">
-          <Title order={1} style={{ color: '#0f0f0f' }}>Afiliado no encontrado</Title>
-          <Button leftSection={<IconArrowLeft size={18} />} onClick={() => navigate('/afiliados')} style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '8px', fontWeight: 500 }}>
+          <Title order={1} className="titulo-afiliado-no-encontrado">
+            Afiliado no encontrado
+          </Title>
+          <Button
+            leftSection={<IconArrowLeft size={18} />}
+            onClick={handleVolverClick}
+            className="boton-volver-lista"
+          >
             Volver a la lista
           </Button>
         </Group>
-        <Paper p="xl" radius="lg" style={{ backgroundColor: 'white', textAlign: 'center', padding: '50px' }}>
-          <Text size="lg" style={{ color: '#666' }}>El afiliado con ID {id} no existe o ha sido eliminado.</Text>
-          <Button onClick={() => navigate('/afiliados')} style={{ marginTop: '20px' }}>Ver todos los afiliados</Button>
+        <Paper p="xl" radius="lg" className="paper-no-encontrado">
+          <Text size="lg" className="texto-no-encontrado">
+            El afiliado con ID {id} no existe o ha sido eliminado.
+          </Text>
+          <Button onClick={handleVolverClick} className="boton-ver-todos">
+            Ver todos los afiliados
+          </Button>
         </Paper>
       </Container>
     );
   }
 
+  // ==============================================
+  // RENDER PRINCIPAL
+  // ==============================================
   return (
     <Container fluid p="md">
       <Group justify="space-between" mb="xl">
-        <Title order={1} fw={800} style={{ color: '#0f0f0f' }}>Detalle Afiliado</Title>
-        <Button leftSection={<IconArrowLeft size={18} />} onClick={() => navigate('/afiliados')} style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '8px', fontWeight: 500 }}>
+        <Title order={1} fw={800} className="titulo-detalle">
+          Detalle Afiliado
+        </Title>
+        <Button
+          leftSection={<IconArrowLeft size={18} />}
+          onClick={handleVolverClick}
+          className="boton-volver-lista"
+        >
           Volver a la lista
         </Button>
       </Group>
 
-      <Paper p="xl" radius="lg" style={{ backgroundColor: 'white', minHeight: '70vh', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', position: 'relative' }}>
+      <Paper p="xl" radius="lg" className="paper-principal">
         <LoadingOverlay visible={cargando} zIndex={1000} overlayProps={{ blur: 2 }} />
 
         {error && !cargando && (
           <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" mb="md">
             {error}
-            <Button variant="subtle" size="xs" onClick={() => cargarAfiliado()} style={{ marginLeft: '10px' }}>Reintentar</Button>
+            <Button variant="subtle" size="xs" onClick={cargarAfiliado} className="boton-reintentar">
+              Reintentar
+            </Button>
           </Alert>
         )}
 
@@ -130,7 +223,7 @@ const DetallesAfiliado = () => {
               leftSection={<IconFilePencil size={18} />}
               loading={exportando}
               onClick={handleGenerarPDF}
-              style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', fontWeight: 500, padding: '10px 20px' }}
+              className="boton-accion"
             >
               {exportando ? 'Generando PDF...' : 'Generar Reporte PDF'}
             </Button>
@@ -139,20 +232,15 @@ const DetallesAfiliado = () => {
               leftSection={<IconEdit size={18} />}
               component="a"
               href={`/afiliados/editar/${id}`}
-              style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', fontWeight: 500, padding: '10px 20px' }}
+              className="boton-accion"
             >
               Editar Perfil de Afiliado
             </Button>
+
             <Button
               leftSection={<IconHistory size={18} />}
-              onClick={() => handleAbrirHistorial(setModalHistorialAbierto, cargarHistorial, id)}
-              style={{
-                backgroundColor: '#0f0f0f',
-                color:           'white',
-                borderRadius:    '100px',
-                fontWeight:      500,
-                padding:         '10px 20px',
-              }}
+              onClick={handleAbrirHistorialClick}
+              className="boton-accion"
             >
               Historial del Afiliado
             </Button>
@@ -161,18 +249,17 @@ const DetallesAfiliado = () => {
               <Button
                 leftSection={<IconUserOff size={18} />}
                 onClick={() => setModalDesafiliarAbierto(true)}
-                style={{ backgroundColor: '#F44336', color: 'white', borderRadius: '100px', fontWeight: 500, padding: '10px 20px', border: '2px solid #F44336' }}
+                className="boton-desafiliar"
               >
                 Desafiliar Afiliado
               </Button>
             )}
-            
 
             {afiliado?.es_habilitado === 0 && (
               <Button
                 leftSection={<IconUserCheck size={18} />}
-                onClick={() => {/* implementar rehabilitación */}}
-                style={{ backgroundColor: '#4CAF50', color: 'white', borderRadius: '100px', fontWeight: 500, padding: '10px 20px' }}
+                onClick={handleRehabilitarClick}
+                className="boton-rehabilitar-detalle"
               >
                 Rehabilitar Afiliado
               </Button>
@@ -183,85 +270,87 @@ const DetallesAfiliado = () => {
         {afiliado && (
           <>
             {/* Información del afiliado */}
-            <Paper p="lg" mb="xl">
+            <Paper p="lg" mb="xl" className="paper-info-afiliado">
               <Group align="flex-start" gap="lg">
-                <Box style={{ width: '200px', height: '200px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0 }}>
+                <Box className="foto-perfil-contenedor-grande">
                   <img
                     src={getPerfilUrl(afiliado)}
                     alt={`Foto de perfil de ${afiliado.nombre} ${afiliado.paterno}`}
                     loading="lazy"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = `
-                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#999">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                          </svg>
-                        </div>
-                      `;
-                    }}
+                    className="foto-perfil-imagen-grande"
+                    onError={handleImageError}
                   />
                 </Box>
 
-                <Stack gap={8} style={{ flex: 1 }}>
+                <Stack gap={8} className="info-afiliado-stack">
                   <Group justify="space-between" align="flex-start">
                     <Box>
-                      <Text fw={700} size="xl" style={{ color: '#0f0f0f' }}>
+                      <Text fw={700} size="xl" className="texto-nombre">
                         {afiliado.nombreCompleto || afiliado.nombre}
                       </Text>
-                      <Text>CI: {afiliado.ci}</Text>
+                      <Text className="texto-ci">CI: {afiliado.ci}</Text>
                     </Box>
                   </Group>
 
                   <Group gap="xl" mt="md">
                     <Box>
-                      <Text fw={600} size="sm" style={{ color: '#0f0f0f', marginBottom: '6px' }}>Puestos Actuales:</Text>
+                      <Text fw={600} size="sm" className="subtitulo-puestos">
+                        Puestos Actuales:
+                      </Text>
                       <Group gap={6} wrap="wrap">
                         {afiliado.patentes?.length > 0 ? (
                           afiliado.patentes.map((puesto, index) => (
-                            <Badge key={index} size="sm" style={{ backgroundColor: '#EDBE3C', color: '#0f0f0f', fontWeight: 700, padding: '4px 10px', borderRadius: '4px' }}>
-                              {puesto}
+                            <Badge
+                              key={index}
+                              size="sm"
+                              className={`badge-puesto-detalle ${puesto.tienePatente ? 'badge-puesto-patente' : 'badge-puesto-sin-patente'}`}
+                            >
+                              {puesto.label}
                             </Badge>
                           ))
                         ) : (
-                          <Text size="sm" style={{ color: '#999', fontStyle: 'italic' }}>Sin puestos asignados</Text>
+                          <Text size="sm" className="texto-sin-puestos">
+                            Sin puestos asignados
+                          </Text>
                         )}
                       </Group>
                     </Box>
 
                     <Box>
-                      <Text fw={600} size="sm" style={{ color: '#0f0f0f', marginBottom: '2px' }}>Ocupación:</Text>
-                      <Text size="sm" style={{ color: '#666' }}>{afiliado.ocupacion || afiliado.rubro || 'No especificado'}</Text>
+                      <Text fw={600} size="sm" className="subtitulo-ocupacion">
+                        Ocupación:
+                      </Text>
+                      <Text size="sm" className="texto-ocupacion">
+                        {afiliado.ocupacion || afiliado.rubro || 'No especificado'}
+                      </Text>
                     </Box>
                   </Group>
 
                   <Group gap="xl" mt="md">
                     <Stack gap={4}>
-                      <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>Contacto:</Text>
-                      <Text size="sm" style={{ color: '#666' }}>{afiliado.telefono || 'No especificado'}</Text>
+                      <Text fw={600} size="sm" className="subtitulo-contacto">Contacto:</Text>
+                      <Text size="sm" className="texto-contacto">{afiliado.telefono || 'No especificado'}</Text>
                     </Stack>
                     <Stack gap={4}>
-                      <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>Dirección:</Text>
-                      <Text size="sm" style={{ color: '#666' }}>{afiliado.direccion || 'No especificado'}</Text>
+                      <Text fw={600} size="sm" className="subtitulo-direccion">Dirección:</Text>
+                      <Text size="sm" className="texto-direccion">{afiliado.direccion || 'No especificado'}</Text>
                     </Stack>
                     <Stack gap={4}>
-                      <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>Fecha Afiliación:</Text>
-                      <Text size="sm" style={{ color: '#666' }}>
+                      <Text fw={600} size="sm" className="subtitulo-fecha">Fecha Afiliación:</Text>
+                      <Text size="sm" className="texto-fecha">
                         {afiliado.fecha_afiliacion ? new Date(afiliado.fecha_afiliacion).toLocaleDateString('es-ES') : 'No especificado'}
                       </Text>
                     </Stack>
                     {afiliado.edad && (
                       <Stack gap={4}>
-                        <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>Edad:</Text>
-                        <Text size="sm" style={{ color: '#666' }}>{afiliado.edad} años</Text>
+                        <Text fw={600} size="sm" className="subtitulo-edad">Edad:</Text>
+                        <Text size="sm" className="texto-edad">{afiliado.edad} años</Text>
                       </Stack>
                     )}
                     {afiliado.sexo && (
                       <Stack gap={4}>
-                        <Text fw={600} size="sm" style={{ color: '#0f0f0f' }}>Sexo:</Text>
-                        <Text size="sm" style={{ color: '#666' }}>{afiliado.sexo}</Text>
+                        <Text fw={600} size="sm" className="subtitulo-sexo">Sexo:</Text>
+                        <Text size="sm" className="texto-sexo">{afiliado.sexo}</Text>
                       </Stack>
                     )}
                   </Group>
@@ -272,7 +361,7 @@ const DetallesAfiliado = () => {
             {/* Sección de Puestos */}
             <Box>
               <Group justify="space-between" align="center" mb="md">
-                <Title order={2} style={{ color: '#0f0f0f', fontSize: '1.5rem' }}>
+                <Title order={2} className="titulo-puestos">
                   Detalles de Puestos de Afiliado
                 </Title>
 
@@ -280,7 +369,7 @@ const DetallesAfiliado = () => {
                   <Button
                     leftSection={<IconPlus size={18} />}
                     onClick={() => setModalPuestoAbierto(true)}
-                    style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', fontWeight: 500, border: '2px solid #0f0f0f', padding: '8px 16px' }}
+                    className="boton-anadir-puesto"
                   >
                     Añadir Puesto
                   </Button>
@@ -319,9 +408,10 @@ const DetallesAfiliado = () => {
               puestoSeleccionado={puestoParaTraspaso}
               onTraspaso={ejecutarTraspaso}
             />
-             <ModalHistorialAfiliado
+
+            <ModalHistorialAfiliado
               opened={modalHistorialAbierto}
-              onClose={() => handleCerrarHistorial(setModalHistorialAbierto, limpiarHistorial)}
+              onClose={handleCerrarHistorialClick}
               historial={historial}
               cargando={cargandoHistorial}
               error={errorHistorial}

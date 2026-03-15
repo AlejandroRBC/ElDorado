@@ -9,7 +9,7 @@ import {
   IconAwardOff,
   IconClockHour4,
 } from '@tabler/icons-react';
-import '../styles/modalHistorial.css';
+import '../styles/Estilos.css';
 import {
   formatearFecha,
   etiquetaTipo,

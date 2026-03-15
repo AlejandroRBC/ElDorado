@@ -27,7 +27,12 @@ export const exportarPuestosExcel = (puestos) => {
         header: "Medidas",
         format: (p) => `${p.ancho}m x ${p.largo}m`
       },
-      { header: "Apoderado", key: "apoderado" },
+
+      //{ header: "Apoderado", key: "apoderado" },
+      { header: "Nombre", key: "nombre"},
+      { header: "Paterno", key: "paterno" },
+      { header: "Materno", key: "materno" },
+
       { header: "CI", key: "ci" },
       { header: "Fecha Adquisición", key: "fecha_adquisicion" },
       { header: "Rubro", key: "rubro" }

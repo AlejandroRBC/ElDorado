@@ -1,0 +1,1757 @@
+/* ============================================
+   FUENTES GOOGLE
+============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ============================================
+   VARIABLES GLOBALES
+============================================ */
+:root {
+  --color-primary: #0f0f0f;
+  --color-accent: #EDBE3C;
+  --color-bg: #F6F9FF;
+  --color-white: #ffffff;
+  --color-border: #eee;
+  --color-dimmed: #666;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-success: #4CAF50;
+  --color-danger: #F44336;
+  --color-warning: #EDBE3C;
+  --color-info: #374567;
+  --color-gray-light: #f5f5f5;
+  --color-gray: #999;
+  --color-gray-dark: #666;
+  --font-title: 'Bebas Neue', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 100px;
+}
+
+/* ============================================
+   ESTILOS BASE
+============================================ */
+* {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.titulo-principal,
+.titulo-seccion {
+  font-family: var(--font-title);
+  letter-spacing: 0.5px;
+}
+
+/* ==============================================
+   ESTILOS ACUMULADOS - MÓDULO DE AFILIADOS
+   ============================================== */
+
+/* ... estilos anteriores ... */
+
+/* ==============================================
+   ESTILOS PARA CARD DE AFILIADOS
+   ============================================== */
+
+/* Contenedor principal de la card */
+.card-container {
+  background-color: rgba(55, 69, 103, 0.06);
+  height: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  font-family: var(--font-body);
+}
+
+.card-container-deshabilitado {
+  background-color: rgba(244, 67, 54, 0.03);
+  border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+/* Botón de edición rápida */
+.boton-edicion-rapida {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 0;
+  border-radius: 0;
+  padding: 6px;
+  background-color: var(--color-info);
+  color: white;
+  z-index: 10;
+}
+.boton-edicion-rapida,
+.boton-edicion-rapida:hover,
+.boton-edicion-rapida:focus,
+.boton-edicion-rapida:active,
+.mantine-ActionIcon-root.boton-edicion-rapida,
+.mantine-ActionIcon-root.boton-edicion-rapida:hover,
+.mantine-ActionIcon-root.boton-edicion-rapida:focus,
+.mantine-ActionIcon-root.boton-edicion-rapida:active {
+  background-color: #374567 !important; /* Tu color azul original */
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Badge deshabilitado */
+.badge-deshabilitado {
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  z-index: 10;
+}
+
+/* Contenedor de foto de perfil */
+.foto-perfil-contenedor {
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: white;
+  flex-shrink: 0;
+}
+
+.foto-perfil-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback de imagen */
+.foto-perfil-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-gray-light);
+}
+
+.foto-perfil-fallback svg {
+  width: 48px;
+  height: 48px;
+  fill: var(--color-gray);
+}
+
+/* Información de la card */
+.card-info-contenedor {
+  flex: 1;
+  padding-right: 0px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-info-contenedor-con-edicion {
+  padding-right: 30px;
+}
+
+.card-nombre {
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.card-ci {
+  color: var(--color-gray-dark);
+}
+
+.card-puestos-titulo {
+  color: var(--color-primary);
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Badges de puestos */
+.badge-puesto {
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.badge-puesto-patente {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.badge-puesto-sin-patente {
+  background-color: #C4C4C4;
+  color: #5a5a5a;
+}
+
+.card-sin-puestos {
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+.card-ocupacion-contenedor {
+  margin-top: auto;
+}
+
+.card-ocupacion-titulo {
+  color: var(--color-primary);
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.card-ocupacion-valor {
+  color: var(--color-gray-dark);
+}
+
+/* Botón rehabilitar */
+.boton-rehabilitar {
+  background-color: var(--color-success);
+  color: white;
+  border-radius: 4px;
+  margin-top: 10px;
+  height: 32px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Pie de card - solo activos */
+.card-pie {
+  position: relative;
+  padding-top: 12px;
+}
+
+.card-pie-linea {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 160px;
+  height: 3px;
+  background-color: var(--color-primary);
+  z-index: 1;
+}
+
+.card-pie-boton-contenedor {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 2;
+}
+
+.card-pie-boton {
+  color: var(--color-primary);
+  height: auto;
+  font-weight: 500;
+  font-size: 13px;
+  background-color: transparent;
+  position: relative;
+  z-index: 3;
+}
+/* Deshabilitar efectos hover en el botón Ver más detalles */
+.card-pie-boton,
+.card-pie-boton:hover,
+.card-pie-boton:focus,
+.card-pie-boton:active,
+.mantine-Button-root.card-pie-boton,
+.mantine-Button-root.card-pie-boton:hover,
+.mantine-Button-root.card-pie-boton:focus,
+.mantine-Button-root.card-pie-boton:active {
+  background-color: transparent !important;
+  color: var(--color-primary) !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ==============================================
+   ESTILOS PARA DETALLES AFILIADO
+   ============================================== */
+
+/* Títulos */
+.titulo-detalle {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+  font-size: 2rem;
+}
+
+.titulo-afiliado-no-encontrado {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+}
+
+.titulo-puestos {
+  color: var(--color-primary);
+  font-size: 1.5rem;
+  font-family: var(--font-title);
+}
+
+/* Botones */
+.boton-volver-lista {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-family: var(--font-body);
+}
+
+.boton-accion {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  padding: 10px 20px;
+  font-family: var(--font-body);
+}
+
+.boton-desafiliar {
+  background-color: var(--color-danger);
+  color: white;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  padding: 10px 20px;
+  border: 2px solid var(--color-danger);
+}
+
+.boton-rehabilitar-detalle {
+  background-color: var(--color-success);
+  color: white;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  padding: 10px 20px;
+}
+
+.boton-reintentar {
+  margin-left: 10px;
+}
+
+.boton-ver-todos {
+  margin-top: 20px;
+}
+
+.boton-anadir-puesto {
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  border: 2px solid var(--color-primary);
+  padding: 8px 16px;
+}
+
+/* Papers */
+.paper-principal {
+  background-color: var(--color-white);
+  min-height: 70vh;
+  box-shadow: 0 4px 20px var(--color-shadow);
+  position: relative;
+}
+
+.paper-no-encontrado {
+  background-color: var(--color-white);
+  text-align: center;
+  padding: 50px;
+}
+
+.paper-info-afiliado {
+  background-color: var(--color-white);
+}
+
+/* Textos */
+.texto-no-encontrado {
+  color: var(--color-gray-dark);
+}
+
+.texto-nombre {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.texto-ci {
+  color: var(--color-primary);
+}
+
+.texto-sin-puestos {
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+.texto-ocupacion {
+  color: var(--color-gray-dark);
+}
+
+.texto-contacto {
+  color: var(--color-gray-dark);
+}
+
+.texto-direccion {
+  color: var(--color-gray-dark);
+}
+
+.texto-fecha {
+  color: var(--color-gray-dark);
+}
+
+.texto-edad {
+  color: var(--color-gray-dark);
+}
+
+.texto-sexo {
+  color: var(--color-gray-dark);
+}
+
+/* Subtítulos */
+.subtitulo-puestos {
+  color: var(--color-primary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.subtitulo-ocupacion {
+  color: var(--color-primary);
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.subtitulo-contacto {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.subtitulo-direccion {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.subtitulo-fecha {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.subtitulo-edad {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.subtitulo-sexo {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Foto de perfil grande */
+.foto-perfil-contenedor-grande {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.foto-perfil-imagen-grande {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info del afiliado */
+.info-afiliado-stack {
+  flex: 1;
+}
+
+/* Badges de puestos en detalle */
+.badge-puesto-detalle {
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.badge-puesto-detalle.badge-puesto-patente {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.badge-puesto-detalle.badge-puesto-sin-patente {
+  background-color: #C4C4C4;
+  color: #5a5a5a;
+}
+
+/* Modal cargando */
+.modal-cargando-contenedor {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ==============================================
+   ESTILOS PARA FORMULARIO DE EDICIÓN
+   ============================================== */
+
+/* Contenedor principal */
+.formulario-paper {
+  background-color: var(--color-white);
+}
+
+/* Zona de foto */
+.formulario-foto-contenedor {
+  width: 180px;
+}
+
+.formulario-foto-zona {
+  width: 180px;
+  height: 180px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 2px dashed var(--color-border);
+  background-color: #f9f9f9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.formulario-foto-dragging {
+  border: 2px solid var(--color-success);
+  background-color: #f0fff0;
+}
+
+.formulario-foto-con-imagen {
+  border: 2px solid var(--color-border);
+}
+
+.formulario-foto-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.formulario-foto-boton-eliminar {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  padding: 2px 6px;
+  min-width: auto;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.formulario-foto-badge-nueva {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background-color: var(--color-success);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.formulario-foto-placeholder {
+  text-align: center;
+}
+
+.icono-dragging {
+  color: var(--color-success);
+}
+
+.icono-normal {
+  color: var(--color-gray);
+}
+
+.texto-dragging {
+  color: var(--color-success);
+  max-width: 120px;
+}
+
+.texto-normal {
+  color: var(--color-gray-dark);
+  max-width: 120px;
+}
+
+.formulario-foto-ayuda {
+  color: var(--color-dimmed);
+  margin-top: 5px;
+  text-align: center;
+}
+
+.formulario-foto-guardada {
+  color: var(--color-dimmed);
+  margin-top: 5px;
+  text-align: center;
+}
+
+/* Campos del formulario */
+.formulario-campos-contenedor {
+  flex: 1;
+}
+
+.formulario-titulo {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+}
+
+.input-span-2 {
+  grid-column: span 2;
+}
+
+/* Botones */
+.boton-cancelar {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: 0 30px;
+  height: 45px;
+  font-family: var(--font-body);
+}
+
+.boton-guardar {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: 0 30px;
+  height: 45px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+/* ==============================================
+   ESTILOS PARA MODAL ACCIÓN PUESTO
+   ============================================== */
+
+/* Modal */
+.modal-title {
+  width: 100%;
+}
+
+.modal-titulo-texto {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+}
+
+/* Información del puesto */
+.modal-puesto-paper {
+  background-color: #fafafa;
+}
+
+.modal-puesto-label {
+  color: var(--color-dimmed);
+}
+
+.modal-puesto-codigo {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.modal-puesto-badge {
+  background-color: rgba(237, 190, 60, 0.1);
+}
+
+/* Acciones */
+.modal-accion-pregunta {
+  color: var(--color-dimmed);
+  text-align: center;
+}
+
+/* Botones de acción */
+.modal-boton-liberar {
+  background-color: var(--color-success);
+  color: white;
+  border-radius: var(--radius-sm);
+  height: 60px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+.modal-boton-liberar:hover {
+  background-color: #45a049;
+}
+
+.modal-boton-despojar {
+  background-color: var(--color-danger);
+  color: white;
+  border-radius: var(--radius-sm);
+  height: 60px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+.modal-boton-despojar:hover {
+  background-color: #d32f2f;
+}
+
+/* Descripciones */
+.modal-descripcion-accion {
+  color: var(--color-dimmed);
+  text-align: center;
+}
+
+/* Botón cancelar */
+.modal-boton-cancelar {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  margin-top: 20px;
+  font-family: var(--font-body);
+}
+
+.modal-boton-cancelar:hover {
+  background-color: var(--color-gray-light);
+}
+
+/* ==============================================
+   ESTILOS PARA MODAL AFILIADO
+   ============================================== */
+
+/* Modal principal */
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 2px solid var(--color-accent);
+  position: sticky;
+  top: 0;
+  background-color: var(--color-white);
+  z-index: 100;
+}
+
+.modal-body {
+  padding: 0;
+  height: calc(90vh - 80px);
+  overflow: hidden;
+}
+
+.modal-contenedor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-tabs {
+  flex-shrink: 0;
+}
+
+.modal-tabs-list {
+  padding: 0 20px;
+  background-color: #fafafa;
+}
+
+.modal-scrollarea {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Foto de perfil en modal */
+.modal-foto-contenedor {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.modal-foto-zona {
+  width: 160px;
+  height: 160px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 2px dashed var(--color-border);
+  background-color: #f9f9f9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-foto-dragging {
+  border: 2px solid var(--color-success);
+  background-color: #f0fff0;
+}
+
+.modal-foto-con-imagen {
+  border: 2px solid var(--color-border);
+}
+
+.modal-foto-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-foto-boton-eliminar {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  z-index: 10;
+}
+
+.modal-foto-placeholder {
+  padding: 10px;
+  text-align: center;
+}
+
+.modal-foto-ayuda {
+  color: var(--color-dimmed);
+  margin-top: 5px;
+  text-align: center;
+}
+
+/* Campos del modal */
+.modal-campos-contenedor {
+  flex: 1;
+}
+
+.modal-paper-datos {
+  background-color: var(--color-white);
+}
+
+/* Puestos seleccionados */
+.modal-puestos-seleccionados {
+  background-color: var(--color-white);
+}
+
+.modal-puestos-badge {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+/* Puestos disponibles */
+.modal-paper-puestos {
+  background-color: var(--color-white);
+}
+
+.modal-disponibles-badge {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+}
+
+/* Botones del modal */
+.boton-ver-puestos {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: 0 30px;
+  height: 45px;
+  font-family: var(--font-body);
+}
+
+.boton-guardar-extendido {
+  min-width: 200px;
+}
+
+.boton-limpiar-filtros {
+  color: var(--color-gray-dark);
+  font-family: var(--font-body);
+}
+
+/* Puesto item */
+.puesto-item-paper {
+  background-color: #fafafa;
+}
+
+.puesto-item-badge {
+  min-width: 90px;
+}
+
+.puesto-item-input {
+  width: 180px;
+}
+
+/* Puesto disponible */
+.puesto-disponible {
+  cursor: pointer;
+  background-color: var(--color-white);
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.puesto-disponible:hover {
+  background-color: #f5f5f5;
+  border-color: var(--color-accent);
+}
+
+.puesto-disponible.seleccionado {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+}
+
+/* ==============================================
+   ESTILOS PARA MODAL ASIGNAR PUESTO
+   ============================================== */
+
+/* Modal */
+.modal-asignar-header {
+  padding: 20px 25px;
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.modal-asignar-body {
+  padding: 0;
+}
+
+.modal-asignar-contenedor {
+  position: relative;
+  min-height: 600px;
+}
+
+.modal-asignar-grid {
+  min-height: 600px;
+}
+
+/* Lado izquierdo - Lista */
+.modal-asignar-lista {
+  flex: 1.8;
+  border-right: 1px solid var(--color-border);
+  padding: 20px;
+}
+
+/* Lado derecho - Formulario */
+.modal-asignar-formulario {
+  flex: 1;
+  padding: 30px;
+  background-color: #fafafa;
+}
+
+/* Panel de filtros */
+.filtros-panel {
+  background-color: var(--color-bg);
+}
+
+.filtros-boton-limpiar {
+  color: var(--color-gray-dark);
+}
+
+.filtro-select .mantine-Select-input,
+.filtro-number .mantine-NumberInput-input,
+.filtro-input .mantine-TextInput-input {
+  background-color: var(--color-white);
+  font-family: var(--font-body);
+}
+
+/* Tabla */
+.tabla-header {
+  margin-bottom: 8px;
+}
+
+.badge-seleccionado {
+  background-color: var(--color-success);
+}
+
+.tabla-scroll {
+  margin-top: 12px;
+}
+
+.tabla-thead {
+  background-color: var(--color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabla-fila {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: var(--font-body);
+}
+
+.tabla-fila:hover {
+  background-color: #f8f9fa;
+}
+
+.tabla-fila-seleccionada {
+  background-color: rgba(237, 190, 60, 0.1);
+}
+
+.tabla-fila-seleccionada:hover {
+  background-color: rgba(237, 190, 60, 0.15);
+}
+
+.tabla-sin-resultados {
+  text-align: center;
+}
+
+.icono-sin-resultados {
+  color: var(--color-gray);
+}
+
+/* Formulario de asignación */
+.formulario-asignacion {
+  height: 100%;
+}
+
+.formulario-titulo {
+  color: var(--color-primary);
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+}
+
+/* Resumen del puesto */
+.puesto-resumen {
+  background-color: var(--color-white);
+}
+
+.puesto-codigo {
+  color: var(--color-primary);
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Inputs del formulario */
+.input-rubro .mantine-TextInput-label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-family: var(--font-body);
+}
+
+.input-rubro .mantine-TextInput-input {
+  background-color: var(--color-white);
+  border: 1px solid #e0e0e0;
+  border-radius: var(--radius-sm);
+  height: 45px;
+  font-family: var(--font-body);
+}
+
+.checkbox-patente .mantine-Checkbox-label {
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+/* Alertas */
+.alerta-informativa {
+  margin-top: 16px;
+  background-color: rgba(55, 69, 103, 0.1);
+}
+
+.alerta-error {
+  margin-top: 16px;
+}
+
+/* Sin selección */
+.sin-seleccion {
+  height: 400px;
+}
+
+.icono-sin-seleccion {
+  color: var(--color-gray);
+}
+
+/* Botones */
+.boton-asignar {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: 0 30px;
+  height: 45px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+.boton-asignar:hover {
+  background-color: #e5b02e;
+}
+
+/* ==============================================
+   ESTILOS PARA MODAL CONFIRMAR ACCIÓN
+   ============================================== */
+
+/* Modal */
+.modal-confirmar-header {
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.modal-confirmar-body {
+  padding: 0;
+}
+
+.modal-confirmar-contenido {
+  background-color: var(--color-white);
+}
+
+/* Información del puesto */
+.modal-confirmar-puesto-paper {
+  background-color: #fafafa;
+}
+
+.modal-confirmar-puesto-label {
+  color: var(--color-dimmed);
+}
+
+.modal-confirmar-puesto-codigo {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.modal-confirmar-badge {
+  font-weight: 600;
+}
+
+/* Alerta */
+.modal-confirmar-alerta {
+  border-radius: var(--radius-sm);
+}
+
+.alerta-despojo {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.alerta-liberacion {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.modal-alerta-titulo {
+  color: var(--color-primary);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.modal-alerta-descripcion {
+  color: var(--color-gray-dark);
+  line-height: 1.5;
+}
+
+.modal-alerta-lista {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-gray-dark);
+}
+
+.modal-alerta-lista li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+/* Botones */
+.modal-confirmar-botones {
+  gap: 12px;
+}
+
+.modal-confirmar-boton-cancelar {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  flex: 1;
+  height: 45px;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.modal-confirmar-boton-cancelar:hover {
+  background-color: var(--color-gray-light);
+}
+
+.modal-confirmar-boton-confirmar {
+  color: white;
+  border-radius: var(--radius-xl);
+  flex: 1;
+  height: 45px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.modal-confirmar-boton-confirmar:hover {
+  filter: brightness(0.9);
+}
+
+/* ==============================================
+   ESTILOS PARA MODAL DESAFILIAR AFILIADO
+   ============================================== */
+
+/* Modal */
+.modal-desafiliar-header {
+  border-bottom: 2px solid var(--color-danger);
+}
+
+.modal-desafiliar-body {
+  padding: 0;
+}
+
+.modal-desafiliar-contenido {
+  background-color: var(--color-white);
+}
+
+/* Información del afiliado */
+.modal-desafiliar-paper {
+  background-color: #fafafa;
+  border-left: 4px solid var(--color-danger);
+}
+
+.modal-desafiliar-label {
+  color: var(--color-dimmed);
+}
+
+.modal-desafiliar-nombre {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.modal-desafiliar-ci {
+  color: var(--color-gray-dark);
+}
+
+.modal-desafiliar-badge {
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: var(--color-danger);
+}
+
+/* Alerta */
+.modal-desafiliar-alerta {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--color-danger);
+}
+
+.modal-desafiliar-alerta-texto {
+  color: var(--color-gray-dark);
+  line-height: 1.5;
+}
+
+.modal-desafiliar-lista {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  color: var(--color-gray-dark);
+}
+
+.modal-desafiliar-lista li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-desafiliar-lista-destacado {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Botones */
+.modal-desafiliar-botones {
+  gap: 12px;
+}
+
+.modal-desafiliar-boton-cancelar {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  flex: 1;
+  height: 45px;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.modal-desafiliar-boton-cancelar:hover {
+  background-color: var(--color-gray-light);
+}
+
+.modal-desafiliar-boton-confirmar {
+  background-color: var(--color-danger);
+  color: white;
+  border-radius: var(--radius-xl);
+  flex: 1;
+  height: 45px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+
+.modal-desafiliar-boton-confirmar:hover {
+  background-color: #d32f2f;
+}
+
+.modal-desafiliar-boton-confirmar:disabled {
+  background-color: #ffcdd2;
+}
+
+/* ============================================================
+   MODAL HISTORIAL DEL AFILIADO
+   ============================================================ */
+
+/* ── Contenedor del título ────────────────────────────────── */
+.historial-titulo {
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 112.9%;
+  letter-spacing: 0.5px;
+  color: var(--color-info);
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ── Línea decorativa junto al título ─────────────────────── */
+.historial-linea-deco {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, #E2ECFF, transparent);
+  border: none;
+  margin: 0;
+  min-width: 40px;
+}
+
+.historial-title-underline {
+  border-bottom: 2px solid var(--color-accent);
+  width: 160px;
+  margin-bottom: 6px;
+}
+
+/* ── Wrapper del header interno del modal ─────────────────── */
+.historial-header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+}
+
+/* ── Tabla — sin líneas visibles ──────────────────────────── */
+.historial-tabla table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.historial-tabla th,
+.historial-tabla td {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ── Encabezado de la tabla ───────────────────────────────── */
+.historial-tabla thead tr {
+  background-color: var(--color-bg) !important;
+}
+
+.historial-tabla thead th {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-info);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px 20px;
+  background-color: var(--color-bg) !important;
+  border-bottom: none !important;
+}
+
+/* ── Filas del cuerpo ─────────────────────────────────────── */
+.historial-tabla tbody tr {
+  background-color: var(--color-white);
+  transition: background-color 0.15s ease;
+}
+
+.historial-tabla tbody tr:hover {
+  background-color: var(--color-bg);
+}
+
+.historial-tabla tbody td {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-primary);
+  padding: 14px 20px;
+  vertical-align: middle;
+  border-bottom: none !important;
+}
+
+/* ── Píldora de tipo de evento ────────────────────────────── */
+.historial-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-xl);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--color-bg);
+  color: var(--color-info);
+}
+
+.historial-badge.tipo-directorio-ingreso {
+  background-color: #E2ECFF;
+  color: var(--color-info);
+}
+
+.historial-badge.tipo-directorio-egreso {
+  background-color: var(--color-bg);
+  color: #C4C4C4;
+}
+
+.historial-badge.tipo-modificacion {
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+}
+
+.historial-badge.tipo-desafiliacion {
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+}
+
+/* ── Estado vacío ───────────────────────────────────────────*/
+.historial-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 24px;
+  color: #C4C4C4;
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+/* ── Texto de detalle (segunda línea de la celda) ────────── */
+.historial-detalle {
+  font-size: 12px;
+  color: #C4C4C4;
+  margin-top: 3px;
+  font-style: italic;
+  word-break: break-word;
+}
+
+/* ── Texto de responsable ───────────────────────────────────*/
+.historial-responsable {
+  font-size: 12px;
+  color: var(--color-info);
+}
+
+/* ==============================================
+   ESTILOS PARA TABLA DE AFILIADOS
+   ============================================== */
+
+/* Contenedor de tabla */
+.tabla-scroll {
+  width: 100%;
+}
+
+.tabla-afiliados {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  min-width: 1300px;
+  font-family: var(--font-body);
+}
+
+.tabla-deshabilitados {
+  min-width: 1400px;
+}
+
+/* Header de tabla */
+.tabla-header {
+  background-color: var(--color-bg);
+}
+
+.tabla-header-columna {
+  font-weight: 600;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+/* Filas */
+.tabla-fila-afiliado {
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tabla-fila-afiliado:hover {
+  background-color: #f8f9fa;
+}
+
+/* Textos en tabla */
+.texto-nombre-tabla {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.texto-ci-tabla {
+  color: var(--color-gray-dark);
+}
+
+.texto-ocupacion-tabla {
+  color: var(--color-gray-dark);
+}
+
+.texto-telefono-tabla {
+  color: var(--color-gray-dark);
+}
+
+.texto-sin-puestos-tabla {
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+/* Badges en tabla */
+.badge-puesto-tabla {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.badge-total-puestos {
+  font-weight: 500;
+}
+
+/* Acciones */
+.acciones-tabla {
+  gap: 4px;
+}
+
+.accion-ver {
+  color: var(--color-primary);
+}
+
+.accion-ver:hover {
+  background-color: rgba(15, 15, 15, 0.1);
+}
+
+.accion-editar {
+  color: var(--color-accent);
+}
+
+.accion-editar:hover {
+  background-color: rgba(237, 190, 60, 0.1);
+}
+
+.accion-rehabilitar {
+  color: var(--color-success);
+}
+
+.accion-rehabilitar:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Estado vacío */
+.tabla-vacia {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-gray-dark);
+  font-family: var(--font-body);
+}
+
+.tabla-vacia-subtitulo {
+  margin-top: 10px;
+}
+
+/* ==============================================
+   ESTILOS PARA TABLA DE PUESTOS
+   ============================================== */
+
+/* Tabla */
+.tabla-puestos-scroll {
+  width: 100%;
+}
+
+.tabla-puestos {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  min-width: 900px;
+  font-family: var(--font-body);
+}
+
+.tabla-puestos-header {
+  background-color: var(--color-bg);
+}
+
+.tabla-puestos-header th {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Filas */
+.tabla-puestos-fila {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Textos en tabla */
+.texto-nro-puesto {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.texto-fila {
+  color: var(--color-gray-dark);
+}
+
+.texto-cuadra {
+  color: var(--color-gray-dark);
+}
+
+.texto-nro-patente {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.texto-fecha {
+  color: var(--color-gray-dark);
+}
+
+.texto-rubro {
+  color: var(--color-gray-dark);
+}
+
+.texto-sin-rubro {
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+/* Badges */
+.badge-patente {
+  font-weight: 500;
+}
+
+/* Menú de acciones */
+.menu-acciones-boton {
+  color: var(--color-primary);
+  background-color: var(--color-bg);
+}
+
+.menu-acciones-boton:hover {
+  background-color: #e9ecef;
+}
+
+.menu-acciones-dropdown {
+  border-radius: var(--radius-sm);
+}
+
+/* Estado vacío */
+.tabla-puestos-vacia {
+  background-color: #f9f9f9;
+  border-radius: var(--radius-sm);
+  padding: 40px;
+  color: var(--color-gray-dark);
+  font-family: var(--font-body);
+}
+
+.icono-vacio {
+  color: var(--color-gray);
+}
+
+/* ==============================================
+   ESTILOS PARA TOGGLE VIEW DESHABILITADOS
+   ============================================== */
+
+/* Contenedor principal */
+.toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Grupo del switch */
+.toggle-switch-group {
+  display: flex;
+  align-items: center;
+}
+
+/* Switch personalizado */
+.toggle-switch .mantine-Switch-track {
+  transition: all 0.2s ease;
+}
+
+.toggle-switch .mantine-Switch-thumb {
+  transition: all 0.2s ease;
+}
+
+/* Grupo del ícono y badge */
+.toggle-icon-group {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+/* Ícono de basura */
+.toggle-icon {
+  transition: color 0.2s ease;
+}
+
+/* Badge de contador */
+.toggle-badge {
+  cursor: help;
+  font-weight: 600;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-danger);
+}
+
+/* Tooltip */
+.toggle-tooltip {
+  font-size: 12px;
+}
+
+/* Estados hover */
+.toggle-switch:hover .mantine-Switch-track {
+  opacity: 0.9;
+}
+
+.toggle-badge:hover {
+  transform: scale(1.05);
+}
+
+/* ==============================================
+   ESTILOS RESPONSIVE GLOBALES
+   ============================================== */
+
+@media (max-width: 768px) {
+  .tabla-afiliados {
+    min-width: 100%;
+  }
+  
+  .tabla-puestos {
+    min-width: 100%;
+  }
+  
+  .tabla-fila-afiliado td,
+  .tabla-puestos-fila td {
+    padding: 12px 8px;
+  }
+  
+  .badge-puesto-tabla {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .toggle-container {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .toggle-switch-group {
+    gap: 8px;
+  }
+  
+  .modal-desafiliar-botones,
+  .modal-confirmar-botones {
+    flex-direction: column;
+  }
+  
+  .modal-desafiliar-boton-cancelar,
+  .modal-desafiliar-boton-confirmar,
+  .modal-confirmar-boton-cancelar,
+  .modal-confirmar-boton-confirmar {
+    width: 100%;
+  }
+  
+  .modal-desafiliar-paper .mantine-Group-root {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .modal-desafiliar-badge {
+    align-self: flex-start;
+  }
+}

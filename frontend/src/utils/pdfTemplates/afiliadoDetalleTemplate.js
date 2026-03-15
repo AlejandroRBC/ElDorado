@@ -43,6 +43,15 @@ const imageUrlToBase64 = async (url) => {
   });
 };
 
+// ─────────────────────────────────────────────
+// Helper: determina si un puesto tiene patente
+// considerando AMBOS campos (tiene_patente y nro_patente)
+// ─────────────────────────────────────────────
+const tienePatente = (puesto) =>
+  puesto.tiene_patente === 1 ||
+  puesto.tiene_patente === true ||
+  (puesto.nro_patente != null && puesto.nro_patente !== '');
+
 export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
   try {
     notifications.show({
@@ -68,19 +77,15 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     // ─────────────────────────────────────────────
     const HEADER_H = 50;
 
-    // Fondo negro del header
     doc.setFillColor(15, 15, 15);
     doc.rect(0, 0, pageWidth, HEADER_H, 'F');
 
-    // Acento dorado inferior
     doc.setFillColor(237, 190, 60);
     doc.rect(0, HEADER_H - 3, pageWidth, 3, 'F');
 
-    // Franja lateral izquierda dorada
     doc.setFillColor(237, 190, 60);
     doc.rect(0, 0, 4, HEADER_H, 'F');
 
-    // ── META (generado por / fecha) — discreta, esquina superior derecha
     const usuario = pdf.getCurrentUser ? pdf.getCurrentUser() : 'Sistema';
     const fechaGeneracion = new Date().toLocaleString('es-ES', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -92,11 +97,11 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     doc.setTextColor(120, 120, 120);
     doc.text(`Generado por ${usuario}  ·  ${fechaGeneracion}`, pageWidth - margin, 7, { align: 'right' });
 
-    // ── FOTO DE PERFIL (izquierda, dentro del header)
+    // ── FOTO DE PERFIL
     const FOTO_SIZE = 36;
     const fotoX = margin + 8;
     const fotoY = (HEADER_H - FOTO_SIZE) / 2;
-    let nombreX = fotoX + FOTO_SIZE + 12; // posición del nombre (ajusta si hay foto)
+    let nombreX = fotoX + FOTO_SIZE + 12;
 
     let fotoOk = false;
     if (afiliado.url_perfil && !afiliado.url_perfil.includes('sinPerfil.png')) {
@@ -106,14 +111,11 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
           : `http://localhost:3000${afiliado.url_perfil}`;
         const base64Image = await imageUrlToBase64(perfilUrl);
         if (base64Image) {
-          // Círculo de sombra
           doc.setFillColor(0, 0, 0);
           doc.roundedRect(fotoX + 1, fotoY + 1, FOTO_SIZE, FOTO_SIZE, 4, 4, 'F');
-          // Borde dorado
           doc.setDrawColor(237, 190, 60);
           doc.setLineWidth(1.2);
           doc.roundedRect(fotoX - 1, fotoY - 1, FOTO_SIZE + 2, FOTO_SIZE + 2, 4, 4, 'D');
-          // Foto
           doc.addImage(base64Image, 'JPEG', fotoX, fotoY, FOTO_SIZE, FOTO_SIZE);
           fotoOk = true;
         }
@@ -123,7 +125,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     }
 
     if (!fotoOk) {
-      // Placeholder minimalista
       doc.setFillColor(35, 35, 35);
       doc.roundedRect(fotoX, fotoY, FOTO_SIZE, FOTO_SIZE, 4, 4, 'F');
       doc.setDrawColor(237, 190, 60);
@@ -140,7 +141,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
 
-    // Truncar si es muy largo
     const nombreMaxW = pageWidth - nombreX - margin;
     const nombreFit = doc.splitTextToSize(nombreCompleto, nombreMaxW);
     const nombreLine1 = nombreFit[0] || nombreCompleto;
@@ -152,7 +152,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
       doc.text(nombreLine2, nombreX, nombreCenterY + 8);
     }
 
-    // CI debajo del nombre (dorado)
     if (afiliado.ci) {
       doc.setTextColor(237, 190, 60);
       doc.setFontSize(9);
@@ -160,7 +159,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
       doc.text(`CI: ${afiliado.ci}`, nombreX, nombreCenterY + (nombreLine2 ? 16 : 9));
     }
 
-    // ── LOGO "EL DORADO" en esquina derecha del header
     doc.setTextColor(237, 190, 60);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
@@ -173,10 +171,8 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     pdf.currentY = HEADER_H + 14;
 
     // ─────────────────────────────────────────────
-    // DATOS PERSONALES — sin fondo, compacto
+    // DATOS PERSONALES
     // ─────────────────────────────────────────────
-
-    // Título de sección
     const drawSectionTitle = (title, y) => {
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
@@ -193,20 +189,17 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     drawSectionTitle('INFORMACIÓN PERSONAL', pdf.currentY);
     pdf.currentY += 8;
 
-    // Grid de 2 columnas, campos compactos
     const col1X = margin;
     const col2X = margin + contentWidth / 2 + 5;
     const colW = contentWidth / 2 - 8;
     const ROW_H = 9;
 
     const drawField = (label, value, x, y) => {
-      // Label
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(130, 130, 130);
       doc.text(label.toUpperCase(), x, y);
 
-      // Value
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(20, 20, 20);
@@ -214,7 +207,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
       const fitted = doc.splitTextToSize(valStr, colW);
       doc.text(fitted[0], x, y + 5);
 
-      // Línea separadora sutil
       doc.setDrawColor(230, 230, 230);
       doc.setLineWidth(0.15);
       doc.line(x, y + 7, x + colW, y + 7);
@@ -246,20 +238,30 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     // ─────────────────────────────────────────────
     // PUESTOS ASIGNADOS
     // ─────────────────────────────────────────────
-    const puestosActivos = afiliado.historial_puestos?.filter(p => p.estado === 'Activo') || [];
+
+    // ✅ FIX 1: historial_puestos NO tiene campo "estado".
+    // El modelo ya devuelve solo los puestos activos (JOIN con tenencia_puesto),
+    // así que usamos el array directamente sin filtrar.
+    const puestosActivos = afiliado.historial_puestos || [];
 
     drawSectionTitle('PUESTOS ASIGNADOS', pdf.currentY);
     pdf.currentY += 8;
 
     if (puestosActivos.length > 0) {
       const puestosHeaders = ['N°', 'Fila', 'Cuadra', 'Rubro', 'Patente', 'F. Asignación'];
+
       const puestosData = puestosActivos.map(p => [
-        p.nro || p.nroPuesto || '—',
-        p.fila || '—',
-        p.cuadra || '—',
-        p.rubro || '—',
-        p.tiene_patente ? 'SÍ' : 'NO',
-        p.fecha_obtencion ? new Date(p.fecha_obtencion).toLocaleDateString('es-ES') : '—'
+        // ✅ FIX 2: el campo es "nroPuesto", no "nro"
+        p.nroPuesto ?? '—',
+        p.fila      || '—',
+        p.cuadra    || '—',
+        p.rubro     || '—',
+        // ✅ FIX 3: patente verdadera si tiene_patente=1 O nro_patente tiene valor
+        tienePatente(p) ? 'SÍ' : 'NO',
+        // ✅ FIX 4: el campo es "fecha_ini", no "fecha_obtencion"
+        p.fecha_ini
+          ? new Date(p.fecha_ini).toLocaleDateString('es-ES')
+          : '—',
       ]);
 
       autoTable(doc, {
@@ -295,49 +297,50 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
           2: { halign: 'center', cellWidth: 28 },
           3: { halign: 'left' },
           4: { halign: 'center', cellWidth: 22 },
-          5: { halign: 'center', cellWidth: 32 }
+          5: { halign: 'center', cellWidth: 32 },
         },
-        didDrawCell: (data) => {
-          // Resaltar fila con borde dorado sutil en header
+
+        // ✅ FIX 5: usar willDrawCell (ANTES de dibujar) en lugar de didDrawCell
+        // (DESPUÉS de dibujar). Con willDrawCell se modifican los estilos de la
+        // celda y autoTable los aplica al renderizar, sin necesidad de redibujar.
+        willDrawCell: (data) => {
+          // Borde dorado debajo del encabezado
           if (data.section === 'head' && data.row.index === 0) {
             doc.setDrawColor(237, 190, 60);
             doc.setLineWidth(0.5);
-            doc.line(data.cell.x, data.cell.y + data.cell.height,
-                     data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+            doc.line(
+              data.cell.x,
+              data.cell.y + data.cell.height,
+              data.cell.x + data.cell.width,
+              data.cell.y + data.cell.height
+            );
           }
-          // Colorear el texto "SÍ" o "NO" sin borrar el original
-  if (data.section === 'body' && data.column.index === 4) {
-    const val = data.cell.raw; // Usar raw en lugar de text[0]
-    if (val === 'SÍ') {
-      // Cambiar el color del texto existente
-      doc.setTextColor(34, 139, 34);
-      doc.setFont('helvetica', 'bold');
-      // No dibujamos texto nuevo, solo cambiamos el color
-      // autoTable ya dibujará el texto con el color que establecimos
-    } else if (val === 'NO') {
-      doc.setTextColor(180, 0, 0);
-      doc.setFont('helvetica', 'bold');
-    }
-  }
+
+          // Color de texto en columna "Patente"
+          if (data.section === 'body' && data.column.index === 4) {
+            const val = data.cell.raw;
+            if (val === 'SÍ') {
+              data.cell.styles.textColor = [34, 139, 34];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (val === 'NO') {
+              data.cell.styles.textColor = [180, 0, 0];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
         },
-        // willDrawCell: (data) => {
-        //   // Evitar que autotable redibuje la celda de patente encima
-        //   if (data.section === 'body' && data.column.index === 4) {
-        //     data.cell.text = [''];
-        //   }
-        // }
       });
 
       pdf.currentY = doc.lastAutoTable.finalY + 8;
 
       // Píldoras de resumen
-      const conPatente = puestosActivos.filter(p => p.tiene_patente).length;
-      const sinPatente = puestosActivos.length - conPatente;
+      // ✅ FIX 6: contador de patentes usa la misma lógica corregida
+      const conPatenteCount = puestosActivos.filter(tienePatente).length;
+      const sinPatenteCount = puestosActivos.length - conPatenteCount;
 
       const pills = [
-        { label: `${puestosActivos.length} puestos totales`, bg: [15, 15, 15], fg: [255, 255, 255] },
-        { label: `${conPatente} con patente`, bg: [34, 139, 34], fg: [255, 255, 255] },
-        { label: `${sinPatente} sin patente`, bg: [180, 0, 0], fg: [255, 255, 255] },
+        { label: `${puestosActivos.length} puestos totales`, bg: [15, 15, 15],   fg: [255, 255, 255] },
+        { label: `${conPatenteCount} con patente`,           bg: [34, 139, 34],  fg: [255, 255, 255] },
+        { label: `${sinPatenteCount} sin patente`,           bg: [180, 0, 0],    fg: [255, 255, 255] },
       ];
 
       let pillX = margin;
@@ -376,7 +379,6 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     // ─────────────────────────────────────────────
     const pageHeight = doc.internal.pageSize.height;
 
-    // Barra negra inferior
     doc.setFillColor(15, 15, 15);
     doc.rect(0, pageHeight - 14, pageWidth, 14, 'F');
     doc.setFillColor(237, 190, 60);
