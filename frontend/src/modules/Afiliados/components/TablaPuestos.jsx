@@ -1,31 +1,72 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stack, Menu } from '@mantine/core';
 import { IconEdit, IconTrash, IconEye, IconMapPin, IconTransfer, IconDotsVertical } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { afiliadosService } from '../services/afiliadosService';
-// import ModalEditarPuesto    from './ModalEditarPuesto';
-// import ModalDetallePuesto   from './ModalDetallePuesto';
-import { ModalEditarPuesto }    from '../../GestionPatentesPuestos/components/ModalEditarPuesto';
-import { ModalMostrarHistorial } from '../../GestionPatentesPuestos/components/ModalMostrarHistorial';
-import { puestosService } from '../../GestionPatentesPuestos/service/puestosService';
 
-import ModalAccionPuesto    from './ModalAccionPuesto';
+import { afiliadosService } from '../services/afiliadosService';
+import { puestosService } from '../../GestionPatentesPuestos/service/puestosService';
+import { ModalEditarPuesto } from '../../GestionPatentesPuestos/components/ModalEditarPuesto';
+import { ModalMostrarHistorial } from '../../GestionPatentesPuestos/components/ModalMostrarHistorial';
+import ModalAccionPuesto from './ModalAccionPuesto';
 import ModalConfirmarAccion from './ModalConfirmarAccion';
 
-const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
-  const [puestos,                  setPuestos]                  = useState([]);
-  const [cargando,                 setCargando]                 = useState(true);
-  const [error,                    setError]                    = useState(null);
-  const [modalEditarAbierto,       setModalEditarAbierto]       = useState(false);
-  const [puestoSeleccionado,       setPuestoSeleccionado]       = useState(null);
-  const [modalDetalleAbierto,      setModalDetalleAbierto]      = useState(false);
-  const [puestoParaDetalle,        setPuestoParaDetalle]        = useState(null);
-  const [modalAccionAbierto,       setModalAccionAbierto]       = useState(false);
-  const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
-  const [accionSeleccionada,       setAccionSeleccionada]       = useState(null);
-  const [cargandoAccion,           setCargandoAccion]           = useState(false);
+import '../styles/Estilos.css'; // Archivo acumulador de estilos
 
-  const cargarPuestos = async () => {
+// ==============================================
+// CONSTANTES
+// ==============================================
+const COLUMNAS_TABLA = [
+  'Nro',
+  'Fila',
+  'Cuadra',
+  'Nro.Patente',
+  'Fecha Obtención',
+  'Rubro',
+  'Patente / Dimensiones',
+  'Acciones'
+];
+
+// ==============================================
+// FUNCIONES AUXILIARES
+// ==============================================
+
+const formatFecha = (fecha) => {
+  if (!fecha) return '—';
+  return new Date(fecha).toLocaleDateString('es-ES');
+};
+
+const getBadgeColor = (tienePatente) => {
+  return tienePatente ? 'green' : 'yellow';
+};
+
+const getBadgeText = (tienePatente) => {
+  return tienePatente ? 'CON PATENTE' : 'SIN PATENTE';
+};
+
+// ==============================================
+// COMPONENTE PRINCIPAL
+// ==============================================
+
+const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
+  // ==============================================
+  // ESTADOS LOCALES
+  // ==============================================
+  const [puestos, setPuestos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [puestoSeleccionado, setPuestoSeleccionado] = useState(null);
+  const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
+  const [puestoParaDetalle, setPuestoParaDetalle] = useState(null);
+  const [modalAccionAbierto, setModalAccionAbierto] = useState(false);
+  const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
+  const [accionSeleccionada, setAccionSeleccionada] = useState(null);
+  const [cargandoAccion, setCargandoAccion] = useState(false);
+
+  // ==============================================
+  // FUNCIÓN DE CARGA DE DATOS
+  // ==============================================
+  const cargarPuestos = useCallback(async () => {
     if (!afiliadoId) return;
     try {
       setCargando(true);
@@ -38,26 +79,46 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
     } finally {
       setCargando(false);
     }
-  };
+  }, [afiliadoId]);
 
-  useEffect(() => { cargarPuestos(); }, [afiliadoId]);
+  // ==============================================
+  // EFECTOS
+  // ==============================================
+  useEffect(() => {
+    cargarPuestos();
+  }, [cargarPuestos]);
 
-  const handleRefresh = () => {
+  // ==============================================
+  // HANDLERS DEL COMPONENTE
+  // ==============================================
+
+  const handleRefresh = useCallback(() => {
     cargarPuestos();
     if (onRefresh) onRefresh();
-  };
+  }, [cargarPuestos, onRefresh]);
 
-  const handleEditar     = (puesto) => { setPuestoSeleccionado(puesto); setModalEditarAbierto(true); };
-  const handleVerDetalle = (puesto) => { setPuestoParaDetalle(puesto);  setModalDetalleAbierto(true); };
-  const handleEliminar   = (puesto) => { setPuestoSeleccionado(puesto); setModalAccionAbierto(true); };
+  const handleEditar = useCallback((puesto) => {
+    setPuestoSeleccionado(puesto);
+    setModalEditarAbierto(true);
+  }, []);
 
-  const handleSeleccionarAccion = (razon) => {
+  const handleVerDetalle = useCallback((puesto) => {
+    setPuestoParaDetalle(puesto);
+    setModalDetalleAbierto(true);
+  }, []);
+
+  const handleEliminar = useCallback((puesto) => {
+    setPuestoSeleccionado(puesto);
+    setModalAccionAbierto(true);
+  }, []);
+
+  const handleSeleccionarAccion = useCallback((razon) => {
     setAccionSeleccionada(razon);
     setModalAccionAbierto(false);
     setModalConfirmacionAbierto(true);
-  };
+  }, []);
 
-  const handleEjecutarAccion = async () => {
+  const handleEjecutarAccion = useCallback(async () => {
     try {
       setCargandoAccion(true);
       const result = await afiliadosService.desasignarPuesto(
@@ -66,111 +127,221 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         accionSeleccionada,
       );
 
-      notifications.show({ title: '✅ Éxito', message: result.message, color: 'green' });
+      notifications.show({
+        title: '✅ Éxito',
+        message: result.message,
+        color: 'green'
+      });
+      
       setModalConfirmacionAbierto(false);
       setPuestoSeleccionado(null);
       setAccionSeleccionada(null);
       cargarPuestos();
     } catch (err) {
       console.error('Error:', err);
-      notifications.show({ title: '❌ Error', message: err.message, color: 'red' });
+      notifications.show({
+        title: '❌ Error',
+        message: err.message,
+        color: 'red'
+      });
     } finally {
       setCargandoAccion(false);
     }
-  };
-  const handleGuardarPuesto = async (formData) => {
+  }, [afiliadoId, puestoSeleccionado, accionSeleccionada, cargarPuestos]);
+
+  const handleGuardarPuesto = useCallback(async (formData) => {
     try {
       await puestosService.actualizarPuesto(puestoSeleccionado.id_puesto, formData);
-      notifications.show({ title: '✅ Éxito', message: 'Puesto actualizado correctamente', color: 'green' });
+      notifications.show({
+        title: '✅ Éxito',
+        message: 'Puesto actualizado correctamente',
+        color: 'green'
+      });
       setModalEditarAbierto(false);
       setPuestoSeleccionado(null);
       cargarPuestos();
       if (onRefresh) onRefresh();
     } catch (err) {
-      notifications.show({ title: '❌ Error', message: err.message || 'No se pudo actualizar el puesto', color: 'red' });
+      notifications.show({
+        title: '❌ Error',
+        message: err.message || 'No se pudo actualizar el puesto',
+        color: 'red'
+      });
     }
-  };
+  }, [puestoSeleccionado, cargarPuestos, onRefresh]);
 
-  if (cargando) return <Center py="xl"><Loader size="sm" color="dark" /></Center>;
+  const handleTraspasoClick = useCallback((puesto) => {
+    if (onTraspaso) onTraspaso(puesto, handleRefresh);
+  }, [onTraspaso, handleRefresh]);
 
-  if (error) return <Center py="xl"><Text c="red" size="sm">{error}</Text></Center>;
+  const handleCerrarModalEditar = useCallback(() => {
+    setModalEditarAbierto(false);
+    setPuestoSeleccionado(null);
+  }, []);
+
+  const handleCerrarModalDetalle = useCallback(() => {
+    setModalDetalleAbierto(false);
+    setPuestoParaDetalle(null);
+  }, []);
+
+  const handleCerrarModalAccion = useCallback(() => {
+    setModalAccionAbierto(false);
+    setPuestoSeleccionado(null);
+  }, []);
+
+  const handleCerrarModalConfirmacion = useCallback(() => {
+    setModalConfirmacionAbierto(false);
+    setPuestoSeleccionado(null);
+    setAccionSeleccionada(null);
+  }, []);
+
+  // ==============================================
+  // RENDERIZADO CONDICIONAL
+  // ==============================================
+  if (cargando) {
+    return (
+      <Center py="xl">
+        <Loader size="sm" color="dark" />
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center py="xl">
+        <Text c="red" size="sm">{error}</Text>
+      </Center>
+    );
+  }
 
   if (puestos.length === 0) {
     return (
-      <Stack align="center" gap="xs" py="xl" style={{ backgroundColor: '#f9f9f9', borderRadius: '8px', padding: '40px', color: '#666' }}>
-        <IconMapPin size={40} style={{ color: '#ccc' }} />
+      <Stack align="center" gap="xs" py="xl" className="tabla-puestos-vacia">
+        <IconMapPin size={40} className="icono-vacio" />
         <Text size="lg">No hay puestos asignados</Text>
         <Text size="sm" c="dimmed">Este afiliado no tiene puestos activos</Text>
       </Stack>
     );
   }
 
-  const rows = puestos.map((puesto) => (
-    <Table.Tr key={puesto.id_puesto} style={{ borderBottom: '1px solid #eee' }}>
-      <Table.Td><Text fw={600} style={{ color: '#0f0f0f' }}>{puesto.nroPuesto}</Text></Table.Td>
-      <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.fila}</Text></Table.Td>
-      <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.cuadra}</Text></Table.Td>
-      <Table.Td><Text fw={600} style={{ color: '#0f0f0f' }}>{puesto.nro_patente}</Text></Table.Td>
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>
-          {puesto.fecha_ini ? new Date(puesto.fecha_ini).toLocaleDateString('es-ES') : '—'}
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>
-          {puesto.rubro || <span style={{ color: '#999', fontStyle: 'italic' }}>Sin rubro</span>}
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        <Badge color={puesto.tiene_patente ? 'green' : 'yellow'} variant="dot">
-          {puesto.tiene_patente ? 'CON PATENTE' : 'SIN PATENTE'}
-        </Badge>
-        {puesto.ancho && puesto.largo && (
-          <Text size="xs" c="dimmed" mt={4}>{puesto.ancho}m x {puesto.largo}m</Text>
-        )}
-      </Table.Td>
-      <Table.Td>
-        <Menu shadow="md" width={200} position="bottom-end" transitionProps={{ transition: 'pop-top-right' }}>
-          <Menu.Target>
-            <ActionIcon
-              variant="subtle" size="md"
-              aria-label="Acciones del puesto"
-              style={{ color: '#0f0f0f', backgroundColor: '#f6f8fe' }}
-            >
-              <IconDotsVertical size={18} />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item leftSection={<IconEye size={16} />} description="Ver información completa del puesto" onClick={() => handleVerDetalle(puesto)}>
-              Historial
-            </Menu.Item>
-            <Menu.Item leftSection={<IconTransfer size={16} />} description="Transferir el puesto a otro afiliado" color="blue"
-              onClick={() => { if (onTraspaso) onTraspaso(puesto, handleRefresh); }}
-            >
-              Traspasar
-            </Menu.Item>
-            <Menu.Item leftSection={<IconEdit size={16} />} description="Modificar rubro, patente o dimensiones" color="yellow" onClick={() => handleEditar(puesto)}>
-              Editar
-            </Menu.Item>
-            <Menu.Divider />
-            <Menu.Item leftSection={<IconTrash size={16} />} description="Liberar o despojar el puesto" color="red" onClick={() => handleEliminar(puesto)}>
-              Desasignar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      </Table.Td>
-    </Table.Tr>
-  ));
+  // ==============================================
+  // RENDERIZADO DE FILAS
+  // ==============================================
+  const rows = puestos.map((puesto) => {
+    const badgeColor = getBadgeColor(puesto.tiene_patente);
+    const badgeText = getBadgeText(puesto.tiene_patente);
+    const fechaFormateada = formatFecha(puesto.fecha_ini);
 
+    return (
+      <Table.Tr key={puesto.id_puesto} className="tabla-puestos-fila">
+        <Table.Td>
+          <Text fw={600} className="texto-nro-puesto">{puesto.nroPuesto}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-fila">{puesto.fila}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-cuadra">{puesto.cuadra}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text fw={600} className="texto-nro-patente">{puesto.nro_patente}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-fecha">{fechaFormateada}</Text>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-rubro">
+            {puesto.rubro || <span className="texto-sin-rubro">Sin rubro</span>}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Badge color={badgeColor} variant="dot" className="badge-patente">
+            {badgeText}
+          </Badge>
+          {puesto.ancho && puesto.largo && (
+            <Text size="xs" c="dimmed" mt={4}>
+              {puesto.ancho}m x {puesto.largo}m
+            </Text>
+          )}
+        </Table.Td>
+        <Table.Td>
+          <Menu
+            shadow="md"
+            width={200}
+            position="bottom-end"
+            transitionProps={{ transition: 'pop-top-right' }}
+          >
+            <Menu.Target>
+              <ActionIcon
+                variant="subtle"
+                size="md"
+                aria-label="Acciones del puesto"
+                className="menu-acciones-boton"
+              >
+                <IconDotsVertical size={18} />
+              </ActionIcon>
+            </Menu.Target>
+
+            <Menu.Dropdown className="menu-acciones-dropdown">
+              <Menu.Item
+                leftSection={<IconEye size={16} />}
+                description="Ver información completa del puesto"
+                onClick={() => handleVerDetalle(puesto)}
+              >
+                Historial
+              </Menu.Item>
+
+              <Menu.Item
+                leftSection={<IconTransfer size={16} />}
+                description="Transferir el puesto a otro afiliado"
+                
+                onClick={() => handleTraspasoClick(puesto)}
+              >
+                Traspasar
+              </Menu.Item>
+
+              <Menu.Item
+                leftSection={<IconEdit size={16} />}
+                description="Modificar rubro, patente o dimensiones"
+                
+                onClick={() => handleEditar(puesto)}
+              >
+                Editar
+              </Menu.Item>
+
+              <Menu.Divider />
+
+              <Menu.Item
+                leftSection={<IconTrash size={16} />}
+                description="Liberar o despojar el puesto"
+                
+                onClick={() => handleEliminar(puesto)}
+              >
+                Desasignar
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
+
+  // ==============================================
+  // RENDER PRINCIPAL
+  // ==============================================
   return (
     <>
-      <ScrollArea>
-        <Table striped highlightOnHover verticalSpacing="md" horizontalSpacing="lg"
-          style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', minWidth: '900px' }}
+      <ScrollArea className="tabla-puestos-scroll">
+        <Table
+          striped
+          highlightOnHover
+          verticalSpacing="md"
+          horizontalSpacing="lg"
+          className="tabla-puestos"
         >
-          <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
+          <Table.Thead className="tabla-puestos-header">
             <Table.Tr>
-              {['Nro', 'Fila', 'Cuadra','Nro.Patente' ,'Fecha Obtención', 'Rubro', 'Patente / Dimensiones', 'Acciones'].map((col) => (
+              {COLUMNAS_TABLA.map((col) => (
                 <Table.Th key={col}>{col}</Table.Th>
               ))}
             </Table.Tr>
@@ -179,37 +350,29 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         </Table>
       </ScrollArea>
 
-      {/* <ModalEditarPuesto
-        opened={modalEditarAbierto}
-        onClose={() => { setModalEditarAbierto(false); setPuestoSeleccionado(null); }}
-        puesto={puestoSeleccionado}
-        onPuestoActualizado={() => { cargarPuestos(); if (onRefresh) onRefresh(); }}
-      />
-      <ModalDetallePuesto
-        opened={modalDetalleAbierto}
-        onClose={() => { setModalDetalleAbierto(false); setPuestoParaDetalle(null); }}
-        puesto={puestoParaDetalle}
-      /> */}
       <ModalEditarPuesto
-  opened={modalEditarAbierto}
-  close={() => { setModalEditarAbierto(false); setPuestoSeleccionado(null); }}
-  puesto={puestoSeleccionado}
-  onGuardar={handleGuardarPuesto}
-/>
-<ModalMostrarHistorial
-  opened={modalDetalleAbierto}
-  close={() => { setModalDetalleAbierto(false); setPuestoParaDetalle(null); }}
-  puesto={puestoParaDetalle}
-/>
+        opened={modalEditarAbierto}
+        close={handleCerrarModalEditar}
+        puesto={puestoSeleccionado}
+        onGuardar={handleGuardarPuesto}
+      />
+
+      <ModalMostrarHistorial
+        opened={modalDetalleAbierto}
+        close={handleCerrarModalDetalle}
+        puesto={puestoParaDetalle}
+      />
+
       <ModalAccionPuesto
         opened={modalAccionAbierto}
-        onClose={() => { setModalAccionAbierto(false); setPuestoSeleccionado(null); }}
+        onClose={handleCerrarModalAccion}
         puesto={puestoSeleccionado}
         onConfirm={handleSeleccionarAccion}
       />
+
       <ModalConfirmarAccion
         opened={modalConfirmacionAbierto}
-        onClose={() => { setModalConfirmacionAbierto(false); setPuestoSeleccionado(null); setAccionSeleccionada(null); }}
+        onClose={handleCerrarModalConfirmacion}
         puesto={puestoSeleccionado}
         razon={accionSeleccionada}
         onConfirmar={handleEjecutarAccion}

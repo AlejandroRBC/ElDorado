@@ -424,40 +424,49 @@ buscar: (termino) => {
   // ============================================
   asignarPuesto: (idAfiliado, datos) => {
     return new Promise((resolve, reject) => {
-      const { fila, cuadra, nroPuesto, rubro, tiene_patente, razon } = datos;
-
+      // ✅ PARCHE: se desestructura nro_patente
+      const { fila, cuadra, nroPuesto, rubro, tiene_patente, nro_patente, razon } = datos;
+ 
       db.get(
         `SELECT id_puesto, disponible FROM puesto
          WHERE fila = ? AND cuadra = ? AND nroPuesto = ?`,
         [fila, cuadra, nroPuesto],
         (err, puesto) => {
-          if (err) { reject(err); return; }
-          if (!puesto)              { reject(new Error('Puesto no encontrado')); return; }
-          if (!puesto.disponible)   { reject(new Error('El puesto no está disponible')); return; }
-
-          // Verificar que no haya tenencia activa (doble seguro)
+          if (err)             { reject(err); return; }
+          if (!puesto)         { reject(new Error('Puesto no encontrado')); return; }
+          if (!puesto.disponible) { reject(new Error('El puesto no está disponible')); return; }
+ 
           db.get(
             `SELECT id_tenencia FROM tenencia_puesto WHERE id_puesto = ?`,
             [puesto.id_puesto],
             (err, tenenciaActiva) => {
-              if (err) { reject(err); return; }
+              if (err)          { reject(err); return; }
               if (tenenciaActiva) { reject(new Error('El puesto ya está ocupado')); return; }
-
+ 
               const idPuesto = puesto.id_puesto;
-
+ 
               db.serialize(() => {
                 db.run('BEGIN TRANSACTION');
-
+ 
+                // ✅ PARCHE: el UPDATE ahora incluye nro_patente
+                // Si tiene_patente es false → nro_patente se guarda como NULL
                 db.run(
-                  `UPDATE puesto SET rubro = ?, tiene_patente = ? WHERE id_puesto = ?`,
-                  [rubro || null, tiene_patente ? 1 : 0, idPuesto],
+                  `UPDATE puesto
+                   SET rubro = ?, tiene_patente = ?, nro_patente = ?
+                   WHERE id_puesto = ?`,
+                  [
+                    rubro || null,
+                    tiene_patente ? 1 : 0,
+                    tiene_patente ? (nro_patente || null) : null,
+                    idPuesto,
+                  ],
                   (err) => {
                     if (err) {
                       db.run('ROLLBACK');
                       reject(new Error('Error al actualizar datos del puesto'));
                       return;
                     }
-
+ 
                     db.run(
                       `INSERT INTO tenencia_puesto (id_afiliado, id_puesto, razon, fecha_ini)
                        VALUES (?, ?, ?, CURRENT_DATE)`,
@@ -468,9 +477,9 @@ buscar: (termino) => {
                           reject(new Error('Error al registrar la tenencia'));
                           return;
                         }
-
+ 
                         const idTenencia = this.lastID;
-
+ 
                         db.run(
                           `UPDATE puesto SET disponible = 0 WHERE id_puesto = ?`,
                           [idPuesto],
@@ -495,7 +504,6 @@ buscar: (termino) => {
       );
     });
   },
-
 
   // ============================================
   // DESPOJAR O LIBERAR PUESTO

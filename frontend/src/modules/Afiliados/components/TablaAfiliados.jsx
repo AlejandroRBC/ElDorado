@@ -1,125 +1,193 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea } from '@mantine/core';
 import { IconUserCheck, IconEdit, IconEye } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 
-// Columnas idénticas para activos y deshabilitados → constante
+import '../styles/Estilos.css'; // Archivo acumulador de estilos
+
+// ==============================================
+// CONSTANTES
+// ==============================================
 const COLUMNAS = ['Nombre', 'CI', 'Ocupación', 'Puestos', '# Puestos', 'Teléfono', 'Acciones'];
+
+// ==============================================
+// FUNCIONES AUXILIARES
+// ==============================================
+
+const getBadgeColor = (puestosConPatente) => {
+  return puestosConPatente > 0 ? 'green' : 'yellow';
+};
+
+const getNombreCompleto = (afiliado) => {
+  return `${afiliado.nombre || ''} ${afiliado.paterno || ''} ${afiliado.materno || ''}`.trim();
+};
+
+// ==============================================
+// COMPONENTE PRINCIPAL
+// ==============================================
 
 const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehabilitar }) => {
   const navigate = useNavigate();
 
-  const verDetalles    = (id) => navigate(`/afiliados/${id}`);
-  const editarAfiliado = (id) => navigate(`/afiliados/editar/${id}`);
+  // ==============================================
+  // HANDLERS DEL COMPONENTE
+  // ==============================================
 
-  const handleRehabilitar = (id, e) => {
+  const verDetalles = useCallback((id) => {
+    navigate(`/afiliados/${id}`);
+  }, [navigate]);
+
+  const editarAfiliado = useCallback((id) => {
+    navigate(`/afiliados/editar/${id}`);
+  }, [navigate]);
+
+  const handleRehabilitar = useCallback((id, e) => {
     e.stopPropagation();
     if (onRehabilitar) onRehabilitar(id);
-  };
+  }, [onRehabilitar]);
 
+  const handleClickFila = useCallback((id) => {
+    verDetalles(id);
+  }, [verDetalles]);
+
+  // ==============================================
+  // RENDERIZADO DE ESTADO VACÍO
+  // ==============================================
   if (afiliados.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+      <div className="tabla-vacia">
         <Text size="lg">No hay afiliados para mostrar</Text>
-        <Text size="sm" style={{ marginTop: '10px' }}>
+        <Text size="sm" className="tabla-vacia-subtitulo">
           Utiliza los filtros o añade nuevos afiliados
         </Text>
       </div>
     );
   }
 
-  const rows = afiliados.map((afiliado) => (
-    <Table.Tr
-      key={afiliado.id}
-      style={{ borderBottom: '1px solid #eee', cursor: 'pointer', transition: 'background-color 0.2s' }}
-    >
-      <Table.Td>
-        <Text fw={500} style={{ color: '#0f0f0f' }}>
-          {afiliado.nombre} {afiliado.paterno} {afiliado.materno}
-        </Text>
-      </Table.Td>
+  // ==============================================
+  // RENDERIZADO DE FILAS
+  // ==============================================
+  const rows = afiliados.map((afiliado) => {
+    const badgeColor = getBadgeColor(afiliado.puestos_con_patente);
+    const nombreCompleto = getNombreCompleto(afiliado);
 
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>{afiliado.ci}</Text>
-      </Table.Td>
+    return (
+      <Table.Tr
+        key={afiliado.id}
+        className="tabla-fila-afiliado"
+        onClick={() => handleClickFila(afiliado.id)}
+      >
+        <Table.Td>
+          <Text fw={500} className="texto-nombre-tabla">
+            {nombreCompleto}
+          </Text>
+        </Table.Td>
 
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>{afiliado.ocupacion}</Text>
-      </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-ci-tabla">
+            {afiliado.ci}
+          </Text>
+        </Table.Td>
 
-      <Table.Td>
-        <Group gap={4} wrap="wrap">
-          {afiliado.puestos?.length > 0 ? (
-            afiliado.puestos.slice(0, 10).map((puesto, index) => (
-              <Badge key={index} size="xs" variant="outline" style={{ borderColor: '#0f0f0f', color: '#0f0f0f', fontWeight: 500 }}>
-                {puesto}
-              </Badge>
-            ))
-          ) : (
-            <Text size="xs" style={{ color: '#999', fontStyle: 'italic' }}>Sin puestos</Text>
-          )}
-        </Group>
-      </Table.Td>
+        <Table.Td>
+          <Text size="sm" className="texto-ocupacion-tabla">
+            {afiliado.ocupacion}
+          </Text>
+        </Table.Td>
 
-      <Table.Td>
-        <Badge color={afiliado.puestos_con_patente > 0 ? 'green' : 'yellow'} variant="dot">
-          {afiliado.total_puestos || 0} puestos
-          {afiliado.puestos_con_patente > 0 && ` (${afiliado.puestos_con_patente} con patente)`}
-        </Badge>
-      </Table.Td>
+        <Table.Td>
+          <Group gap={4} wrap="wrap">
+            {afiliado.puestos?.length > 0 ? (
+              afiliado.puestos.slice(0, 10).map((puesto, index) => (
+                <Badge
+                  key={index}
+                  size="xs"
+                  variant="outline"
+                  className="badge-puesto-tabla"
+                >
+                  {puesto}
+                </Badge>
+              ))
+            ) : (
+              <Text size="xs" className="texto-sin-puestos-tabla">
+                Sin puestos
+              </Text>
+            )}
+          </Group>
+        </Table.Td>
 
-      <Table.Td>
-        <Text size="sm" style={{ color: '#666' }}>{afiliado.telefono}</Text>
-      </Table.Td>
+        <Table.Td>
+          <Badge color={badgeColor} variant="dot" className="badge-total-puestos">
+            {afiliado.total_puestos || 0} puestos
+            {afiliado.puestos_con_patente > 0 && ` (${afiliado.puestos_con_patente} con patente)`}
+          </Badge>
+        </Table.Td>
 
-      <Table.Td>
-        <Group gap={4}>
-          {esDeshabilitados ? (
-            <ActionIcon
-              variant="subtle" size="sm"
-              aria-label="Rehabilitar afiliado"
-              style={{ color: '#4CAF50' }}
-              onClick={(e) => handleRehabilitar(afiliado.id, e)}
-            >
-              <IconUserCheck size={16} />
-            </ActionIcon>
-          ) : (
-            <>
+        <Table.Td>
+          <Text size="sm" className="texto-telefono-tabla">
+            {afiliado.telefono}
+          </Text>
+        </Table.Td>
+
+        <Table.Td>
+          <Group gap={4} className="acciones-tabla">
+            {esDeshabilitados ? (
               <ActionIcon
-                variant="subtle" size="sm"
-                aria-label="Ver detalles del afiliado"
-                style={{ color: '#0f0f0f' }}
-                onClick={(e) => { e.stopPropagation(); verDetalles(afiliado.id); }}
+                variant="subtle"
+                size="sm"
+                aria-label="Rehabilitar afiliado"
+                className="accion-rehabilitar"
+                onClick={(e) => handleRehabilitar(afiliado.id, e)}
               >
-                <IconEye size={16} />
+                <IconUserCheck size={16} />
               </ActionIcon>
-              <ActionIcon
-                variant="subtle" size="sm"
-                aria-label="Editar afiliado"
-                style={{ color: '#edbe3c' }}
-                onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}
-              >
-                <IconEdit size={16} />
-              </ActionIcon>
-            </>
-          )}
-        </Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
+            ) : (
+              <>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  aria-label="Ver detalles del afiliado"
+                  className="accion-ver"
+                  onClick={(e) => { e.stopPropagation(); verDetalles(afiliado.id); }}
+                >
+                  <IconEye size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  aria-label="Editar afiliado"
+                  className="accion-editar"
+                  onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}
+                >
+                  <IconEdit size={16} />
+                </ActionIcon>
+              </>
+            )}
+          </Group>
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
 
+  // ==============================================
+  // RENDER PRINCIPAL
+  // ==============================================
   return (
-    <ScrollArea>
+    <ScrollArea className="tabla-scroll">
       <Table
         striped={!esDeshabilitados}
         highlightOnHover
         verticalSpacing="md"
         horizontalSpacing="lg"
-        style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', minWidth: esDeshabilitados ? '1400px' : '1300px' }}
+        className={`tabla-afiliados ${esDeshabilitados ? 'tabla-deshabilitados' : ''}`}
       >
-        <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
+        <Table.Thead className="tabla-header">
           <Table.Tr>
-            {COLUMNAS.map((col) => <Table.Th key={col}>{col}</Table.Th>)}
+            {COLUMNAS.map((col) => (
+              <Table.Th key={col} className="tabla-header-columna">
+                {col}
+              </Table.Th>
+            ))}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

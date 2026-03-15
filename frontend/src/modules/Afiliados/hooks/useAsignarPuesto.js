@@ -1,6 +1,6 @@
 // frontend/src/modules/Afiliados/hooks/useAsignarPuesto.js
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { notifications } from '@mantine/notifications';
 import { afiliadosService } from '../services/afiliadosService';
 
@@ -26,7 +26,8 @@ export const useAsignarPuesto = (idAfiliado) => {
     rango_numeros: { min: 1, max: 100 }
   });
 
-  const cargarPuestosDisponibles = async () => {
+  // 🔴 SOLUCIÓN: Envolver cargarPuestosDisponibles con useCallback
+  const cargarPuestosDisponibles = useCallback(async () => {
     try {
       setPuestosCargando(true);
       console.log('📥 Cargando puestos disponibles...');
@@ -48,8 +49,8 @@ export const useAsignarPuesto = (idAfiliado) => {
         cuadras,
         total: puestos.length,
         rango_numeros: {
-          min: Math.min(...numeros) || 1,
-          max: Math.max(...numeros) || 100
+          min: numeros.length > 0 ? Math.min(...numeros) : 1,
+          max: numeros.length > 0 ? Math.max(...numeros) : 100
         }
       });
       
@@ -65,46 +66,49 @@ export const useAsignarPuesto = (idAfiliado) => {
     } finally {
       setPuestosCargando(false);
     }
-  };
+  }, []); // ✅ Sin dependencias, se crea una sola vez
 
   // Función para aplicar filtros
-  const aplicarFiltros = (nuevosFiltros) => {
-    const filtrosActualizados = { ...filtros, ...nuevosFiltros };
-    setFiltros(filtrosActualizados);
+  const aplicarFiltros = useCallback((nuevosFiltros) => {
+    setFiltros(prev => {
+      const filtrosActualizados = { ...prev, ...nuevosFiltros };
+      
+      let resultados = [...puestosDisponibles];
 
-    let resultados = [...puestosDisponibles];
-
-    // Filtrar por fila
-    if (filtrosActualizados.fila) {
-      resultados = resultados.filter(p => p.fila === filtrosActualizados.fila);
-    }
-
-    // Filtrar por cuadra
-    if (filtrosActualizados.cuadra) {
-      resultados = resultados.filter(p => p.cuadra === filtrosActualizados.cuadra);
-    }
-
-    // Filtrar por número de puesto
-    if (filtrosActualizados.nroPuesto) {
-      const numBuscado = parseInt(filtrosActualizados.nroPuesto);
-      if (!isNaN(numBuscado)) {
-        resultados = resultados.filter(p => p.nroPuesto === numBuscado);
+      // Filtrar por fila
+      if (filtrosActualizados.fila) {
+        resultados = resultados.filter(p => p.fila === filtrosActualizados.fila);
       }
-    }
 
-    // Filtrar por rubro (búsqueda parcial)
-    if (filtrosActualizados.rubro) {
-      const termino = filtrosActualizados.rubro.toLowerCase();
-      resultados = resultados.filter(p => 
-        p.rubro && p.rubro.toLowerCase().includes(termino)
-      );
-    }
+      // Filtrar por cuadra
+      if (filtrosActualizados.cuadra) {
+        resultados = resultados.filter(p => p.cuadra === filtrosActualizados.cuadra);
+      }
 
-    setPuestosFiltrados(resultados);
-  };
+      // Filtrar por número de puesto
+      if (filtrosActualizados.nroPuesto) {
+        const numBuscado = parseInt(filtrosActualizados.nroPuesto);
+        if (!isNaN(numBuscado)) {
+          resultados = resultados.filter(p => p.nroPuesto === numBuscado);
+        }
+      }
+
+      // Filtrar por rubro (búsqueda parcial)
+      if (filtrosActualizados.rubro) {
+        const termino = filtrosActualizados.rubro.toLowerCase();
+        resultados = resultados.filter(p => 
+          p.rubro && p.rubro.toLowerCase().includes(termino)
+        );
+      }
+
+      setPuestosFiltrados(resultados);
+      
+      return filtrosActualizados;
+    });
+  }, [puestosDisponibles]); // ✅ Dependencia correcta
 
   // Limpiar todos los filtros
-  const limpiarFiltros = () => {
+  const limpiarFiltros = useCallback(() => {
     setFiltros({
       fila: '',
       cuadra: '',
@@ -112,9 +116,9 @@ export const useAsignarPuesto = (idAfiliado) => {
       rubro: ''
     });
     setPuestosFiltrados(puestosDisponibles);
-  };
+  }, [puestosDisponibles]); // ✅ Dependencia correcta
 
-  const asignarPuesto = async (puestoData) => {
+  const asignarPuesto = useCallback(async (puestoData) => {
     try {
       setLoading(true);
       
@@ -135,6 +139,9 @@ export const useAsignarPuesto = (idAfiliado) => {
         message: `Puesto ${puestoData.nroPuesto}-${puestoData.fila}-${puestoData.cuadra} asignado`,
         color: 'green'
       });
+      
+      // ✅ Recargar puestos disponibles después de asignar
+      await cargarPuestosDisponibles();
       
       return { exito: true, datos: resultado };
     } catch (error) {
@@ -158,7 +165,7 @@ export const useAsignarPuesto = (idAfiliado) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [idAfiliado, cargarPuestosDisponibles]); // ✅ Añadir cargarPuestosDisponibles
 
   return {
     puestosDisponibles,
