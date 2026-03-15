@@ -248,17 +248,19 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
     pdf.currentY += 8;
 
     if (puestosActivos.length > 0) {
-      const puestosHeaders = ['N°', 'Fila', 'Cuadra', 'Rubro', 'Patente', 'F. Asignación'];
+      // Columnas: N° | Fila | Cuadra | Rubro | Nro. Patente | Patente | F. Asignación
+      const puestosHeaders = ['N°', 'Fila', 'Cuadra', 'Rubro', 'Nro. Patente', 'Patente', 'F. Asignación'];
 
       const puestosData = puestosActivos.map(p => [
-        // ✅ FIX 2: el campo es "nroPuesto", no "nro"
         p.nroPuesto ?? '—',
         p.fila      || '—',
         p.cuadra    || '—',
         p.rubro     || '—',
-        // ✅ FIX 3: patente verdadera si tiene_patente=1 O nro_patente tiene valor
+        // Nro de patente: muestra el número si existe, si no '—'
+        (p.nro_patente != null && String(p.nro_patente).trim() !== '')
+          ? String(p.nro_patente)
+          : '—',
         tienePatente(p) ? 'SÍ' : 'NO',
-        // ✅ FIX 4: el campo es "fecha_ini", no "fecha_obtencion"
         p.fecha_ini
           ? new Date(p.fecha_ini).toLocaleDateString('es-ES')
           : '—',
@@ -270,8 +272,8 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
         startY: pdf.currentY,
         margin: { left: margin, right: margin },
         styles: {
-          fontSize: 8.5,
-          cellPadding: { top: 4, bottom: 4, left: 5, right: 5 },
+          fontSize: 8,
+          cellPadding: { top: 4, bottom: 4, left: 4, right: 4 },
           lineColor: [220, 220, 220],
           lineWidth: 0.15,
           textColor: [30, 30, 30],
@@ -282,27 +284,20 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
           textColor: [255, 255, 255],
           fontStyle: 'bold',
           halign: 'center',
-          fontSize: 8.5,
-          cellPadding: { top: 5, bottom: 5, left: 5, right: 5 },
+          fontSize: 8,
+          cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
         },
-        bodyStyles: {
-          fillColor: [255, 255, 255],
-        },
-        alternateRowStyles: {
-          fillColor: [250, 250, 250],
-        },
+        bodyStyles:          { fillColor: [255, 255, 255] },
+        alternateRowStyles:  { fillColor: [250, 250, 250] },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 15 },
-          1: { halign: 'center', cellWidth: 18 },
-          2: { halign: 'center', cellWidth: 28 },
-          3: { halign: 'left' },
-          4: { halign: 'center', cellWidth: 22 },
-          5: { halign: 'center', cellWidth: 32 },
+          0: { halign: 'center', cellWidth: 12 },  // N°
+          1: { halign: 'center', cellWidth: 14 },  // Fila
+          2: { halign: 'center', cellWidth: 24 },  // Cuadra
+          3: { halign: 'left'   },                 // Rubro (ancho automático)
+          4: { halign: 'center', cellWidth: 22 },  // Nro. Patente
+          5: { halign: 'center', cellWidth: 18 },  // Patente (SÍ/NO)
+          6: { halign: 'center', cellWidth: 28 },  // F. Asignación
         },
-
-        // ✅ FIX 5: usar willDrawCell (ANTES de dibujar) en lugar de didDrawCell
-        // (DESPUÉS de dibujar). Con willDrawCell se modifican los estilos de la
-        // celda y autoTable los aplica al renderizar, sin necesidad de redibujar.
         willDrawCell: (data) => {
           // Borde dorado debajo del encabezado
           if (data.section === 'head' && data.row.index === 0) {
@@ -316,8 +311,17 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
             );
           }
 
-          // Color de texto en columna "Patente"
+          // Color dorado para el número de patente cuando existe
           if (data.section === 'body' && data.column.index === 4) {
+            const val = String(data.cell.raw || '');
+            if (val !== '—') {
+              data.cell.styles.textColor = [160, 120, 0];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+
+          // Verde/rojo para la columna SÍ/NO (ahora columna 5)
+          if (data.section === 'body' && data.column.index === 5) {
             const val = data.cell.raw;
             if (val === 'SÍ') {
               data.cell.styles.textColor = [34, 139, 34];
