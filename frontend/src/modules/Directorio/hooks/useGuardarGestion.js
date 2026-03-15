@@ -1,22 +1,25 @@
+// modules/Directorio/hooks/useGuardarGestion.js
+
+// ============================================================
+// HOOK useGuardarGestion
+// ============================================================
+
 import { useState, useCallback } from 'react';
 import { notifications }         from '@mantine/notifications';
 import { directorioService }     from '../services/directorioService';
 
-// ============================================================
-// HOOK useGuardarGestion (simplificado con DELETE)
-//
-// Lógica por fila — solo 4 casos posibles:
-//
-//   nuevo +  sin previo           → asignarCargo (INSERT)
-//   nuevo + mismo previo          → skip
-//   nuevo + distinto previo       → eliminarCargo + asignarCargo
-//   sin nuevo + con previo        → eliminarCargo (DELETE)
-//   sin nuevo + sin previo        → skip
-//
-// Ya no hay cerrarCargo ni reemplazarCargo.
-// El trigger BEFORE DELETE graba el EGRESO automáticamente.
-// ============================================================
-
+/**
+ * Maneja el guardado del directorio aplicando los cambios por fila.
+ *
+ * Lógica por fila — 4 casos posibles:
+ *  - sin nuevo + sin previo           → skip
+ *  - nuevo + mismo previo             → skip
+ *  - sin nuevo + con previo           → eliminarCargo (DELETE)
+ *  - nuevo + distinto previo          → eliminarCargo + asignarCargo
+ *  - nuevo + sin previo               → asignarCargo (INSERT)
+ *
+ * El trigger BEFORE DELETE graba el egreso en historial automáticamente.
+ */
 export const useGuardarGestion = () => {
   const [guardando, setGuardando] = useState(false);
 
@@ -42,19 +45,14 @@ export const useGuardarGestion = () => {
         const mismoAfil   = teniaPrevio && Number(id_afiliado_prev) === Number(id_afiliado_nuevo);
 
         try {
+          // ── Ambos vacíos → nada que hacer ──
+          if (!tieneNuevo && !teniaPrevio) continue;
 
-          if (!tieneNuevo && !teniaPrevio) {
-            // Ambos vacíos → nada que hacer
-            continue;
-          }
+          // ── Sin cambio → nada que hacer ──
+          if (tieneNuevo && mismoAfil) continue;
 
-          if (tieneNuevo && mismoAfil) {
-            // Sin cambio → nada que hacer
-            continue;
-          }
-
+          // ── Quitar titular → DELETE ──
           if (!tieneNuevo && teniaPrevio) {
-            // ── Quitar titular → DELETE ───────────────────────
             if (!id_directorio) {
               errores.push(`${nom_secretaria}: no se encontró el ID del cargo`);
               continue;
@@ -64,29 +62,21 @@ export const useGuardarGestion = () => {
             continue;
           }
 
+          // ── Cambio de titular → DELETE + INSERT ──
           if (tieneNuevo && teniaPrevio && !mismoAfil) {
-            // ── Cambio de titular → DELETE + INSERT ───────────
             if (!id_directorio) {
               errores.push(`${nom_secretaria}: no se encontró el ID del cargo`);
               continue;
             }
             await directorioService.eliminarCargo(id_directorio);
-            await directorioService.asignarCargo({
-              id_gestion:    idGestion,
-              id_secretaria,
-              id_afiliado:   id_afiliado_nuevo,
-            });
+            await directorioService.asignarCargo({ id_gestion: idGestion, id_secretaria, id_afiliado: id_afiliado_nuevo });
             cambios++;
             continue;
           }
 
+          // ── Nuevo cargo → INSERT ──
           if (tieneNuevo && !teniaPrevio) {
-            // ── Nuevo cargo → INSERT ──────────────────────────
-            await directorioService.asignarCargo({
-              id_gestion:    idGestion,
-              id_secretaria,
-              id_afiliado:   id_afiliado_nuevo,
-            });
+            await directorioService.asignarCargo({ id_gestion: idGestion, id_secretaria, id_afiliado: id_afiliado_nuevo });
             cambios++;
           }
 

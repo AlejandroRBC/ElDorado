@@ -34,27 +34,23 @@ const useUsuarioForm = ({ onSuccess, usuarioId = null }) => {
   // true si estamos editando un usuario existente
   const esEdicion = !!usuarioId;
 
-  // ── Cargar afiliados para el buscador (solo en creación) ──
-  useEffect(() => {
-    if (!authLoading && isLogin && !esEdicion) {
-      const cargarAfiliados = async () => {
-        try {
-          setLoadingAfiliados(true);
-          const response = await usuarioService.obtenerAfiliadosSelect();
-          setAfiliados(response.data.data || []);
-        } catch (error) {
-          notifications.show({
-            title: 'Error',
-            message: 'No se pudieron cargar los afiliados',
-            color: 'red'
-          });
-        } finally {
-          setLoadingAfiliados(false);
-        }
-      };
-      cargarAfiliados();
-    }
-  }, [authLoading, isLogin, esEdicion]);
+  // ── Cargar afiliados para el buscador  ──
+useEffect(() => {
+  if (!authLoading && isLogin && !esEdicion) {
+    const cargarAfiliados = async () => {
+      try {
+        setLoadingAfiliados(true);
+        const response = await usuarioService.obtenerAfiliadosSelect();
+        setAfiliados(response.data.data || []);
+      } catch (error) {
+        notifications.show({ title: 'Error', message: 'No se pudieron cargar los afiliados', color: 'red' });
+      } finally {
+        setLoadingAfiliados(false);
+      }
+    };
+    cargarAfiliados();
+  }
+}, [authLoading, isLogin, esEdicion]);
 
   // ── Cargar datos del usuario a editar ──
   useEffect(() => {

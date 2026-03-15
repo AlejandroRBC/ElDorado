@@ -1,18 +1,27 @@
+// modules/Directorio/components/BuscadorAfiliado.jsx
+
+// ============================================================
+// COMPONENTE BUSCADOR AFILIADO
+// ============================================================
+
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal }                             from 'react-dom';
-import { TextInput, ActionIcon, Loader }            from '@mantine/core';
-import { IconSearch, IconX }                        from '@tabler/icons-react';
-import { useDebouncedValue }                        from '@mantine/hooks';
-import { directorioService }                        from '../services/directorioService';
+import { createPortal }      from 'react-dom';
+import { IconSearch, IconX, IconUser } from '@tabler/icons-react';
+import { Loader }            from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
+import { directorioService } from '../services/directorioService';
 import '../styles/directorio.css';
 
-// ============================================================
-// BUSCADOR AFILIADO
-// Dropdown renderizado via createPortal para evitar el clipping
-// del ScrollArea / overflow del modal. La posición se calcula
-// con getBoundingClientRect y se actualiza en resize y scroll.
-// ============================================================
-
+/**
+ * Input de búsqueda de afiliados con dropdown via createPortal.
+ * Diseño unificado con BuscadorMapa: fondo F6F9FF, borde negro al focus.
+ *
+ * value        - Texto controlado desde el padre
+ * onChange      - Callback al cambiar texto
+ * onSeleccionar - Callback al elegir afiliado
+ * placeholder   - Placeholder del input
+ * disabled      - Deshabilita el input
+ */
 const BuscadorAfiliado = ({
   value         = '',
   onChange,
@@ -20,8 +29,8 @@ const BuscadorAfiliado = ({
   placeholder   = 'Buscar por nombre o CI...',
   disabled      = false,
 }) => {
-  const inputRef = useRef(null);
   const wrapRef  = useRef(null);
+  const inputRef = useRef(null);
 
   const [textoBusq,  setTextoBusq]  = useState(value);
   const [resultados, setResultados] = useState([]);
@@ -29,71 +38,49 @@ const BuscadorAfiliado = ({
   const [abierto,    setAbierto]    = useState(false);
   const [pos,        setPos]        = useState({ top: 0, left: 0, width: 0 });
 
-  // Sincroniza cuando el padre limpia externamente
   useEffect(() => { setTextoBusq(value); }, [value]);
 
   const [debouncedTexto] = useDebouncedValue(textoBusq, 280);
 
-  // ── Búsqueda debounced ──────────────────────────────────
+  // ── Búsqueda debounced ──
   useEffect(() => {
-    if (debouncedTexto.trim().length < 2) {
-      setResultados([]);
-      setAbierto(false);
-      return;
-    }
+    if (debouncedTexto.trim().length < 2) { setResultados([]); setAbierto(false); return; }
     let activo = true;
     setBuscando(true);
     directorioService.buscarAfiliados(debouncedTexto)
-      .then((data) => {
-        if (!activo) return;
-        setResultados(data.slice(0, 8));
-        setAbierto(data.length > 0);
-      })
+      .then((data) => { if (!activo) return; setResultados(data.slice(0, 8)); setAbierto(data.length > 0); })
       .catch(() => { if (activo) setResultados([]); })
       .finally(() => { if (activo) setBuscando(false); });
     return () => { activo = false; };
   }, [debouncedTexto]);
 
-  // ── Calcula la posición del dropdown bajo el input ──────
+  /**
+   * Calcula posición del dropdown bajo el input.
+   */
   const calcularPos = useCallback(() => {
     if (!inputRef.current) return;
     const rect = inputRef.current.getBoundingClientRect();
-    setPos({
-      top:   rect.bottom + window.scrollY + 4,
-      left:  rect.left   + window.scrollX,
-      width: rect.width,
-    });
+    setPos({ top: rect.bottom + window.scrollY + 4, left: rect.left + window.scrollX, width: rect.width });
   }, []);
 
-  // Recalcular al abrir y en cualquier resize / scroll
   useEffect(() => {
     if (!abierto) return;
     calcularPos();
     window.addEventListener('resize', calcularPos);
     window.addEventListener('scroll', calcularPos, true);
-    return () => {
-      window.removeEventListener('resize', calcularPos);
-      window.removeEventListener('scroll', calcularPos, true);
-    };
+    return () => { window.removeEventListener('resize', calcularPos); window.removeEventListener('scroll', calcularPos, true); };
   }, [abierto, calcularPos]);
 
-  // ── Cerrar al hacer clic fuera ──────────────────────────
   useEffect(() => {
     if (!abierto) return;
     const handler = (e) => {
       const portalEl = document.getElementById('dir-buscador-portal');
-      if (
-        wrapRef.current && !wrapRef.current.contains(e.target) &&
-        !(portalEl && portalEl.contains(e.target))
-      ) {
-        setAbierto(false);
-      }
+      if (wrapRef.current && !wrapRef.current.contains(e.target) && !(portalEl && portalEl.contains(e.target))) setAbierto(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [abierto]);
 
-  // ── Handlers ────────────────────────────────────────────
   const handleCambioTexto = (e) => {
     const texto = e.target.value;
     setTextoBusq(texto);
@@ -101,14 +88,20 @@ const BuscadorAfiliado = ({
     if (!texto && onSeleccionar) onSeleccionar(null);
   };
 
-  const handleSeleccionar = useCallback((afiliado) => {
-    const nombre = `${afiliado.nombre} ${afiliado.paterno} ${afiliado.materno || ''}`.trim();
+  /**
+   * Selecciona afiliado y cierra dropdown.
+   */
+  const handleSeleccionar = useCallback((af) => {
+    const nombre = `${af.nombre} ${af.paterno} ${af.materno || ''}`.trim();
     setTextoBusq(nombre);
     setAbierto(false);
     setResultados([]);
-    if (onSeleccionar) onSeleccionar(afiliado);
+    if (onSeleccionar) onSeleccionar(af);
   }, [onSeleccionar]);
 
+  /**
+   * Limpia el input.
+   */
   const handleLimpiar = () => {
     setTextoBusq('');
     setResultados([]);
@@ -117,83 +110,51 @@ const BuscadorAfiliado = ({
     if (onChange) onChange('');
   };
 
-  // ── Dropdown en portal ──────────────────────────────────
   const dropdown = abierto && createPortal(
     <div
       id="dir-buscador-portal"
-      style={{
-        position:     'absolute',
-        top:          pos.top,
-        left:         pos.left,
-        width:        pos.width,
-        zIndex:       99999,
-        background:   '#FFFFFF',
-        border:       '1px solid #E2ECFF',
-        borderRadius: '8px',
-        boxShadow:    '0 6px 20px rgba(0,0,0,0.12)',
-        maxHeight:    '220px',
-        overflowY:    'auto',
-      }}
+      className="dir-buscador-dropdown"
+      style={{ position: 'absolute', top: pos.top, left: pos.left, width: pos.width, zIndex: 99999 }}
     >
-      {resultados.length === 0 ? (
-        <div className="dir-buscador-vacio">Sin resultados</div>
-      ) : (
-        resultados.map((af) => (
-          <div
-            key={af.id || af.id_afiliado}
-            className="dir-buscador-item"
-            onMouseDown={(e) => { e.preventDefault(); handleSeleccionar(af); }}
-          >
-            <span className="dir-buscador-item-nombre">
-              {af.nombre} {af.paterno} {af.materno || ''}
-            </span>
-            <span className="dir-buscador-item-ci">
-              CI: {af.ci} {af.extension || ''}
-            </span>
-          </div>
-        ))
-      )}
+      {resultados.length === 0
+        ? <div className="dir-buscador-vacio">Sin resultados</div>
+        : resultados.map((af) => (
+            <div
+              key={af.id || af.id_afiliado}
+              className="dir-buscador-item"
+              onMouseDown={(e) => { e.preventDefault(); handleSeleccionar(af); }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '28px', height: '28px', backgroundColor: 'var(--dir-accent)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                 <IconUser size={14} color="#0f0f0f" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}> 
+                  <span className="dir-buscador-item-nombre">{af.nombre} {af.paterno} {af.materno || ''}</span>
+                  <span className="dir-buscador-item-ci">CI: {af.ci} {af.extension || ''}</span>
+                </div>
+              </div>
+            </div>
+          ))
+      }
     </div>,
     document.body
   );
 
   return (
     <div ref={wrapRef} style={{ position: 'relative' }}>
-      <TextInput
-        ref={inputRef}
-        value={textoBusq}
-        onChange={handleCambioTexto}
-        placeholder={placeholder}
-        disabled={disabled}
-        size="sm"
-        leftSection={
-          buscando
-            ? <Loader size={14} color="dark" />
-            : <IconSearch size={14} />
-        }
-        rightSection={
-          textoBusq ? (
-            <ActionIcon variant="subtle" size="sm" onClick={handleLimpiar} aria-label="Limpiar">
-              <IconX size={13} />
-            </ActionIcon>
-          ) : null
-        }
-        styles={{
-          input: {
-            fontFamily:      'Poppins, sans-serif',
-            fontSize:        '13px',
-            backgroundColor: '#F6F9FF',
-            border:          '1px solid #E2ECFF',
-            borderRadius:    '8px',
-          },
-        }}
-        onFocus={() => {
-          if (resultados.length > 0) {
-            calcularPos();
-            setAbierto(true);
-          }
-        }}
-      />
+      <div className="dir-buscador-wrapper" ref={inputRef}>
+        {buscando ? <Loader size={14} color="dark" style={{ flexShrink: 0 }} /> : <IconSearch size={14} color="#999" style={{ flexShrink: 0 }} />}
+        <input
+          type="text"
+          value={textoBusq}
+          onChange={handleCambioTexto}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="dir-buscador-input"
+          onFocus={() => { if (resultados.length > 0) { calcularPos(); setAbierto(true); } }}
+        />
+        {textoBusq && <button onClick={handleLimpiar} className="dir-buscador-clear-btn" type="button"><IconX size={13} /></button>}
+      </div>
       {dropdown}
     </div>
   );
