@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/puestosController');
+const { normalizePuesto } = require('../middleware/normalizePuesto');
 
 // ==========================================
 // 1. RUTAS DE CONSULTA (GET) - Estáticas primero
@@ -25,8 +26,7 @@ router.post('/traspasar', ctrl.traspasar);
 // 4. RUTAS DE ACTUALIZACIÓN Y ELIMINACIÓN (PUT/DELETE)
 // ==========================================
 
-// Actualizar datos del puesto (se unifican los nombres del controlador) 
-// tambien lo ando usando en afiliados, cuidado XD
-router.put('/:id', ctrl.actualizarPuesto || ctrl.actualizar);
+//normalizePuesto se aplica al actualizar (rubro, fila, cuadra → MAYÚSCULAS)
+router.put('/:id', normalizePuesto, ctrl.actualizarPuesto || ctrl.actualizar);
 
 module.exports = router;
