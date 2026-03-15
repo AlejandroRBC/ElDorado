@@ -92,6 +92,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
   const rows = puestos.map((puesto) => (
     <Table.Tr key={puesto.id_puesto} style={{ borderBottom: '1px solid #eee' }}>
       <Table.Td><Text fw={600} style={{ color: '#0f0f0f' }}>{puesto.nroPuesto}</Text></Table.Td>
+      <Table.Td><Text fw={600} style={{ color: '#0f0f0f' }}>{puesto.nro_patente}</Text></Table.Td>
       <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.fila}</Text></Table.Td>
       <Table.Td><Text size="sm" style={{ color: '#666' }}>{puesto.cuadra}</Text></Table.Td>
       <Table.Td>
@@ -153,7 +154,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         >
           <Table.Thead style={{ backgroundColor: '#f6f8fe' }}>
             <Table.Tr>
-              {['Nro', 'Fila', 'Cuadra', 'Fecha Obtención', 'Rubro', 'Patente / Dimensiones', 'Acciones'].map((col) => (
+              {['Nro','Nro.Patente', 'Fila', 'Cuadra', 'Fecha Obtención', 'Rubro', 'Patente / Dimensiones', 'Acciones'].map((col) => (
                 <Table.Th key={col}>{col}</Table.Th>
               ))}
             </Table.Tr>

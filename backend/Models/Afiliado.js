@@ -224,6 +224,7 @@ const Afiliado = {
                 ancho:         p.ancho,
                 largo:         p.largo,
                 tiene_patente: p.tiene_patente,
+                nro_patente:   p.nro_patente,
                 rubro:         p.rubro,
                 fecha_ini:     p.fecha_ini,
                 razon:         p.razon,
@@ -369,8 +370,7 @@ const Afiliado = {
   obtenerPuestos: (id) => {
     return new Promise((resolve, reject) => {
       db.all(`
-        SELECT p.id_puesto, p.fila, p.cuadra, p.nroPuesto,
-               p.rubro, p.tiene_patente, p.ancho, p.largo,
+        SELECT p.*,
                tp.fecha_ini, tp.razon, tp.id_tenencia
         FROM puesto p
         JOIN tenencia_puesto tp ON tp.id_puesto = p.id_puesto
