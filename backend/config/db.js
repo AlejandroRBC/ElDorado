@@ -58,13 +58,12 @@ function crearTablas() {
 
     `CREATE TABLE IF NOT EXISTS tenencia_puesto (
       id_tenencia INTEGER PRIMARY KEY AUTOINCREMENT,
-      id_afiliado INTEGER,
-      id_puesto INTEGER,
-      fecha_ini DATE DEFAULT CURRENT_DATE,
-      fecha_fin DATE,
-      razon VARCHAR(50),
+      id_afiliado INTEGER NOT NULL,
+      id_puesto   INTEGER NOT NULL UNIQUE,
+      fecha_ini   DATE DEFAULT CURRENT_DATE,
+      razon       VARCHAR(50),
       FOREIGN KEY (id_afiliado) REFERENCES afiliado(id_afiliado),
-      FOREIGN KEY (id_puesto) REFERENCES puesto(id_puesto)
+      FOREIGN KEY (id_puesto)   REFERENCES puesto(id_puesto)
     )`,
 
     `CREATE TABLE IF NOT EXISTS usuario (
@@ -216,7 +215,7 @@ function crearIndices() {
     `CREATE INDEX IF NOT EXISTS idx_usuario_es_vigente ON usuario(es_vigente)`,
     `CREATE INDEX IF NOT EXISTS idx_afiliado_ci ON afiliado(ci)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_usuario(fecha)`,
-    `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini, fecha_fin)`,
+    `CREATE INDEX IF NOT EXISTS idx_tenencia_fechas ON tenencia_puesto(fecha_ini)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_puestos_fecha ON historial_puestos(fecha)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_afiliado_id   ON historial_afiliado(id_afiliado)`,
     `CREATE INDEX IF NOT EXISTS idx_historial_afiliado_fecha ON historial_afiliado(fecha)`,
