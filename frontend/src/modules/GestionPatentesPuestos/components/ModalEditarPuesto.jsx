@@ -11,7 +11,24 @@ export function ModalEditarPuesto({ opened, close, puesto, onGuardar }) {
 
   if (!puesto) return null;
 
-  const handle = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const handle = (k, v) => {
+    setForm(f => {
+      let newState = { ...f, [k]: v };
+
+      // Si se está editando el nro_patente
+      if (k === "nro_patente") {
+        // Si hay texto, marcamos tiene_patente como true (1), si no, false (0)
+        newState.tiene_patente = v.trim() !== "";
+      }
+
+      // Si el usuario cambia manualmente el Select a "Sin Patente", borramos el número
+      if (k === "tiene_patente" && v === false) {
+        newState.nro_patente = "";
+      }
+
+      return newState;
+    });
+  };
 {/**toque esta parte dejalo porfis **/}
   return (
     <Modal 
@@ -35,12 +52,18 @@ export function ModalEditarPuesto({ opened, close, puesto, onGuardar }) {
       
 
       <Stack>
-
-        <TextInput
-          label="Rubros"
-          value={form.rubro || ""}
-          onChange={e => handle("rubro", e.target.value)}
-        />
+        <Group grow>
+          <TextInput
+            label="Nro Patente"
+            value={form.nro_patente || ""}
+            onChange={e => handle("nro_patente", e.target.value)}
+          />
+          <TextInput
+            label="Rubros"
+            value={form.rubro || ""}
+            onChange={e => handle("rubro", e.target.value)}
+          />
+        </Group>
         <Group grow>
           <TextInput
             label="Ancho"

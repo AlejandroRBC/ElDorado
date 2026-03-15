@@ -14,6 +14,7 @@ const listarPuestosDisponibles = (req, res) => {
       p.ancho,
       p.largo,
       p.tiene_patente,
+      p.nro_patente,
       p.rubro,
       CASE 
         WHEN p.disponible = 1 AND t.id_puesto IS NULL THEN 1
@@ -91,6 +92,7 @@ const listar = (req, res) => {
       p.ancho,
       p.largo,
       p.tiene_patente,
+      p.nro_patente,
       p.rubro,
       t.fecha_ini AS fecha_adquisicion,
       a.id_afiliado,
@@ -240,18 +242,30 @@ const traspasar = (req, res) => {
 // ===============================
 const actualizar = (req, res) => {
   const id = parseInt(req.params.id);
-  const {
+  
+  // Usamos 'let' para permitir la limpieza de los datos abajo
+  let {
     nroPuesto,
     rubro,
     fila,
     cuadra,
     ancho,
     largo,
-    tiene_patente
+    tiene_patente,
+    nro_patente
   } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: "ID inválido" });
+  }
+
+  // Lógica de validación y limpieza de datos
+  // Si nro_patente viene vacío, null o solo espacios:
+  if (!nro_patente || String(nro_patente).trim() === "") {
+    nro_patente = null;
+    tiene_patente = 0; // Forzamos 0 (Sin Patente)
+  } else {
+    tiene_patente = 1; // Forzamos 1 (Con Patente) porque sí hay un número
   }
 
   const sql = `
@@ -262,10 +276,12 @@ const actualizar = (req, res) => {
         cuadra = ?,
         ancho = ?,
         largo = ?,
-        tiene_patente = ?
+        tiene_patente = ?,
+        nro_patente = ?
     WHERE id_puesto = ?
   `;
 
+  // Ejecutamos con los valores ya normalizados
   db.run(sql, [
     nroPuesto,
     rubro,
@@ -273,17 +289,21 @@ const actualizar = (req, res) => {
     cuadra,
     ancho,
     largo,
-    tiene_patente ? 1 : 0,
+    tiene_patente, 
+    nro_patente,   
     id
   ], function(err) {
     if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Error al actualizar puesto" });
+      console.error("ERROR SQL:", err.message);
+      return res.status(500).json({ 
+        error: "Error al actualizar puesto en la base de datos",
+        details: err.message 
+      });
     }
 
     res.json({
       success: true,
-      mensaje: "Puesto actualizado"
+      mensaje: "Puesto actualizado correctamente"
     });
   });
 };

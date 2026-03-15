@@ -27,6 +27,7 @@ export function TablaPuestos({
             <Table.Tr>
                 {[
                 "N° Puesto",
+                "Patente",
                 "Fila/Cuadra",
                 "Estado",
                 "Ancho/largo",
@@ -73,6 +74,7 @@ export function TablaPuestos({
               ) : (
                 <>
                   <Table.Td fw={700}>{puesto.nroPuesto}</Table.Td>
+                  <Table.Td>{puesto.nro_patente}</Table.Td>
                   <Table.Td>{puesto.fila} - {puesto.cuadra}</Table.Td>
 
                   <Table.Td>

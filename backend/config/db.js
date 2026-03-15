@@ -50,6 +50,7 @@ function crearTablas() {
       ancho INTEGER,
       largo INTEGER,
       tiene_patente BOOLEAN DEFAULT 1,
+      nro_patente INTEGER,
       rubro TEXT,
       disponible BOOLEAN DEFAULT 1,
       UNIQUE(fila, cuadra, nroPuesto)
