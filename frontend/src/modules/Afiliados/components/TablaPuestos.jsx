@@ -3,8 +3,12 @@ import { Table, Badge, Group, ActionIcon, Text, ScrollArea, Loader, Center, Stac
 import { IconEdit, IconTrash, IconEye, IconMapPin, IconTransfer, IconDotsVertical } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { afiliadosService } from '../services/afiliadosService';
-import ModalEditarPuesto    from './ModalEditarPuesto';
-import ModalDetallePuesto   from './ModalDetallePuesto';
+// import ModalEditarPuesto    from './ModalEditarPuesto';
+// import ModalDetallePuesto   from './ModalDetallePuesto';
+import { ModalEditarPuesto }    from '../../GestionPatentesPuestos/components/ModalEditarPuesto';
+import { ModalMostrarHistorial } from '../../GestionPatentesPuestos/components/ModalMostrarHistorial';
+import { puestosService } from '../../GestionPatentesPuestos/service/puestosService';
+
 import ModalAccionPuesto    from './ModalAccionPuesto';
 import ModalConfirmarAccion from './ModalConfirmarAccion';
 
@@ -72,6 +76,18 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
       notifications.show({ title: '❌ Error', message: err.message, color: 'red' });
     } finally {
       setCargandoAccion(false);
+    }
+  };
+  const handleGuardarPuesto = async (formData) => {
+    try {
+      await puestosService.actualizarPuesto(puestoSeleccionado.id_puesto, formData);
+      notifications.show({ title: '✅ Éxito', message: 'Puesto actualizado correctamente', color: 'green' });
+      setModalEditarAbierto(false);
+      setPuestoSeleccionado(null);
+      cargarPuestos();
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      notifications.show({ title: '❌ Error', message: err.message || 'No se pudo actualizar el puesto', color: 'red' });
     }
   };
 
@@ -163,7 +179,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         </Table>
       </ScrollArea>
 
-      <ModalEditarPuesto
+      {/* <ModalEditarPuesto
         opened={modalEditarAbierto}
         onClose={() => { setModalEditarAbierto(false); setPuestoSeleccionado(null); }}
         puesto={puestoSeleccionado}
@@ -173,7 +189,18 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         opened={modalDetalleAbierto}
         onClose={() => { setModalDetalleAbierto(false); setPuestoParaDetalle(null); }}
         puesto={puestoParaDetalle}
-      />
+      /> */}
+      <ModalEditarPuesto
+  opened={modalEditarAbierto}
+  close={() => { setModalEditarAbierto(false); setPuestoSeleccionado(null); }}
+  puesto={puestoSeleccionado}
+  onGuardar={handleGuardarPuesto}
+/>
+<ModalMostrarHistorial
+  opened={modalDetalleAbierto}
+  close={() => { setModalDetalleAbierto(false); setPuestoParaDetalle(null); }}
+  puesto={puestoParaDetalle}
+/>
       <ModalAccionPuesto
         opened={modalAccionAbierto}
         onClose={() => { setModalAccionAbierto(false); setPuestoSeleccionado(null); }}
