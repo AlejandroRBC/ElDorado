@@ -9,6 +9,10 @@ export const exportarPuestosExcel = (puestos) => {
     generatedBy: "Sistema El Dorado",
     columns: [
       { header: "N° Puesto", key: "nroPuesto" },
+      { 
+        header: "N° Patente", 
+        format: (p) => p.nro_patente || "---" 
+      },
       {
         header: "Fila / Cuadra",
         format: (p) => `${p.fila} - ${p.cuadra}`

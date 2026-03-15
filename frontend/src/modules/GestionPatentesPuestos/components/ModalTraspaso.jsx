@@ -404,7 +404,7 @@ export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso })
                       <Box>
                         <Text size="xs" fw={700}>Puesto N. {p.nroPuesto}</Text>
                         <Text size="10px" style={{ opacity: 0.8 }}>
-                          Fila {p.fila} - {p.cuadra}
+                          Fila {p.fila} - {p.cuadra} • {p.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
                         </Text>
                       </Box>
                     </Box>
