@@ -1,0 +1,653 @@
+/* ============================================================
+   FUENTES GOOGLE
+============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================
+   VARIABLES
+============================================================ */
+:root {
+  --gp-primary:   #0f0f0f;
+  --gp-accent:    #EDBE3C;
+  --gp-bg-input:  #F6F9FF;
+  --gp-bg-option: #E2ECFF;
+  --gp-white:     #ffffff;
+  --gp-border:    #dde3f0;
+  --gp-dimmed:    #C4C4C4;
+  --gp-shadow:    rgba(0,0,0,0.08);
+  --font-title:   'Bebas Neue', sans-serif;
+  --font-body:    'Poppins', sans-serif;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-xl:    100px;
+}
+
+/* ============================================================
+   MÓDULO PRINCIPAL
+============================================================ */
+.gp-module {
+  font-family: var(--font-body);
+  background-color: #fdfdfd;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+/* ============================================================
+   FAB VOLVER ARRIBA
+============================================================ */
+.gp-fab {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+  border-radius:    var(--radius-xl) !important;
+  height:           50px !important;
+  padding:          0 25px !important;
+  box-shadow:       0 4px 15px var(--gp-shadow) !important;
+  border:           none !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-fab:hover {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+}
+
+/* ============================================================
+   FILTROS PAPER
+============================================================ */
+
+.gp-filtros-paper {
+  background-color: var(--gp-white);
+  border-radius:    var(--radius-md) !important;
+  box-shadow:       0 4px 20px var(--gp-shadow) !important;
+  border:           none !important;
+}
+
+/* ── Buscador ── */
+.gp-search-wrapper {
+  display:          flex;
+  align-items:      center;
+  background-color: var(--gp-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  padding:          6px 10px;
+  gap:              8px;
+  transition:       border-color 0.2s;
+  flex:             1;
+  min-width:        220px;
+  height:           38px;
+}
+
+.gp-search-wrapper:focus-within {
+  border-color: var(--gp-primary);
+}
+
+.gp-search-input {
+  border:           none;
+  outline:          none;
+  flex:             1;
+  font-size:        13px;
+  color:            var(--gp-primary);
+  background-color: transparent;
+  font-family:      var(--font-body);
+}
+
+.gp-search-input::placeholder {
+  color:       var(--gp-dimmed);
+  font-family: var(--font-body);
+}
+
+.gp-search-clear-btn {
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  padding:     2px;
+  display:     flex;
+  align-items: center;
+  color:       #999;
+}
+
+/* ── Custom select filtros ── */
+.gp-custom-select {
+  position:    relative;
+  min-width:   160px;
+  font-family: var(--font-body);
+}
+
+.gp-custom-select-selected {
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      center;
+  background-color: var(--gp-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  padding:          7px 12px;
+  font-size:        13px;
+  font-family:      var(--font-body);
+  color:            var(--gp-primary);
+  cursor:           pointer;
+  transition:       border-color 0.2s;
+  height:           38px;
+}
+
+.gp-custom-select-selected:hover {
+  border-color: var(--gp-primary);
+}
+
+.gp-custom-select-icon {
+  font-size:  12px;
+  transition: transform 0.2s ease;
+}
+
+.gp-custom-select-icon.open {
+  transform: rotate(180deg);
+}
+
+.gp-custom-select-dropdown {
+  position:      absolute;
+  top:           110%;
+  left:          0;
+  width:         100%;
+  background:    var(--gp-white);
+  border-radius: var(--radius-sm);
+  overflow:      hidden;
+  box-shadow:    0 8px 20px rgba(0,0,0,0.15);
+  z-index:       300;
+}
+
+.gp-custom-select-option {
+  padding:          8px 12px;
+  font-size:        13px;
+  font-family:      var(--font-body);
+  cursor:           pointer;
+  background-color: var(--gp-bg-option);
+  color:            var(--gp-primary);
+  transition:       background 0.15s;
+}
+
+.gp-custom-select-option:hover {
+  background-color: var(--gp-primary);
+  color:            var(--gp-white);
+}
+
+/* ── Botones filtros ── */
+.gp-btn-traspaso {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+  border-radius:    var(--radius-xl) !important;
+  border:           none !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      500 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-traspaso:hover {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+}
+
+.gp-btn-exportar {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+  border-radius:    var(--radius-xl) !important;
+  border:           none !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-exportar:hover {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+}
+
+.gp-btn-limpiar {
+  font-family: var(--font-body) !important;
+  color:       var(--gp-primary) !important;
+}
+
+/* ============================================================
+   TABLA PUESTOS — ESTILO TABLAAFILIADOS
+============================================================ */
+.gp-tabla-scroll {
+  overflow-x: auto;
+  padding-bottom: 60px;
+}
+
+.gp-tabla table {
+  border-collapse: collapse;
+  width:           100%;
+  font-family:     var(--font-body);
+}
+
+.gp-tabla thead tr {
+  background-color: var(--gp-bg-input);
+}
+
+.gp-tabla thead th {
+  font-family:    var(--font-body);
+  font-weight:    600;
+  font-size:      11px;
+  color:          var(--gp-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding:        12px 16px;
+  text-align:     center;
+  white-space:    nowrap;
+}
+
+.gp-tabla thead th:last-child {
+  border-right: none;
+}
+
+.gp-tabla tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition:    background-color 0.15s ease;
+}
+
+.gp-tabla tbody tr:hover {
+  background-color: var(--gp-bg-input);
+}
+
+.gp-tabla tbody td {
+  font-family:    var(--font-body);
+  font-size:      13px;
+  color:          var(--gp-primary);
+  padding:        12px 16px;
+  text-align:     center;
+  vertical-align: middle;
+  
+}
+
+.gp-tabla-paso {
+  background-color: #b0b0b0;
+}
+
+/* Botón menú acciones */
+.gp-action-btn {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+  border-radius:    var(--radius-xl) !important;
+  transition:       background-color 0.2s ease !important;
+}
+
+.gp-action-btn:hover {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+}
+
+/* ============================================================
+   MODAL HISTORIAL
+============================================================ */
+.gp-historial-titulo {
+  font-family:    var(--font-title) !important;
+  font-size:      1.75rem !important;
+  font-weight:    400 !important;
+  letter-spacing: 1px;
+  color:          var(--gp-primary);
+}
+
+.gp-historial-underline {
+  border-bottom: 2px solid var(--gp-primary);
+  width:         200px;
+  margin-bottom: 8px;
+}
+
+.gp-btn-reporte {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+  border-radius:    var(--radius-xl) !important;
+  font-family:      var(--font-body) !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-reporte:hover {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+}
+
+.gp-btn-cerrar {
+  background-color: var(--gp-accent) !important;
+  color:            var(--gp-primary) !important;
+  border-radius:    var(--radius-xl) !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-cerrar:hover {
+  background-color: var(--gp-primary) !important;
+  color:            var(--gp-white) !important;
+}
+
+/* ============================================================
+   MODAL ASIGNAR PUESTO
+============================================================ */
+.gp-modal-titulo {
+  font-family:    var(--font-title) !important;
+  font-size:      1.75rem !important;
+  letter-spacing: 1px;
+  color:          var(--gp-primary);
+}
+
+.gp-resultado-item {
+  display:       flex;
+  align-items:   center;
+  gap:           12px;
+  padding:       10px 12px;
+  cursor:        pointer;
+  border-radius: var(--radius-sm);
+  border:        1px solid transparent;
+  transition:    all 0.15s ease;
+  font-family:   var(--font-body);
+}
+
+.gp-resultado-item:hover {
+  background-color: var(--gp-bg-input);
+  border-color:     var(--gp-accent);
+}
+
+.gp-btn-volver {
+  background-color: var(--gp-primary);
+  color:            var(--gp-white);
+  border:           none;
+  border-radius:    var(--radius-xl);
+  font-family:      var(--font-body);
+  font-weight:      500;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease;
+}
+
+.gp-btn-volver:hover:not(:disabled) {
+  background-color: var(--gp-accent);
+  color:            var(--gp-primary);
+}
+
+.gp-btn-confirmar {
+  background-color: var(--gp-accent);
+  color:            var(--gp-primary);
+  border:           none;
+  border-radius:    var(--radius-xl);
+  font-family:      var(--font-body);
+  font-weight:      600;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease;
+}
+
+.gp-btn-confirmar:hover:not(:disabled) {
+  background-color: var(--gp-primary);
+  color:            var(--gp-white);
+}
+
+.gp-btn-confirmar:disabled {
+  opacity: 0.5;
+  cursor:  not-allowed;
+}
+
+/* ============================================================
+   MODAL TRASPASO
+============================================================ */
+.gp-traspaso-titulo {
+  font-family:    var(--font-title) !important;
+  font-size:      1.75rem !important;
+  letter-spacing: 2px;
+  color:          var(--gp-primary);
+}
+
+.gp-traspaso-label {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size:   11px;
+  color:       #888;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gp-traspaso-search {
+  font-family:      var(--font-body) !important;
+  font-size:        13px !important;
+  background-color: var(--gp-bg-input) !important;
+  border-radius:    var(--radius-sm) !important;
+}
+
+.gp-traspaso-resultado-item {
+  padding:       8px 10px;
+  cursor:        pointer;
+  font-family:   var(--font-body);
+  font-size:     13px;
+  transition:    background-color 0.12s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.gp-traspaso-resultado-item:hover {
+  background-color: var(--gp-bg-input);
+}
+
+/* Panel negro de puestos */
+.gp-panel-puestos {
+  background-color: var(--gp-primary);
+  padding:          40px;
+  flex:             1;
+}
+
+.gp-panel-puestos-titulo {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size:   16px;
+  color:       var(--gp-white);
+  text-align:  center;
+}
+
+.gp-puesto-item {
+  display:       flex;
+  align-items:   center;
+  padding:       12px 16px;
+  border-radius: var(--radius-sm);
+  cursor:        pointer;
+  transition:    all 0.2s ease;
+  border:        1px solid #333;
+  font-family:   var(--font-body);
+}
+
+.gp-puesto-item.selected {
+  background-color: var(--gp-accent);
+  color:            var(--gp-primary);
+}
+
+.gp-puesto-item:not(.selected) {
+  color: var(--gp-white);
+}
+
+.gp-puesto-item:not(.selected):hover {
+  background-color: #333;
+}
+
+/* ============================================================
+   MODAL EDITAR PUESTO
+============================================================ */
+.gp-editar-titulo {
+  font-family:    var(--font-title) !important;
+  font-size:      1.5rem !important;
+  letter-spacing: 2px;
+  color:          var(--gp-primary);
+  text-transform: uppercase;
+}
+
+.gp-btn-guardar {
+  background-color: var(--gp-accent);
+  color:            var(--gp-primary);
+  border-radius:    var(--radius-xl);
+  border:           none;
+  font-family:      var(--font-body);
+  font-weight:      600;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease;
+}
+
+.gp-btn-guardar:hover {
+  background-color: var(--gp-primary);
+  color:            var(--gp-white);
+}
+
+.gp-btn-cancelar {
+  background-color: var(--gp-primary);
+  color:            var(--gp-white);
+  border-radius:    var(--radius-xl);
+  border:           none;
+  font-family:      var(--font-body);
+  font-weight:      500;
+  cursor:           pointer;
+  transition:       background-color 0.2s ease, color 0.2s ease;
+}
+
+.gp-btn-cancelar:hover {
+  background-color: var(--gp-accent);
+  color:            var(--gp-primary);
+}
+
+/* ============================================================
+   BUSCADOR DROPDOWN (FILTROS)
+============================================================ */
+.gp-search-dropdown {
+  position:      absolute;
+  top:           calc(100% + 4px);
+  left:          0;
+  right:         0;
+  background:    var(--gp-white);
+  border:        1.5px solid var(--gp-border);
+  border-radius: var(--radius-sm);
+  box-shadow:    0 8px 24px rgba(0,0,0,0.12);
+  z-index:       200;
+  max-height:    240px;
+  overflow-y:    auto;
+}
+
+.gp-search-dropdown-item {
+  padding:     9px 12px;
+  cursor:      pointer;
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  border-bottom: 1px solid #f0f0f0;
+  transition:  background 0.12s;
+  font-family: var(--font-body);
+  font-size:   13px;
+}
+
+.gp-search-dropdown-item:last-child { border-bottom: none; }
+
+.gp-search-dropdown-item:hover { background-color: var(--gp-bg-input); }
+
+.gp-search-dropdown-icono {
+  width:            28px;
+  height:           28px;
+  background-color: var(--gp-accent);
+  border-radius:    6px;
+  display:          flex;
+  align-items:      center;
+  justify-content:  center;
+  flex-shrink:      0;
+}
+
+.gp-search-dropdown-nombre {
+  font-weight: 700;
+  color:       var(--gp-primary);
+  font-size:   12px;
+  line-height: 1;
+}
+
+.gp-search-dropdown-ci {
+  color:       #555;
+  font-size:   11px;
+  line-height: 1;
+}
+
+/* ============================================================
+   FORM INPUTS NATIVOS (ModalEditarPuesto)
+============================================================ */
+.gp-form-label {
+  display:        block;
+  font-family:    var(--font-body);
+  font-size:      12px;
+  font-weight:    600;
+  color:          var(--gp-primary);
+  margin-bottom:  4px;
+}
+
+.gp-form-input {
+  width:            100%;
+  padding:          8px 12px;
+  background-color: var(--gp-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  font-family:      var(--font-body);
+  font-size:        13px;
+  color:            var(--gp-primary);
+  outline:          none;
+  transition:       border-color 0.2s;
+  height:           38px;
+}
+
+.gp-form-input:focus {
+  border-color: var(--gp-primary);
+}
+
+.gp-form-select {
+  width:            100%;
+  padding:          7px 32px 7px 12px;
+  appearance:       none;
+  background-color: var(--gp-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--radius-sm);
+  font-family:      var(--font-body);
+  font-size:        13px;
+  color:            var(--gp-primary);
+  cursor:           pointer;
+  outline:          none;
+  transition:       border-color 0.2s;
+  height:           38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.gp-form-select:focus {
+  border-color: var(--gp-primary);
+}
+
+.gp-form-select option {
+  background-color: var(--gp-bg-option);
+  color:            var(--gp-primary);
+}
+
+/* ── Resultado item traspaso ── */
+.gp-traspaso-resultado-item {
+  padding:       8px 10px;
+  cursor:        pointer;
+  font-family:   var(--font-body);
+  font-size:     12px;
+  transition:    background-color 0.12s;
+  border-bottom: 1px solid #f0f0f0;
+  color:         var(--gp-primary);
+}
+
+.gp-traspaso-resultado-item:hover {
+  background-color: var(--gp-bg-input);
+}
+.buscador-sin-resultados {
+  position:         absolute;
+  top:              calc(100% + 4px);
+  left:             0;
+  right:            0;
+  background-color: white;
+  border:           1.5px solid #dde3f0;
+  border-radius:    8px;
+  padding:          14px;
+  text-align:       center;
+  color:            #999;
+  font-size:        13px;
+  z-index:          200;
+  box-shadow:       0 8px 24px rgba(0,0,0,0.12);
+  font-family:      var(--font-body);
+}

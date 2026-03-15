@@ -15,6 +15,7 @@ import '../styles/directorio.css';
 /**
  * Input de búsqueda de afiliados con dropdown via createPortal.
  * Diseño unificado con BuscadorMapa: fondo F6F9FF, borde negro al focus.
+ * Muestra "Sin resultados" cuando no hay coincidencias.
  *
  * value        - Texto controlado desde el padre
  * onChange      - Callback al cambiar texto
@@ -42,14 +43,18 @@ const BuscadorAfiliado = ({
 
   const [debouncedTexto] = useDebouncedValue(textoBusq, 280);
 
-  // ── Búsqueda debounced ──
+  // ── Búsqueda debounced — abre siempre para mostrar sin resultados ──
   useEffect(() => {
     if (debouncedTexto.trim().length < 2) { setResultados([]); setAbierto(false); return; }
     let activo = true;
     setBuscando(true);
     directorioService.buscarAfiliados(debouncedTexto)
-      .then((data) => { if (!activo) return; setResultados(data.slice(0, 8)); setAbierto(data.length > 0); })
-      .catch(() => { if (activo) setResultados([]); })
+      .then((data) => {
+        if (!activo) return;
+        setResultados(data.slice(0, 8));
+        setAbierto(true); // abre siempre, incluso sin resultados
+      })
+      .catch(() => { if (activo) { setResultados([]); setAbierto(true); } })
       .finally(() => { if (activo) setBuscando(false); });
     return () => { activo = false; };
   }, [debouncedTexto]);
@@ -68,7 +73,10 @@ const BuscadorAfiliado = ({
     calcularPos();
     window.addEventListener('resize', calcularPos);
     window.addEventListener('scroll', calcularPos, true);
-    return () => { window.removeEventListener('resize', calcularPos); window.removeEventListener('scroll', calcularPos, true); };
+    return () => {
+      window.removeEventListener('resize', calcularPos);
+      window.removeEventListener('scroll', calcularPos, true);
+    };
   }, [abierto, calcularPos]);
 
   useEffect(() => {
@@ -113,12 +121,22 @@ const BuscadorAfiliado = ({
   const dropdown = abierto && createPortal(
     <div
       id="dir-buscador-portal"
-      className="dir-buscador-dropdown"
-      style={{ position: 'absolute', top: pos.top, left: pos.left, width: pos.width, zIndex: 99999 }}
+      style={{
+        position: 'absolute',
+        top:      pos.top,
+        left:     pos.left,
+        width:    pos.width,
+        zIndex:   99999,
+      }}
     >
-      {resultados.length === 0
-        ? <div className="dir-buscador-vacio">Sin resultados</div>
-        : resultados.map((af) => (
+      {resultados.length === 0 ? (
+        /* ── Sin resultados ── */
+        <div className="buscador-sin-resultados">
+          Sin resultados para "{textoBusq}"
+        </div>
+      ) : (
+        <div className="dir-buscador-dropdown">
+          {resultados.map((af) => (
             <div
               key={af.id || af.id_afiliado}
               className="dir-buscador-item"
@@ -126,16 +144,17 @@ const BuscadorAfiliado = ({
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ width: '28px', height: '28px', backgroundColor: 'var(--dir-accent)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                 <IconUser size={14} color="#0f0f0f" />
+                  <IconUser size={14} color="#0f0f0f" />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}> 
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span className="dir-buscador-item-nombre">{af.nombre} {af.paterno} {af.materno || ''}</span>
                   <span className="dir-buscador-item-ci">CI: {af.ci} {af.extension || ''}</span>
                 </div>
               </div>
             </div>
-          ))
-      }
+          ))}
+        </div>
+      )}
     </div>,
     document.body
   );
@@ -143,7 +162,10 @@ const BuscadorAfiliado = ({
   return (
     <div ref={wrapRef} style={{ position: 'relative' }}>
       <div className="dir-buscador-wrapper" ref={inputRef}>
-        {buscando ? <Loader size={14} color="dark" style={{ flexShrink: 0 }} /> : <IconSearch size={14} color="#999" style={{ flexShrink: 0 }} />}
+        {buscando
+          ? <Loader size={14} color="dark" style={{ flexShrink: 0 }} />
+          : <IconSearch size={14} color="#999" style={{ flexShrink: 0 }} />
+        }
         <input
           type="text"
           value={textoBusq}
@@ -151,9 +173,15 @@ const BuscadorAfiliado = ({
           placeholder={placeholder}
           disabled={disabled}
           className="dir-buscador-input"
-          onFocus={() => { if (resultados.length > 0) { calcularPos(); setAbierto(true); } }}
+          onFocus={() => {
+            if (textoBusq.trim().length >= 2) { calcularPos(); setAbierto(true); }
+          }}
         />
-        {textoBusq && <button onClick={handleLimpiar} className="dir-buscador-clear-btn" type="button"><IconX size={13} /></button>}
+        {textoBusq && (
+          <button onClick={handleLimpiar} className="dir-buscador-clear-btn" type="button">
+            <IconX size={13} />
+          </button>
+        )}
       </div>
       {dropdown}
     </div>

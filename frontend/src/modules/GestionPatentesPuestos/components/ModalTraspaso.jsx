@@ -1,421 +1,305 @@
 // frontend/src/modules/GestionPatentesPuestos/components/ModalTraspaso.jsx
-import { useState, useEffect } from "react";
-import { 
-  Modal, TextInput, Button, Group, Stack, Text, 
-  Paper, Loader, Box, Image, Divider, Badge, Radio
-} from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
-import { useDebouncedValue } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
-import { afiliadosService } from "../service/afiliadosService";
-import { puestosService } from "../service/puestosService";
-import { getPerfilUrl } from '../../../utils/imageHelper';
 
+// ============================================
+// COMPONENTE MODAL TRASPASO
+// ============================================
+
+import { useState, useEffect, useRef }                from 'react';
+import { Modal, Stack, Text, Box, Loader,
+         Image, Badge, Radio }                        from '@mantine/core';
+import {  IconUser, IconX }                          from '@tabler/icons-react';
+import { useDebouncedValue }                          from '@mantine/hooks';
+import { notifications }                              from '@mantine/notifications';
+import { afiliadosService }                           from '../service/afiliadosService';
+import { puestosService }                             from '../service/puestosService';
+import { getPerfilUrl }                               from '../../../utils/imageHelper';
+import '../Styles/gestionpatentespuestos.css';
+
+const avatarPlaceholder = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+/**
+ * Buscador inline con dropdown para el modal de traspaso.
+ */
+const BuscadorTraspaso = ({ value, onChange, onSelect, resultados, placeholder }) => {
+  const ref = useRef(null);
+  const [abierto, setAbierto] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setAbierto(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <div className="gp-search-wrapper">
+        < IconUser size={13} color="#999" style={{ flexShrink: 0 }} />
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => { onChange(e.target.value); setAbierto(true); }}
+          onFocus={() => setAbierto(true)}
+          className="gp-search-input"
+          style={{ fontSize: '12px' }}
+        />
+        {value && (
+          <button onClick={() => { onChange(''); setAbierto(false); }} className="gp-search-clear-btn">
+            <IconX size={11} />
+          </button>
+        )}
+      </div>
+
+      {abierto && resultados.length > 0 && (
+        <div className="gp-search-dropdown">
+          {resultados.map((a) => (
+            <div
+              key={a.id_afiliado}
+              className="gp-search-dropdown-item"
+              onMouseDown={(e) => { e.preventDefault(); onSelect(a); setAbierto(false); }}
+            >
+              <div className="gp-search-dropdown-icono" style={{ width: 24, height: 24 }}>
+                < IconUser size={11} color="#0f0f0f" />
+              </div>
+              <div>
+                <div className="gp-search-dropdown-nombre">{a.nombre} {a.paterno} {a.materno}</div>
+                <div className="gp-search-dropdown-ci">CI: {a.ci}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {abierto && resultados.length === 0 && value.trim().length >= 2 && (
+      <div className="buscador-sin-resultados">
+        Sin resultados para "{value}"
+      </div>
+    )}
+    </div>
+  );
+};
+
+/**
+ * Modal para realizar el traspaso de un puesto entre dos afiliados.
+ * Panel izquierdo: emisor y receptor con buscador dropdown.
+ * Panel derecho (negro): lista de puestos del emisor con radio button.
+ * Orden de botones: Confirmar primero, Cancelar después.
+ */
 export function ModalTraspaso({ opened, close, puestoSeleccionado, onTraspaso }) {
-  const [loadingData, setLoadingData] = useState(false);
-  const [searchTermA, setSearchTermA] = useState('');
-
-  //estados para la busqueda del afliliado
-  const [resultadosDesde, setResultadosDesde] = useState([]); 
-  const [resultadosA, setResultadosA] = useState([]);
-  
-
-  // Datos del Emisor (Desde)
-  const [afiliadoDesde, setAfiliadoDesde] = useState(null);
-  const [puestosDelAfiliado, setPuestosDelAfiliado] = useState([]);
-  
-  // Cambiamos de array a un solo ID (radio button)
+  const [loadingData,          setLoadingData]          = useState(false);
+  const [searchTermDesde,      setSearchTermDesde]      = useState('');
+  const [searchTermA,          setSearchTermA]          = useState('');
+  const [resultadosDesde,      setResultadosDesde]      = useState([]);
+  const [resultadosA,          setResultadosA]          = useState([]);
+  const [afiliadoDesde,        setAfiliadoDesde]        = useState(null);
+  const [afiliadoA,            setAfiliadoA]            = useState(null);
+  const [puestosDelAfiliado,   setPuestosDelAfiliado]   = useState([]);
   const [puestoSeleccionadoId, setPuestoSeleccionadoId] = useState(null);
 
-  // Datos del Receptor (A)
-  const [afiliadoA, setAfiliadoA] = useState(null);
-  const [buscandoA, setBuscandoA] = useState(false);
-
-
-  const [searchTermDesde, setSearchTermDesde] = useState('');
-
-
   const [desdeDebounced] = useDebouncedValue(searchTermDesde, 400);
-  const [aDebounced] = useDebouncedValue(searchTermA, 400);
+  const [aDebounced]     = useDebouncedValue(searchTermA, 400);
 
-  const avatarPlaceholder = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
-  // 1. CARGAR DATOS AL ABRIR
   useEffect(() => {
     if (!opened) return;
-
-    if (puestoSeleccionado) {
-      cargarDatosIniciales();
-    } else {
-      resetModal();
-    }
-
+    if (puestoSeleccionado) cargarDatosIniciales();
+    else resetModal();
   }, [opened, puestoSeleccionado]);
 
-
-
-
   useEffect(() => {
-    if (desdeDebounced.length < 2) return;
-
-    afiliadosService.buscarTiempoReal(desdeDebounced)
-      .then(setResultadosDesde)
-      .catch(() => setResultadosDesde([]));
+    if (desdeDebounced.trim().length < 2) { setResultadosDesde([]); return; }
+    afiliadosService.buscarTiempoReal(desdeDebounced.trim()).then(setResultadosDesde).catch(() => setResultadosDesde([]));
   }, [desdeDebounced]);
 
-
   useEffect(() => {
-    if (aDebounced.length < 2) return;
-
-    afiliadosService.buscarTiempoReal(aDebounced)
-      .then(setResultadosA)
-      .catch(() => setResultadosA([]));
+    if (aDebounced.trim().length < 2) { setResultadosA([]); return; }
+    afiliadosService.buscarTiempoReal(aDebounced.trim()).then(setResultadosA).catch(() => setResultadosA([]));
   }, [aDebounced]);
 
-  
-
-
-  // Función para buscar al emisor manualmente (si no se seleccionó puesto en la tabla)
-  const buscarAfiliadoEmisor = async () => {
-    if (!searchTermDesde) return;
+  /**
+   * Carga afiliado y puestos al abrir desde la tabla.
+   */
+  const cargarDatosIniciales = async () => {
+    setLoadingData(true);
     try {
-      setLoadingData(true);
-      // Buscamos al afiliado emisor por CI
-      const afiliado = await afiliadosService.buscarPorCI(searchTermDesde);
-      setAfiliadoDesde(afiliado);
-      
-      // Cargamos sus puestos usando su ID
-      const puestos = await afiliadosService.obtenerPuestos(afiliado.id_afiliado);
-      setPuestosDelAfiliado(puestos || []);
-      
-      // Por defecto, seleccionar el primer puesto si no hay ninguno seleccionado
-      if (puestos && puestos.length > 0 && !puestoSeleccionadoId) {
-        setPuestoSeleccionadoId(puestos[0].id_puesto);
-      }
-    } catch (error) {
-      console.error("No se encontró el emisor");
-      setAfiliadoDesde(null);
+      const res = await puestosService.obtenerInfoTraspaso(puestoSeleccionado.id_puesto);
+      setAfiliadoDesde(res.afiliadoActual || null);
+      setPuestosDelAfiliado(res.puestosDelAfiliado || []);
+      if (puestoSeleccionado?.id_puesto) setPuestoSeleccionadoId(puestoSeleccionado.id_puesto);
+      else if (res.puestosDelAfiliado?.length > 0) setPuestoSeleccionadoId(res.puestosDelAfiliado[0].id_puesto);
+    } catch (err) {
+      console.error('Error cargando traspaso:', err);
     } finally {
       setLoadingData(false);
     }
   };
-  
-  const cargarDatosIniciales = async () => {
-    setLoadingData(true);
 
-    try {
-      const res = await puestosService.obtenerInfoTraspaso(
-        puestoSeleccionado.id_puesto
-      );
-
-      setAfiliadoDesde(res.afiliadoActual || null);
-      setPuestosDelAfiliado(res.puestosDelAfiliado || []);
-      
-      // Seleccionar automáticamente el puesto que se clickeó en la tabla
-      if (puestoSeleccionado?.id_puesto) {
-        setPuestoSeleccionadoId(puestoSeleccionado.id_puesto);
-      } else if (res.puestosDelAfiliado && res.puestosDelAfiliado.length > 0) {
-        // Si no hay puesto específico, seleccionar el primero
-        setPuestoSeleccionadoId(res.puestosDelAfiliado[0].id_puesto);
-      }
-
-    } catch (err) {
-      console.error("Error cargando traspaso:", err);
-      setAfiliadoDesde(null);
-      setPuestosDelAfiliado([]);
-    }
-
-    setLoadingData(false);
-  };
-
-
-  // 2. BUSCAR NUEVO DUEÑO (POR CI)
-  const buscarNuevoAfiliado = async () => {
-    if (!searchTermA) return;
-    try {
-      setBuscandoA(true);
-      const data = await afiliadosService.buscarPorCI(searchTermA);
-      setAfiliadoA(data); // El backend debe retornar el objeto del afiliado
-    } catch (error) {
-      console.error("No se encontró el afiliado");
-      setAfiliadoA(null);
-      notifications.show({
-        title: 'Error',
-        message: 'No se encontró el afiliado',
-        color: 'red'
-      });
-    } finally {
-      setBuscandoA(false);
-    }
-  };
-
-  // Función para seleccionar un puesto (radio button)
-  const seleccionarPuesto = (id_puesto) => {
-    setPuestoSeleccionadoId(id_puesto);
-  };
-
-  const handleEjecutar = () => {
-    if (!afiliadoA) {
-      notifications.show({
-        title: 'Error',
-        message: 'Debe seleccionar un destinatario',
-        color: 'red'
-      });
-      return;
-    }
-    
-    if (!puestoSeleccionadoId) {
-      notifications.show({
-        title: 'Error',
-        message: 'Seleccione un puesto para traspasar',
-        color: 'red'
-      });
-      return;
-    }
-
-    onTraspaso({
-      desde: afiliadoDesde.id_afiliado,
-      para: afiliadoA.id_afiliado,
-      puestos: [puestoSeleccionadoId], // Enviar como array para mantener compatibilidad
-      motivoDetallado: "TRASPASO"
-    });
-  };
-
-  const resetModal = () => {
-    setSearchTermDesde('');
-    setSearchTermA('');
-
+  /**
+   * Selecciona el emisor y carga sus puestos.
+   */
+  const seleccionarEmisor = async (a) => {
+    setAfiliadoDesde(a);
     setResultadosDesde([]);
-    setResultadosA([]);
-
-    setAfiliadoDesde(null);
-    setAfiliadoA(null);
-
-    setPuestosDelAfiliado([]);
-    setPuestoSeleccionadoId(null);
+    setSearchTermDesde(`${a.ci} — ${a.nombre}`);
+    const puestos = await afiliadosService.obtenerPuestos(a.id_afiliado);
+    setPuestosDelAfiliado(puestos || []);
+    if (puestos?.length > 0) setPuestoSeleccionadoId(puestos[0].id_puesto);
   };
 
+  /**
+   * Selecciona el receptor.
+   */
+  const seleccionarReceptor = (a) => {
+    setAfiliadoA(a);
+    setResultadosA([]);
+    setSearchTermA(`${a.ci} — ${a.nombre}`);
+  };
+
+  /**
+   * Valida y ejecuta el traspaso.
+   */
+  const handleEjecutar = () => {
+    if (!afiliadoA) { notifications.show({ title: 'Error', message: 'Debe seleccionar un destinatario', color: 'red' }); return; }
+    if (!puestoSeleccionadoId) { notifications.show({ title: 'Error', message: 'Seleccione un puesto para traspasar', color: 'red' }); return; }
+    onTraspaso({ desde: afiliadoDesde.id_afiliado, para: afiliadoA.id_afiliado, puestos: [puestoSeleccionadoId], motivoDetallado: 'TRASPASO' });
+  };
+
+  /**
+   * Resetea todos los estados.
+   */
+  const resetModal = () => {
+    setSearchTermDesde(''); setSearchTermA('');
+    setResultadosDesde([]); setResultadosA([]);
+    setAfiliadoDesde(null); setAfiliadoA(null);
+    setPuestosDelAfiliado([]); setPuestoSeleccionadoId(null);
+  };
 
   return (
-    <Modal 
-      opened={opened} 
-      onClose={() => {
-        resetModal();
-        close();
-      }}
-      size="90%" 
-      centered withCloseButton={false} 
-      padding={0} 
-      radius="lg">
+    <Modal opened={opened} onClose={() => { resetModal(); close(); }} size="90%" centered withCloseButton={false} padding={0} radius="lg">
       <Box style={{ display: 'flex', minHeight: '520px', position: 'relative' }}>
+
         {loadingData && (
-            <Box style={{position:'absolute', inset:0, background:'rgba(255,255,255,0.7)', zIndex:10, display:'flex', alignItems:'center', justifyContent:'center'}}>
-                <Loader color="yellow" />
-            </Box>
+          <Box style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader color="yellow" />
+          </Box>
         )}
 
-        {/* IZQUIERDA: FORMULARIO */}
+        {/* ── Panel izquierdo ── */}
         <Box style={{ flex: 1.6, padding: '40px', backgroundColor: '#fdfdfd' }}>
           <Stack gap="xl">
-            <Text fw={900} size="xl" style={{ letterSpacing: '2px' }}>REALIZAR TRASPASO</Text>
+            <Text className="gp-traspaso-titulo">REALIZAR TRASPASO</Text>
 
-            <Group justify="center" gap={40} mt="xl">
-              {/* DESDE (AUTOMÁTICO) */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginTop: '1rem', flexWrap: 'wrap' }}>
+
+              {/* EMISOR */}
               <Stack align="center" gap="xs" style={{ width: '180px' }}>
-                <Text fw={800} size="xs" c="gray.6">EMISOR (DESDE):</Text>
-                <Paper shadow="xl" radius="md" style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee' }}>
+                <Text className="gp-traspaso-label">EMISOR (DESDE):</Text>
+                <Box style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee', borderRadius: '8px' }}>
                   <Image src={getPerfilUrl(afiliadoDesde) || avatarPlaceholder} height={200} fit="cover" />
-                  
-                </Paper>
-                
+                </Box>
                 {!puestoSeleccionado ? (
                   <>
-                    <TextInput
-                      placeholder="Nombre o CI"
-                      variant="filled"
-                      size="xs"
+                    <BuscadorTraspaso
                       value={searchTermDesde}
-                      onChange={(e) => setSearchTermDesde(e.currentTarget.value)}
-                      styles={{ input: { textAlign: 'center' } }}
+                      onChange={setSearchTermDesde}
+                      onSelect={seleccionarEmisor}
+                      resultados={resultadosDesde}
+                      placeholder="Nombre o CI"
                     />
-
-                    {resultadosDesde.length > 0 && (
-                      <Paper shadow="md" mt={4}>
-                        {resultadosDesde.map(a => (
-                          <Box
-                            key={a.id_afiliado}
-                            p="xs"
-                            style={{ cursor: 'pointer' }}
-                            onClick={async () => {
-                              setAfiliadoDesde(a);
-                              setResultadosDesde([]);
-                              setSearchTermDesde(`${a.ci} — ${a.nombre}`);
-
-                              const puestos = await afiliadosService.obtenerPuestos(a.id_afiliado);
-                              setPuestosDelAfiliado(puestos || []);
-                              
-                              // Seleccionar el primer puesto automáticamente
-                              if (puestos && puestos.length > 0) {
-                                setPuestoSeleccionadoId(puestos[0].id_puesto);
-                              }
-                            }}
-                          >
-                            <Text size="sm">
-                              {a.ci} — {a.nombre} {a.paterno}
-                            </Text>
-                          </Box>
-                        ))}
-                      </Paper>
-                    )}
-                    {afiliadoDesde && !puestoSeleccionado && (
-                      <Text fw={700} size="xs" ta="center">
+                    {afiliadoDesde && (
+                      <Text fw={700} size="xs" ta="center" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {afiliadoDesde.nombre} {afiliadoDesde.paterno} {afiliadoDesde.materno}
                       </Text>
                     )}
                   </>
                 ) : (
-                  // CASO AUTOMÁTICO: Solo lectura
                   <Stack gap={2} align="center">
-                    <Text fw={700} size="sm" ta="center">
-                      {afiliadoDesde ? `${afiliadoDesde.nombre} ${afiliadoDesde.paterno}` : <Loader size="xs" />}
+                    <Text fw={700} size="sm" ta="center" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      {afiliadoDesde ? `${afiliadoDesde.nombre} ${afiliadoDesde.paterno} ${afiliadoDesde.materno}` : <Loader size="xs" />}
                     </Text>
                     <Badge color="gray" variant="light" size="xs">CI: {afiliadoDesde?.ci}</Badge>
                   </Stack>
                 )}
               </Stack>
 
-              <Text size="xl" fw={300} c="gray.4">————</Text>
+              <Text size="xl" fw={300} c="gray.4" style={{ alignSelf: 'center' }}>————</Text>
 
-              {/* A (BÚSQUEDA) */}
+              {/* RECEPTOR */}
               <Stack align="center" gap="xs" style={{ width: '180px' }}>
-                <Text fw={800} size="xs" c="gray.6">RECEPTOR (NUEVO):</Text>
-                <Paper shadow="xl" radius="md" style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee' }}>
-                   <Image src={getPerfilUrl(afiliadoA)  || avatarPlaceholder} height={200} fit="cover" />
-                </Paper>
-                <TextInput
-                  placeholder="Nombre o CI del nuevo dueño"
-                  variant="filled"
-                  size="xs"
+                <Text className="gp-traspaso-label">RECEPTOR (NUEVO):</Text>
+                <Box style={{ width: 160, height: 200, overflow: 'hidden', border: '2px solid #eee', borderRadius: '8px' }}>
+                  <Image src={getPerfilUrl(afiliadoA) || avatarPlaceholder} height={200} fit="cover" />
+                </Box>
+                <BuscadorTraspaso
                   value={searchTermA}
-                  onChange={(e) => setSearchTermA(e.currentTarget.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && buscarNuevoAfiliado()}
-                  rightSection={
-                    buscandoA
-                      ? <Loader size={10}/>
-                      : <IconSearch size={14} onClick={buscarNuevoAfiliado} style={{cursor:'pointer'}}/>
-                  }
+                  onChange={setSearchTermA}
+                  onSelect={seleccionarReceptor}
+                  resultados={resultadosA}
+                  placeholder="Nombre o CI del nuevo dueño"
                 />
-
-                {resultadosA.length > 0 && (
-                  <Paper shadow="md" mt={4}>
-                    {resultadosA.map(a => (
-                      <Box
-                        key={a.id_afiliado}
-                        p="xs"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => {
-                          setAfiliadoA(a);
-                          setResultadosA([]);
-                          setSearchTermA(`${a.ci} — ${a.nombre}`);
-                        }}
-                      >
-                        <Text size="sm">
-                          {a.ci} — {a.nombre} {a.paterno}
-                        </Text>
-                      </Box>
-                    ))}
-                  </Paper>
+                {afiliadoA && (
+                  <Text fw={700} size="xs" ta="center" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    {afiliadoA.nombre} {afiliadoA.paterno} {afiliadoA.materno}
+                  </Text>
                 )}
-                {afiliadoA && <Text fw={700} size="xs" ta="center">{afiliadoA.nombre} {afiliadoA.paterno} {afiliadoA.materno}</Text>}
               </Stack>
-            </Group>
+            </div>
 
-            <Group justify="center" mt={30}>
-              <Button 
-                variant="filled"
-                style={{ backgroundColor: '#0F0F0F' }}
-                radius="xl" 
-                px={45} 
-                onClick={() => {
-                  resetModal();
-                  close();
-                }}
+            {/* ── Confirmar primero, Cancelar después ── */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+              <button
+                onClick={() => { resetModal(); close(); }}
+                className="gp-btn-volver"
+                style={{ padding: '0 45px', height: '42px' }}
               >
-                  Cancelar
-              </Button>
-              <Button 
-                variant="filled"
-                style={{ backgroundColor: '#EDBE3C' }}
-                radius="xl" 
-                px={45} 
-                c="black" 
-                fw={800} 
-                disabled={!afiliadoA || !puestoSeleccionadoId}
+                Cancelar
+              </button>
+              <button
                 onClick={handleEjecutar}
+                disabled={!afiliadoA || !puestoSeleccionadoId || !afiliadoDesde}
+                className="gp-btn-confirmar"
+                style={{ padding: '0 45px', height: '42px' }}
               >
                 Confirmar Traspaso
-              </Button>
-            </Group>
+              </button>
+              
+            </div>
           </Stack>
         </Box>
 
-        {/* DERECHA: PANEL NEGRO (PUESTOS) */}
-        <Box style={{ flex: 1, backgroundColor: '#0d0d0d', padding: '40px' }}>
+        {/* ── Panel derecho: puestos ── */}
+        <div className="gp-panel-puestos">
           <Stack gap="xl">
-            <Text c="white" align="center" fw={800} size="lg">Selecciona un puesto</Text>
-            
+            <Text className="gp-panel-puestos-titulo">Selecciona un puesto</Text>
             <Stack gap="xs">
-              {puestosDelAfiliado && puestosDelAfiliado.length > 0 ? (
+              {puestosDelAfiliado.length > 0 ? (
                 puestosDelAfiliado.map((p) => {
                   const esSeleccionado = puestoSeleccionadoId === p.id_puesto;
-                  
                   return (
-                    <Box
+                    <div
                       key={p.id_puesto}
-                      onClick={() => seleccionarPuesto(p.id_puesto)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '12px 16px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        backgroundColor: esSeleccionado ? '#f0c419' : 'transparent',
-                        color: esSeleccionado ? 'black' : '#fff',
-                        border: '1px solid #333',
-                        '&:hover': {
-                          backgroundColor: esSeleccionado ? '#f0c419' : '#333',
-                        }
-                      }}
+                      className={`gp-puesto-item ${esSeleccionado ? 'selected' : ''}`}
+                      onClick={() => setPuestoSeleccionadoId(p.id_puesto)}
                     >
                       <Radio
                         checked={esSeleccionado}
-                        onChange={() => seleccionarPuesto(p.id_puesto)}
-                        color="dark"
-                        mr="md"
-                        styles={{
-                          radio: {
-                            cursor: 'pointer',
-                            backgroundColor: esSeleccionado ? 'black' : 'transparent',
-                            borderColor: esSeleccionado ? 'black' : '#666',
-                          }
-                        }}
+                        onChange={() => setPuestoSeleccionadoId(p.id_puesto)}
+                        color="dark" mr="md"
+                        styles={{ radio: { cursor: 'pointer', backgroundColor: esSeleccionado ? 'black' : 'transparent', borderColor: esSeleccionado ? 'black' : '#666' } }}
                       />
                       <Box>
                         <Text size="xs" fw={700}>Puesto N. {p.nroPuesto}</Text>
-                        <Text size="10px" style={{ opacity: 0.8 }}>
-                          Fila {p.fila} - {p.cuadra} • {p.tiene_patente ? "CON PATENTE" : "SIN PATENTE"}
+                        <Text size="10px" style={{ opacity: 0.8, fontFamily: 'Poppins, sans-serif' }}>
+                          Fila {p.fila} - {p.cuadra} • {p.tiene_patente ? 'CON PATENTE' : 'SIN PATENTE'}
                         </Text>
                       </Box>
-                    </Box>
+                    </div>
                   );
                 })
               ) : (
-                <Text c="dimmed" size="xs" ta="center">No hay puestos vinculados</Text>
+                <Text c="dimmed" size="xs" ta="center" style={{ fontFamily: 'Poppins, sans-serif' }}>No hay puestos vinculados</Text>
               )}
             </Stack>
           </Stack>
-        </Box>
+        </div>
       </Box>
     </Modal>
   );

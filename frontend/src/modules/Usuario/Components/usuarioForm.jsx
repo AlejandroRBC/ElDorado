@@ -9,7 +9,7 @@ import {
   Text
 } from '@mantine/core';
 import { IconSearch, IconX, IconUser } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useUsuarioForm from '../Hooks/useUsuarioForm';
 import usuarioService from '../Services/UsuarioService';
 import '../Styles/usuario.css';
@@ -40,10 +40,22 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
   const [showResults, setShowResults] = useState(false);
   const [resultados,  setResultados]  = useState([]);
   const [buscando,    setBuscando]    = useState(false);
+  const wrapperRef = useRef(null);
+
+  // ── Cerrar dropdown al click fuera ──
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // ── Búsqueda al backend con debounce local ──
   useEffect(() => {
-    if (!searchTerm || searchTerm.length < 2 || formData.id_afiliado) {
+    if (!searchTerm || searchTerm.trim().length < 2) {
       setResultados([]);
       return;
     }
@@ -51,7 +63,7 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
     const timer = setTimeout(async () => {
       try {
         setBuscando(true);
-        const res = await usuarioService.obtenerAfiliadosSelect(searchTerm);
+        const res = await usuarioService.obtenerAfiliadosSelect(searchTerm.trim());
         if (activo) setResultados(res.data.data || []);
       } catch {
         if (activo) setResultados([]);
@@ -60,7 +72,7 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
       }
     }, 300);
     return () => { activo = false; clearTimeout(timer); };
-  }, [searchTerm, formData.id_afiliado]);
+  }, [searchTerm]);
 
   /**
    * Seleccionar afiliado del dropdown.
@@ -109,41 +121,40 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
             classNames={{ input: 'usuario-form-afiliado-disabled' }}
           />
         ) : (
-          <Box className="usuario-form-search-container">
+          <Box mb="md">
             <Text size="sm" className="usuario-list-filtro-label">Buscar Afiliado</Text>
 
-            {/* ── Input buscador ── */}
-            <div className="usuario-form-search-input-wrapper">
-              {buscando
-                ? <Loader size={14} color="dark" style={{ flexShrink: 0 }} />
-                : <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
-              }
-              <input
-                type="text"
-                placeholder="Escribe nombre o CI para buscar..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowResults(true);
-                  if (formData.id_afiliado) handleChange('id_afiliado', '');
-                }}
-                onFocus={() => setShowResults(true)}
-                onBlur={() => setTimeout(() => setShowResults(false), 200)}
-                disabled={loading}
-                required
-              />
-              {searchTerm && (
-                <button type="button" onClick={limpiarSeleccion} className="usuario-form-clear-btn">
-                  <IconX size={13} />
-                </button>
-              )}
-            </div>
+            {/* ── Wrapper con posición relativa para el dropdown ── */}
+            <div ref={wrapperRef} style={{ position: 'relative' }}>
+              <div className="usuario-form-search-input-wrapper">
+                {buscando
+                  ? <Loader size={14} color="dark" style={{ flexShrink: 0 }} />
+                  : <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
+                }
+                <input
+                  type="text"
+                  placeholder="Escribe nombre o CI para buscar..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowResults(true);
+                    if (formData.id_afiliado) handleChange('id_afiliado', '');
+                  }}
+                  onFocus={() => setShowResults(true)}
+                  disabled={loading}
+                  required
+                />
+                {searchTerm && (
+                  <button type="button" onClick={limpiarSeleccion} className="usuario-form-clear-btn">
+                    <IconX size={13} />
+                  </button>
+                )}
+              </div>
 
-            {/* ── Dropdown resultados ── */}
-            {showResults && searchTerm?.length > 1 && !formData.id_afiliado && (
-              <Paper shadow="md" className="usuario-form-results-dropdown">
-                {resultados.length > 0 ? (
-                  resultados.map((afiliado) => (
+              {/* ── Dropdown con resultados ── */}
+              {showResults && searchTerm?.trim().length > 1 && !formData.id_afiliado && resultados.length > 0 && (
+                <Paper shadow="md" className="usuario-form-results-dropdown">
+                  {resultados.map((afiliado) => (
                     <button
                       key={afiliado.value}
                       type="button"
@@ -162,14 +173,17 @@ const UsuarioForm = ({ onSuccess, usuarioId = null, onCancel }) => {
                         </Text>
                       </div>
                     </button>
-                  ))
-                ) : (
-                  <Text size="sm" className="usuario-form-no-results" c="dimmed">
-                    {buscando ? 'Buscando...' : `Sin resultados para "${searchTerm}"`}
-                  </Text>
-                )}
-              </Paper>
-            )}
+                  ))}
+                </Paper>
+              )}
+
+              {/* ── Sin resultados (fuera del Paper, directo bajo el input) ── */}
+              {showResults && searchTerm?.trim().length > 1 && !formData.id_afiliado && !buscando && resultados.length === 0 && (
+                <div className="buscador-sin-resultados">
+                  Sin resultados para "{searchTerm}"
+                </div>
+              )}
+            </div>
           </Box>
         )}
 

@@ -1,61 +1,74 @@
 // frontend/src/modules/GestionPatentesPuestos/GestionPatentesPuestosModule.jsx
-import { useState } from "react";
-import { Button,Affix,Transition,Stack, Title, Group, Box, Text, Loader } from "@mantine/core";
 
-import {IconArrowUp } from '@tabler/icons-react';
+// ============================================
+// MÓDULO GESTIÓN DE PUESTOS Y PATENTES
+// ============================================
 
-import { useDisclosure } from "@mantine/hooks";
+import { useState }                                     from 'react';
+import { Button, Affix, Transition, Stack, Text, Loader } from '@mantine/core';
+import { IconArrowUp }                                  from '@tabler/icons-react';
+import { useDisclosure }                                from '@mantine/hooks';
+import { useMediaQuery }                                from 'react-responsive';
+import ModuleHeader                                     from '../Navegacion/components/ModuleHeader';
+import { usePuestos }                                   from './hooks/usePuestos';
+import { usePuestosFiltros }                            from './hooks/usePuestosFiltros';
+import { FiltrosPuestos }                               from './components/FiltrosPuestos';
+import { TablaPuestos }                                 from './components/TablaPuestos';
+import { ModalMostrarHistorial }                        from './components/ModalMostrarHistorial';
+import { ModalTraspaso }                                from './components/ModalTraspaso';
+import { ModalEditarPuesto }                            from './components/ModalEditarPuesto';
+import { ModalAsignarPuesto }                           from './components/ModalAsignarPuesto';
+import './Styles/gestionpatentespuestos.css';
 
-import { usePuestos } from "./hooks/usePuestos";
-import { usePuestosFiltros } from "./hooks/usePuestosFiltros";
-
-import { FiltrosPuestos } from "./components/FiltrosPuestos";
-import { TablaPuestos } from "./components/TablaPuestos";
-import { ModalMostrarHistorial } from "./components/ModalMostrarHistorial";
-import { ModalTraspaso } from "./components/ModalTraspaso";
-import { ModalEditarPuesto } from "./components/ModalEditarPuesto";
-import { ModalAsignarPuesto } from "./components/ModalAsignarPuesto"; // ← Nuevo
-
+/**
+ * Módulo principal de gestión de puestos y patentes.
+ * Orquesta los filtros, la tabla y los modales de edición,
+ * traspaso, historial y asignación de afiliados.
+ */
 function GestionPatentesPuestosModule() {
-  const [editarOpened, { open: openEditar, close: closeEditar }] = useDisclosure(false);
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+
+  const [editarOpened,   { open: openEditar,   close: closeEditar   }] = useDisclosure(false);
   const [traspasoOpened, { open: openTraspaso, close: closeTraspaso }] = useDisclosure(false);
-  const [historialOpened, { open: openHistorial, close: closeHistorial }] = useDisclosure(false);
-  const [asignarOpened, { open: openAsignar, close: closeAsignar }] = useDisclosure(false); 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const [historialOpened,{ open: openHistorial,close: closeHistorial}] = useDisclosure(false);
+  const [asignarOpened,  { open: openAsignar,  close: closeAsignar  }] = useDisclosure(false);
 
   const {
-    puestos,
-    loading,
-    error,
-    puestoParaTraspaso,
-    setPuestoParaTraspaso,
-    puestoParaAsignar,      // ← Nuevo
-    setPuestoParaAsignar,   // ← Nuevo
-    puestoSeleccionado,
-    setPuestoSeleccionado,
+    puestos, loading, error,
+    puestoParaTraspaso,  setPuestoParaTraspaso,
+    puestoParaAsignar,   setPuestoParaAsignar,
+    puestoSeleccionado,  setPuestoSeleccionado,
     handleGuardarEdicion,
     handleEjecutarTraspaso,
-    handleAsignacionExitosa // ← Nuevo
-  } = usePuestos(closeEditar, closeTraspaso, closeAsignar); // ← Pasamos closeAsignar
+    handleAsignacionExitosa,
+  } = usePuestos(closeEditar, closeTraspaso, closeAsignar);
 
   const filtros = usePuestosFiltros(puestos);
 
-  const [puestoEditar, setPuestoEditar] = useState(null);
+  const [puestoEditar,    setPuestoEditar]    = useState(null);
   const [puestoHistorial, setPuestoHistorial] = useState(null);
+
+  /**
+   * Navega suavemente al inicio de la página.
+   */
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (loading && puestos.length === 0) {
     return (
       <Stack align="center" justify="center" style={{ height: '50vh' }}>
-        <Loader size="xl" />
-        <Text>Cargando puestos...</Text>
+        <Loader size="xl" color="yellow" />
+        <Text style={{ fontFamily: 'Poppins, sans-serif' }}>Cargando puestos...</Text>
       </Stack>
     );
   }
 
   return (
-    <Stack gap="xl" p="xl" style={{ backgroundColor: '#fdfdfd', minHeight: '100vh' }}>
+    <div className="gp-module" style={{ padding: isMobile ? '0.75rem' : '1.5rem' }}>
+
+      {/* ── Título del módulo ── */}
+      <ModuleHeader title="Gestión de Puestos" />
+
+      {/* ── Modales ── */}
       <ModalMostrarHistorial
         opened={historialOpened}
         close={closeHistorial}
@@ -76,7 +89,6 @@ function GestionPatentesPuestosModule() {
         onGuardar={handleGuardarEdicion}
       />
 
-      {/* Nuevo modal para asignar puesto */}
       <ModalAsignarPuesto
         opened={asignarOpened}
         close={closeAsignar}
@@ -84,54 +96,39 @@ function GestionPatentesPuestosModule() {
         onAsignado={handleAsignacionExitosa}
       />
 
-      {/* PANEL DE FILTROS */}
-      <Group>
-        <Title order={2} fw={800}>GESTIÓN DE PUESTOS</Title>
-        <Box style={{ borderBottom: '2px solid black', width: '150px' }} />
-      </Group>
-
+      {/* ── Panel de filtros ── */}
       <FiltrosPuestos
         {...filtros}
         puestos={filtros.puestosFiltrados}
-        onTraspaso={() => {
-          setPuestoParaTraspaso(null);
-          openTraspaso();
-        }}
+        onTraspaso={() => { setPuestoParaTraspaso(null); openTraspaso(); }}
       />
 
+      {/* ── Tabla de puestos ── */}
       <TablaPuestos
         puestos={filtros.puestosFiltrados}
         loading={loading}
-        onEditar={(p) => { setPuestoEditar(p); openEditar(); }}
-        onVerHistorial={(p) => { setPuestoHistorial(p); openHistorial(); }}
-        onTraspaso={(p) => { setPuestoParaTraspaso(p); openTraspaso(); }}
-        onAsignar={(p) => { setPuestoParaAsignar(p); openAsignar(); }} // ← Nueva prop
+        onEditar={(p)       => { setPuestoEditar(p);    openEditar();   }}
+        onVerHistorial={(p) => { setPuestoHistorial(p); openHistorial();}}
+        onTraspaso={(p)     => { setPuestoParaTraspaso(p); openTraspaso(); }}
+        onAsignar={(p)      => { setPuestoParaAsignar(p);  openAsignar();  }}
       />
-    <Affix position={{ bottom: 30, right: 30 }}>
-    <Transition transition="slide-up" mounted={true}>
-      {(transitionStyles) => (
-        <Button
-          leftSection={<IconArrowUp size={18} />}
-          style={{
-            ...transitionStyles,
-            backgroundColor: '#0f0f0f',
-            color: 'white',
-            borderRadius: '50px',
-            height: '50px',
-            padding: '0 25px',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-            border: '2px solid #edbe3c',
-            fontWeight: 600
-          }}
-          onClick={scrollToTop}
-        >
-          Volver arriba
-        </Button>
-      )}
-    </Transition>
-    </Affix>
-    </Stack>
 
+      {/* ── FAB volver arriba ── */}
+      <Affix position={{ bottom: 30, right: 30 }}>
+        <Transition transition="slide-up" mounted={true}>
+          {(transitionStyles) => (
+            <Button
+              leftSection={<IconArrowUp size={18} />}
+              className="gp-fab"
+              style={transitionStyles}
+              onClick={scrollToTop}
+            >
+              Volver arriba
+            </Button>
+          )}
+        </Transition>
+      </Affix>
+    </div>
   );
 }
 

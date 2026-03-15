@@ -1,3 +1,6 @@
+// ============================================
+// EXPORTAR HISTORIAL EXCEL
+// ============================================
 import {exportToExcel } from '../../../utils/excelExport';
 
 export const exportarHistorialExcel = (historial) => {

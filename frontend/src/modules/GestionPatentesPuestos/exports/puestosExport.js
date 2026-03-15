@@ -1,4 +1,6 @@
-//toque esta parte dejalo porfis 
+// ============================================
+// EXPORTAR PUESTOS EXCEL
+// ============================================
 import {exportToExcel } from '../../../utils/excelExport';
 
 export const exportarPuestosExcel = (puestos) => {

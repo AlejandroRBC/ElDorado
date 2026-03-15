@@ -1,98 +1,194 @@
-import { TextInput, Select, Button, Group, Stack, Paper } from "@mantine/core";
-import { IconSearch, IconX, IconArrowsExchange, IconFileExport } from "@tabler/icons-react";
-import { exportarPuestosExcel } from "../exports/puestosExport";
-import { TablaPuestos } from "./TablaPuestos";
+// frontend/src/modules/GestionPatentesPuestos/components/FiltrosPuestos.jsx
 
-export function FiltrosPuestos({
-  puestos,
-  search, setSearch,
-  filtroPatente, setFiltroPatente,
-  filtroFila, setFiltroFila,
-  filtroCuadra, setFiltroCuadra,
-  limpiarFiltros,
-  onTraspaso
-}) {
+// ============================================
+// COMPONENTE FILTROS PUESTOS
+// ============================================
+
+import { useRef, useEffect, useState }                   from 'react';
+import { Group, Stack, Paper, Button }                   from '@mantine/core';
+import { IconSearch, IconX, IconArrowsExchange,
+         IconFileExport, IconMapPin }                    from '@tabler/icons-react';
+import { useMediaQuery }                                 from 'react-responsive';
+import { exportarPuestosExcel }                          from '../exports/puestosExport';
+import '../Styles/gestionpatentespuestos.css';
+
+const OPCIONES_PATENTE = [
+  { value: 'Todo', label: 'Todo' },
+  { value: 'si',   label: 'Con Patente' },
+  { value: 'no',   label: 'Sin Patente' },
+];
+
+const OPCIONES_FILA = [
+  { value: 'Todo', label: 'Todo' },
+  { value: 'A',    label: 'Fila A' },
+  { value: 'B',    label: 'Fila B' },
+];
+
+const OPCIONES_CUADRA = [
+  { value: 'Todo',     label: 'Todo'     },
+  { value: 'Cuadra 1', label: 'Cuadra 1' },
+  { value: 'Cuadra 2', label: 'Cuadra 2' },
+  { value: 'Cuadra 3', label: 'Cuadra 3' },
+  { value: 'Cuadra 4', label: 'Cuadra 4' },
+  { value: 'Callejón', label: 'Callejón' },
+];
+
+/**
+ * Custom select con dropdown propio estilo mapa.
+ */
+const CustomSelect = ({ value, onChange, opciones, placeholder }) => {
+  const [abierto, setAbierto] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setAbierto(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const label = opciones.find(o => o.value === value)?.label || placeholder;
 
   return (
-    <Paper shadow="sm" p="lg" radius="md" withBorder>
+    <div className="gp-custom-select" ref={ref}>
+      <div className="gp-custom-select-selected" onClick={() => setAbierto(!abierto)}>
+        <span>{label}</span>
+        <span className={`gp-custom-select-icon ${abierto ? 'open' : ''}`}>▾</span>
+      </div>
+      {abierto && (
+        <div className="gp-custom-select-dropdown">
+          {opciones.map(({ value: v, label: l }) => (
+            <div key={v} className="gp-custom-select-option" onClick={() => { onChange(v); setAbierto(false); }}>
+              {l}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Panel de filtros con buscador dropdown (apoderado, CI, N° puesto),
+ * selects custom y botones de acción unificados.
+ */
+export function FiltrosPuestos({
+  puestos,
+  search,        setSearch,
+  filtroPatente, setFiltroPatente,
+  filtroFila,    setFiltroFila,
+  filtroCuadra,  setFiltroCuadra,
+  limpiarFiltros,
+  onTraspaso,
+}) {
+  const isMobile   = useMediaQuery({ maxWidth: 640 });
+  const hayFiltros = search || filtroPatente || filtroFila || filtroCuadra;
+  const wrapperRef = useRef(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Cerrar dropdown al click fuera
+  useEffect(() => {
+    const handler = (e) => { if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setShowDropdown(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Resultados para el dropdown
+const resultadosDropdown = search.trim().length >= 1
+  ? puestos
+      .filter(p => {
+        if (Number(p.nroPuesto) > 10000) return false;
+        const t = search.toLowerCase().trim();
+        return (
+          String(p.nroPuesto).includes(t) ||
+          (p.apoderado || '').toLowerCase().includes(t) ||
+          (p.ci || '').includes(t)
+        );
+      })
+      .sort((a, b) => {
+        const nroA = Number(a.nroPuesto);
+        const nroB = Number(b.nroPuesto);
+        if (nroA !== nroB) return nroA - nroB;
+        return (a.fila || '').localeCompare(b.fila || '');
+      })
+      .slice(0, 10)
+  : [];
+
+  return (
+    <Paper className="gp-filtros-paper" p="lg" mb="xl">
       <Stack gap="md">
 
-        <Group grow>
+        <Group gap="md" align="center" style={{ flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap' }}>
 
-          <TextInput
-            placeholder="Buscar Apoderado o CI..."
-            leftSection={<IconSearch size={18} />}
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            size="sm"
-            radius="md"
-          />
+          {/* ── Buscador con dropdown ── */}
+          <div ref={wrapperRef} style={{ position: 'relative', flex: isMobile ? '1 1 100%' : '2' }}>
+            <div className="gp-search-wrapper">
+              <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
+              <input
+                type="text"
+                placeholder="Buscar por apoderado, CI o N° puesto..."
+                value={search}
+                onChange={(e) => { setSearch(e.currentTarget.value); setShowDropdown(true); }}
+                onFocus={() => setShowDropdown(true)}
+                className="gp-search-input"
+              />
+              {search && (
+                <button onClick={() => { setSearch(''); setShowDropdown(false); }} className="gp-search-clear-btn">
+                  <IconX size={13} />
+                </button>
+              )}
+            </div>
 
-          <Select
-            placeholder="Estado Patente"
-            data={[
-              { value: 'Todo', label: 'Todo'},
-              { value: 'si', label: 'Con Patente' },
-              { value: 'no', label: 'Sin Patente' }
-            ]}
-            value={filtroPatente}
-            onChange={setFiltroPatente}
-          />
-{/**toque esta parte dejalo porfis **/}
-          <Select
-            placeholder="Fila"
-            data={['Todo','A','B']}
-            value={filtroFila}
-            onChange={setFiltroFila}
-          />
+            {showDropdown && resultadosDropdown.length > 0 && (
+              <div className="gp-search-dropdown">
+                {resultadosDropdown.map((p) => (
+                  <div
+                    key={p.id_puesto}
+                    className="gp-search-dropdown-item"
+                    onMouseDown={(e) => { e.preventDefault(); setSearch(String(p.nroPuesto)); setShowDropdown(false); }}
+                  >
+                    <div className="gp-search-dropdown-icono">
+                      <IconMapPin size={14} color="#0f0f0f" />
+                    </div>
+                    <div>
+                      <div className="gp-search-dropdown-nombre">
+                        Puesto {p.nroPuesto} — Fila {p.fila} {p.cuadra}
+                      </div>
+                      <div className="gp-search-dropdown-ci">
+                        {p.apoderado || 'Vacante'}{p.ci ? ` · CI: ${p.ci}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Sin resultados ← NUEVO */}
+            {showDropdown && search.trim().length >= 1 && resultadosDropdown.length === 0 && (
+              <div className="buscador-sin-resultados">
+                Sin resultados para "{search}"
+              </div>
+            )}
+          </div>
 
-          <Select
-            placeholder="Cuadra"
-            data={['Todo','Cuadra 1','Cuadra 2','Cuadra 3','Cuadra 4','Callejón']}
-            value={filtroCuadra}
-            onChange={setFiltroCuadra}
-          />
-
+          <CustomSelect value={filtroPatente} onChange={setFiltroPatente} opciones={OPCIONES_PATENTE} placeholder="Estado Patente" />
+          <CustomSelect value={filtroFila}    onChange={setFiltroFila}    opciones={OPCIONES_FILA}    placeholder="Fila" />
+          <CustomSelect value={filtroCuadra}  onChange={setFiltroCuadra}  opciones={OPCIONES_CUADRA}  placeholder="Cuadra" />
         </Group>
 
-        <Group justify="space-between">
-
-          <Group>
-
-            <Button
-              leftSection={<IconArrowsExchange size={18}/>}
-              color="dark"
-              radius="xl"
-              style={{ backgroundColor:'#0f0f0f' }}
-              onClick={onTraspaso}
-            >
+        <Group justify="space-between" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
+          <Group gap="md" style={{ flexWrap: 'wrap' }}>
+            <Button leftSection={<IconArrowsExchange size={18} />} className="gp-btn-traspaso" onClick={onTraspaso}>
               Realizar Traspaso
             </Button>
-
-            <Button
-              leftSection={<IconFileExport size={18}/>}
-              radius="xl"
-              style={{ backgroundColor:'#EDBE3C', color:'black' }}
-              onClick={() => exportarPuestosExcel(puestos)}
-            >
+            <Button leftSection={<IconFileExport size={18} />} className="gp-btn-exportar" onClick={() => exportarPuestosExcel(puestos)}>
               Generar Reporte General
             </Button>
-
           </Group>
-
-          {(search || filtroPatente || filtroFila || filtroCuadra) && (
-            <Button
-              variant="subtle"
-              size="xs"
-              onClick={limpiarFiltros}
-              leftSection={<IconX size={14}/>}
-            >
+          {hayFiltros && (
+            <Button variant="subtle" size="xs" onClick={limpiarFiltros} leftSection={<IconX size={14} />} className="gp-btn-limpiar">
               Limpiar Filtros
             </Button>
           )}
-
         </Group>
-
       </Stack>
     </Paper>
   );

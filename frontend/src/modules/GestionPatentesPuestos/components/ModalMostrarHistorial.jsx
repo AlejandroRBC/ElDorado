@@ -1,27 +1,38 @@
-import { Modal, Table, Loader, Text, Stack, Group, Box, Button, Badge } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { obtenerHistorialPuesto } from '../service/historialService';
-import { exportarHistorialExcel } from "../exports/historialExport";
+// frontend/src/modules/GestionPatentesPuestos/components/ModalMostrarHistorial.jsx
 
+// ============================================
+// COMPONENTE MODAL MOSTRAR HISTORIAL
+// ============================================
+
+import { Modal, Table, Loader, Text, Stack, Group, Box, Button } from '@mantine/core';
+import { useEffect, useState }                                    from 'react';
+import { obtenerHistorialPuesto }                                 from '../service/historialService';
+import { exportarHistorialExcel }                                 from '../exports/historialExport';
+import '../Styles/gestionpatentespuestos.css';
+
+/**
+ * Modal que muestra el historial de asignaciones de un puesto.
+ * Permite exportar el historial a Excel con un reporte individual.
+ *
+ * opened - Si el modal está visible
+ * close  - Callback para cerrar el modal
+ * puesto - Objeto con datos del puesto { id_puesto, nroPuesto, cuadra, fila }
+ */
 export function ModalMostrarHistorial({ opened, close, puesto }) {
   const [historial, setHistorial] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState(null);
 
-  
   const id = puesto?.id_puesto ?? puesto?.id;
+
+  /**
+   * Carga el historial del puesto desde el backend.
+   */
   const cargarHistorial = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      
       const data = await obtenerHistorialPuesto(id);
-
-      
-
-
-      
       setHistorial(data);
     } catch (err) {
       console.error(err);
@@ -32,111 +43,95 @@ export function ModalMostrarHistorial({ opened, close, puesto }) {
   };
 
   useEffect(() => {
-    if (id && opened) {
-      cargarHistorial();
-    }
+    if (id && opened) cargarHistorial();
   }, [id, opened]);
 
+  const columnas = ['Fecha', 'Hora', 'Tipo', 'Afiliado', 'Motivo', 'Usuario'];
+
   return (
-    <Modal 
-      opened={opened} 
-      onClose={close} 
-      size="95%" 
+    <Modal
+      opened={opened}
+      onClose={close}
+      size="95%"
       radius="lg"
       withCloseButton={false}
       padding={0}
     >
       <Box p="xl">
-        {/* ENCABEZADO ESTILO IMAGEN */}
+
+        {/* ── Encabezado ── */}
         <Group justify="space-between" mb="xl" align="flex-end">
           <Group align="center" gap="xs">
-            <Text fw={800} size="xl" style={{ letterSpacing: '1px' }}>HISTORIAL DEL PUESTO</Text>
-            <Box style={{ borderBottom: '2px solid black', width: '200px', marginBottom: '8px' }} />
+            <Text className="gp-historial-titulo">HISTORIAL DEL PUESTO</Text>
+            <Box className="gp-historial-underline" />
           </Group>
-          
           <Group gap={40}>
-            <Stack gap={0} align="center">
-              <Text fw={700} size="lg">Puesto N. {puesto?.nroPuesto || '---'}</Text>
-            </Stack>
-            <Stack gap={0} align="center">
-              <Text fw={700} size="lg">Cuadra N. {puesto?.cuadra || '---'}</Text>
-            </Stack>
-            <Stack gap={0} align="center">
-              <Text fw={700} size="lg">Fila {puesto?.fila || '---'}</Text>
-            </Stack>
+            <Text fw={700} size="lg" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Puesto N. {puesto?.nroPuesto || '---'}
+            </Text>
+            <Text fw={700} size="lg" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Cuadra N. {puesto?.cuadra || '---'}
+            </Text>
+            <Text fw={700} size="lg" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Fila {puesto?.fila || '---'}
+            </Text>
           </Group>
         </Group>
 
+        {/* ── Tabla historial ── */}
         {loading ? (
-          <Stack align="center" py={50}><Loader color="yellow" /><Text>Cargando historial...</Text></Stack>
+          <Stack align="center" py={50}>
+            <Loader color="yellow" />
+            <Text style={{ fontFamily: 'Poppins, sans-serif' }}>Cargando historial...</Text>
+          </Stack>
         ) : (
           <Box style={{ overflowX: 'auto' }}>
-            <Table verticalSpacing="md" horizontalSpacing="sm" variant="unstyled">
-              <Table.Thead>
-                <Table.Tr>
-                  {['Fecha', 'Hora', 'Tipo', 'Afiliado', 'Motivo', 'Usuario'].map((h) => (
-                    <Table.Th key={h}>
-                      <Badge variant="light" color="gray" size="lg" radius="sm" fullWidth style={{ backgroundColor: '#f1f3f5', color: '#495057' }}>
-                        {h}
-                      </Badge>
-                    </Table.Th>
+            <table className="gp-tabla" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  {columnas.map((col) => (
+                    <th key={col}>{col}</th>
                   ))}
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {historial.length === 0 && (
-                  <Table.Tr>
-                    <Table.Td colSpan={7}>
-                      <Text align="center">No hay historial para este puesto</Text>
-                    </Table.Td>
-                  </Table.Tr>
+                </tr>
+              </thead>
+              <tbody>
+                {historial.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', fontFamily: 'Poppins, sans-serif', color: '#C4C4C4', padding: '40px' }}>
+                      No hay historial para este puesto
+                    </td>
+                  </tr>
+                ) : (
+                  historial.map((reg, i) => (
+                    <tr
+                      key={i}
+                      style={{ backgroundColor: i % 2 === 0 ? 'white' : '#fafafa' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#eee'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'white' : '#fafafa'}
+                    >
+                      <td><Text size="xs">{reg.fecha_ini || '00/00/0000'}</Text></td>
+                      <td><Text size="xs">{reg.hora_accion || '00:00:00'}</Text></td>
+                      <td><Text size="xs">{reg.razon || 'Traspaso'}</Text></td>
+                      <td style={{ maxWidth: '250px' }}><Text size="xs" fw={500}>{reg.afiliado}</Text></td>
+                      <td style={{ maxWidth: '200px' }}><Text size="xs" c="dimmed">{reg.motivo || 'Sin detalles'}</Text></td>
+                      <td><Text size="xs">{reg.usuario || 'Administrador'}</Text></td>
+                    </tr>
+                  ))
                 )}
-
-                {historial.map((reg, i) => (
-                  <Table.Tr key={i} style={{ textAlign: 'center' }}>
-                    <Table.Td><Text size="xs">{reg.fecha_ini || '00/00/0000'}</Text></Table.Td>
-                    
-                    <Table.Td><Text size="xs">{reg.hora_accion || '00:00:00 am'}</Text></Table.Td>
-                    <Table.Td><Text size="xs">{reg.razon || 'Traspaso'}</Text></Table.Td>
-                    <Table.Td style={{ maxWidth: '250px' }}>
-                      <Text size="xs" fw={500}>{reg.afiliado}</Text>
-                    </Table.Td>
-                    <Table.Td style={{ maxWidth: '200px' }}>
-                      <Text size="xs" c="dimmed">{reg.motivo || 'Sin detalles'}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text size="xs">{reg.usuario || 'Administrador'}</Text>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
+              </tbody>
+            </table>
           </Box>
         )}
 
-        {/* BOTONES INFERIORES */}
+        {/* ── Botones ── */}
         <Group justify="flex-end" mt={50} gap="md">
-          <Button 
-            variant="filled" 
-            color="dark" 
-            radius="xl" 
-            size="md" 
-            px={30}
-            style={{ backgroundColor: '#0f0f0f' }}
-            onClick={() => exportarHistorialExcel(historial)}
-          >
-            Hacer un Reporte Individual
-          </Button>
-          <Button 
-            variant="filled" 
-            radius="xl" 
-            size="md" 
-            px={50}
-            onClick={close}
-            style={{ backgroundColor: '#EDBE3C', color: 'black' }}
-          >
+           <Button className="gp-btn-cerrar" size="md" px={50} onClick={close}>
             Cerrar
           </Button>
+          <Button className="gp-btn-reporte" size="md" px={30} onClick={() => exportarHistorialExcel(historial)}>
+            Hacer un Reporte Individual
+          </Button>
+         
         </Group>
       </Box>
     </Modal>

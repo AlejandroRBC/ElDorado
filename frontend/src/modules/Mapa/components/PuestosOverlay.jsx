@@ -21,8 +21,8 @@ const COLORES = {
   con_patente: { fill: 'rgba(76, 175, 80, 0.45)',  stroke: '#4caf50' },
   sin_patente: { fill: 'rgba(237, 190, 60, 0.45)', stroke: '#EDBE3C' },
   libre:       { fill: 'rgba(244, 67, 54, 0.45)',  stroke: '#f44336' },
-  hover:       { fill: 'rgba(237, 190, 60, 0.35)', stroke: '#EDBE3C' },
-  selected:    { fill: 'rgba(237, 190, 60, 0.6)',  stroke: '#EDBE3C' },
+hover:    { fill: 'rgba(55, 69, 103, 0.35)', stroke: '#374567' },
+selected: { fill: 'rgba(55, 69, 103, 0.6)',  stroke: '#374567' },
 };
 
 /**
