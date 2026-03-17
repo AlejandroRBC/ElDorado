@@ -2,8 +2,9 @@ import { memo, useCallback } from 'react';
 import { Table, Badge, Group, ActionIcon, Text, ScrollArea } from '@mantine/core';
 import { IconUserCheck, IconEdit, IconEye } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { useLogin } from '../../../context/LoginContext';
 
-import '../styles/Estilos.css'; // Archivo acumulador de estilos
+import '../styles/Estilos.css';
 
 // ==============================================
 // CONSTANTES
@@ -26,8 +27,17 @@ const getNombreCompleto = (afiliado) => {
 // COMPONENTE PRINCIPAL
 // ==============================================
 
+/**
+ * Tabla de afiliados.
+ * El icono de edición solo se muestra a usuarios con rol superadmin.
+ * El icono de ver detalles es libre para todos.
+ */
 const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehabilitar }) => {
   const navigate = useNavigate();
+
+  // ── Control de rol ──────────────────────────────────────────
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   // ==============================================
   // HANDLERS DEL COMPONENTE
@@ -132,17 +142,21 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
         <Table.Td>
           <Group gap={4} className="acciones-tabla">
             {esDeshabilitados ? (
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                aria-label="Rehabilitar afiliado"
-                className="accion-rehabilitar"
-                onClick={(e) => handleRehabilitar(afiliado.id, e)}
-              >
-                <IconUserCheck size={16} />
-              </ActionIcon>
+              // Rehabilitar — solo superAdmin
+              esSuperAdmin && (
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  aria-label="Rehabilitar afiliado"
+                  className="accion-rehabilitar"
+                  onClick={(e) => handleRehabilitar(afiliado.id, e)}
+                >
+                  <IconUserCheck size={16} />
+                </ActionIcon>
+              )
             ) : (
               <>
+                {/* Ver detalles — libre para todos */}
                 <ActionIcon
                   variant="subtle"
                   size="sm"
@@ -152,15 +166,19 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
                 >
                   <IconEye size={16} />
                 </ActionIcon>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  aria-label="Editar afiliado"
-                  className="accion-editar"
-                  onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}
-                >
-                  <IconEdit size={16} />
-                </ActionIcon>
+
+                {/* Editar — solo superAdmin */}
+                {esSuperAdmin && (
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    aria-label="Editar afiliado"
+                    className="accion-editar"
+                    onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}
+                  >
+                    <IconEdit size={16} />
+                  </ActionIcon>
+                )}
               </>
             )}
           </Group>

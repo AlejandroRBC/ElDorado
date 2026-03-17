@@ -9,8 +9,9 @@ import { ModalEditarPuesto } from '../../GestionPatentesPuestos/components/Modal
 import { ModalMostrarHistorial } from '../../GestionPatentesPuestos/components/ModalMostrarHistorial';
 import ModalAccionPuesto from './ModalAccionPuesto';
 import ModalConfirmarAccion from './ModalConfirmarAccion';
+import { useLogin } from '../../../context/LoginContext';
 
-import '../styles/Estilos.css'; // Archivo acumulador de estilos
+import '../styles/Estilos.css';
 
 // ==============================================
 // CONSTANTES
@@ -47,7 +48,16 @@ const getBadgeText = (tienePatente) => {
 // COMPONENTE PRINCIPAL
 // ==============================================
 
+/**
+ * Tabla de puestos de un afiliado.
+ * Historial — visible para todos.
+ * Traspasar, Editar y Desasignar — solo superAdmin.
+ */
 const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
+  // ── Control de rol ──────────────────────────────────────────
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
+
   // ==============================================
   // ESTADOS LOCALES
   // ==============================================
@@ -132,7 +142,7 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
         message: result.message,
         color: 'green'
       });
-      
+
       setModalConfirmacionAbierto(false);
       setPuestoSeleccionado(null);
       setAccionSeleccionada(null);
@@ -283,6 +293,8 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
             </Menu.Target>
 
             <Menu.Dropdown className="menu-acciones-dropdown">
+
+              {/* Historial — libre para todos */}
               <Menu.Item
                 leftSection={<IconEye size={16} />}
                 description="Ver información completa del puesto"
@@ -291,34 +303,37 @@ const TablaPuestos = ({ afiliadoId, onRefresh, onTraspaso }) => {
                 Historial
               </Menu.Item>
 
-              <Menu.Item
-                leftSection={<IconTransfer size={16} />}
-                description="Transferir el puesto a otro afiliado"
-                
-                onClick={() => handleTraspasoClick(puesto)}
-              >
-                Traspasar
-              </Menu.Item>
+              {/* Traspasar, Editar, Desasignar — solo superAdmin */}
+              {esSuperAdmin && (
+                <>
+                  <Menu.Item
+                    leftSection={<IconTransfer size={16} />}
+                    description="Transferir el puesto a otro afiliado"
+                    onClick={() => handleTraspasoClick(puesto)}
+                  >
+                    Traspasar
+                  </Menu.Item>
 
-              <Menu.Item
-                leftSection={<IconEdit size={16} />}
-                description="Modificar rubro, patente o dimensiones"
-                
-                onClick={() => handleEditar(puesto)}
-              >
-                Editar
-              </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconEdit size={16} />}
+                    description="Modificar rubro, patente o dimensiones"
+                    onClick={() => handleEditar(puesto)}
+                  >
+                    Editar
+                  </Menu.Item>
 
-              <Menu.Divider />
+                  <Menu.Divider />
 
-              <Menu.Item
-                leftSection={<IconTrash size={16} />}
-                description="Liberar o despojar el puesto"
-                
-                onClick={() => handleEliminar(puesto)}
-              >
-                Desasignar
-              </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconTrash size={16} />}
+                    description="Liberar o despojar el puesto"
+                    onClick={() => handleEliminar(puesto)}
+                  >
+                    Desasignar
+                  </Menu.Item>
+                </>
+              )}
+
             </Menu.Dropdown>
           </Menu>
         </Table.Td>

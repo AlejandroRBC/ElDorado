@@ -6,7 +6,29 @@ import ExcelJS from 'exceljs';
 // ============================================================
 // EXPORTACIÓN A EXCEL
 // ============================================================
-  export const exportToExcel = async ({
+
+/**
+ * Calcula la longitud "efectiva" de un valor de celda.
+ * Si el texto tiene saltos de línea (\n) — como en las columnas
+ * de puestos — devuelve la longitud de la línea más larga,
+ * no la del string completo.
+ */
+const longitudEfectiva = (valor) => {
+  const texto = String(valor ?? '');
+  if (!texto.includes('\n')) return texto.length;
+  return Math.max(...texto.split('\n').map((linea) => linea.length));
+};
+
+/**
+ * Cuenta cuántas líneas tiene un valor de celda.
+ * Usado para calcular la altura de fila cuando hay puestos múltiples.
+ */
+const contarLineas = (valor) => {
+  const texto = String(valor ?? '');
+  return texto ? texto.split('\n').length : 1;
+};
+
+export const exportToExcel = async ({
   data = [],
   columns = [],
   sheetName = 'Hoja1',
@@ -66,49 +88,87 @@ import ExcelJS from 'exceljs';
     cell.font      = { bold: true, color: { argb: '000000' }, size: 11 };
     cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     cell.border    = {
-      top: { style: 'thin' }, left:   { style: 'thin' },
-      bottom: { style: 'thin' }, right: { style: 'thin' },
+      top:    { style: 'thin' },
+      left:   { style: 'thin' },
+      bottom: { style: 'thin' },
+      right:  { style: 'thin' },
     };
   });
 
   // ── Filas de datos ────────────────────────────────────────
   data.forEach((item, rowIndex) => {
-    const row           = worksheet.getRow(6 + rowIndex);
+    const excelRow      = worksheet.getRow(6 + rowIndex);
     const esMayorA10000 = Number(item.nroPuesto) > 10000;
 
+    // Calcular la altura de la fila según el mayor número de
+    // líneas (\n) que tenga cualquier celda de esta fila.
+    // Altura base ExcelJS ≈ 15 pt; añadimos 14 pt por cada línea extra.
+    let maxLineas = 1;
+
     columns.forEach((col, colIndex) => {
-      const cell  = row.getCell(colIndex + 1);
+      const cell  = excelRow.getCell(colIndex + 1);
       const value = col.format ? col.format(item) : item[col.key];
 
       cell.value = esMayorA10000 ? '' : value;
 
+      // ── Colorear fila ──────────────────────────────────
       if (esMayorA10000) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF6F9FF' } };
       } else if (item.tiene_patente === 0) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF59D' } };
       }
 
+      // ── Alineación base ────────────────────────────────
       cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      cell.border    = {
+
+      // ── Aplicar col.style si el template lo define ─────
+      // El template puede sobreescribir alineación (ej: vertical: 'top')
+      if (col.style) {
+        if (col.style.alignment) {
+          cell.alignment = { ...cell.alignment, ...col.style.alignment };
+        }
+        if (col.style.font)   cell.font   = { ...cell.font,   ...col.style.font   };
+        if (col.style.fill)   cell.fill   = col.style.fill;
+        if (col.style.border) cell.border = col.style.border;
+      }
+
+      // ── Borde ──────────────────────────────────────────
+      cell.border = {
         top:    { style: 'thin', color: { argb: 'CCCCCC' } },
         left:   { style: 'thin', color: { argb: 'CCCCCC' } },
         bottom: { style: 'thin', color: { argb: 'CCCCCC' } },
         right:  { style: 'thin', color: { argb: 'CCCCCC' } },
       };
 
+      // ── Formato numérico ───────────────────────────────
       if (col.numeric) cell.numFmt = col.numFmt || '#,##0.00';
+
+      // ── Conteo de líneas para auto-altura de fila ─────
+      if (!esMayorA10000) {
+        const lineas = contarLineas(value);
+        if (lineas > maxLineas) maxLineas = lineas;
+      }
     });
+
+    // Ajustar altura: 15 pt base + 14 pt por cada línea adicional
+    if (maxLineas > 1) {
+      excelRow.height = 15 + (maxLineas - 1) * 14;
+    }
   });
 
-  // ── Ajustar ancho de columnas ─────────────────────────────
+  // ── Auto-ajuste de ancho de columnas ─────────────────────
+  // FIX: usa longitudEfectiva() para manejar correctamente
+  // los valores multilinea (columnas NRO PUESTO / FILA / CUADRA).
   columns.forEach((col, index) => {
-    let maxLength = col.header.length;
+    let maxLen = col.header.length;
+
     data.forEach((item) => {
-      const value  = col.format ? col.format(item) : item[col.key];
-      const length = String(value || '').length;
-      if (length > maxLength) maxLength = length;
+      const value = col.format ? col.format(item) : item[col.key];
+      const len   = longitudEfectiva(value);
+      if (len > maxLen) maxLen = len;
     });
-    worksheet.getColumn(index + 1).width = Math.min(Math.max(maxLength + 2, 10), 50);
+
+    worksheet.getColumn(index + 1).width = Math.min(Math.max(maxLen + 2, 10), 50);
   });
 
   // ── Timestamp y descarga ──────────────────────────────────

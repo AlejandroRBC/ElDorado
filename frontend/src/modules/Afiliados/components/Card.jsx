@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { Text, Group, Badge, Stack, ActionIcon, Box, Button } from '@mantine/core';
 import { IconEdit, IconChevronRight, IconUserCheck } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { useLogin } from '../../../context/LoginContext';
 
 import { getPerfilUrl } from '../../../utils/imageHelper';
 import '../styles/Estilos.css';
@@ -31,37 +32,44 @@ const renderImageFallback = (parentElement) => {
 // ==============================================
 
 /**
- * Card de afiliado para mostrar información resumida
- * Componente puramente presentacional
+ * Card de afiliado para mostrar información resumida.
+ * Componente puramente presentacional.
+ * El icono de edición rápida y el botón Rehabilitar
+ * solo se muestran a usuarios con rol superadmin.
  */
 const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
   const navigate = useNavigate();
 
+  // ── Control de rol ──────────────────────────────────────────
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
+
   // ==============================================
-  // HANDLERS DEL COMPONENTE - CORREGIDOS
+  // HANDLERS DEL COMPONENTE
   // ==============================================
 
   const verDetalles = useCallback(() => {
     navigate(`/afiliados/${afiliado.id}`);
-  }, [navigate, afiliado.id]); // ← CORREGIDO: función inline
+  }, [navigate, afiliado.id]);
 
   const handleRehabilitar = useCallback((e) => {
     e.stopPropagation();
     if (onRehabilitar) onRehabilitar(afiliado.id);
-  }, [onRehabilitar, afiliado.id]); // ← CORREGIDO: función inline
+  }, [onRehabilitar, afiliado.id]);
 
   const handleImageError = useCallback((e) => {
     e.target.style.display = 'none';
     renderImageFallback(e.target.parentElement);
-  }, []); // ← CORREGIDO: función inline
+  }, []);
 
   // ==============================================
   // RENDERIZADO DE SECCIONES
   // ==============================================
 
   const renderBotonEdicion = () => {
-    if (esDeshabilitado) return null;
-    
+    // Icono azul de edición rápida — solo superAdmin
+    if (esDeshabilitado || !esSuperAdmin) return null;
+
     return (
       <ActionIcon
         variant="subtle"
@@ -78,7 +86,7 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
 
   const renderBadgeDeshabilitado = () => {
     if (!esDeshabilitado) return null;
-    
+
     return (
       <Badge
         size="sm"
@@ -106,7 +114,7 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
   const renderPuestos = () => {
     if (afiliado.puestos?.length > 0) {
       const puestos = (afiliado.puestosDetalle ?? afiliado.puestos?.map(p => ({ label: p, tienePatente: false })) ?? []);
-      
+
       return puestos.map((puesto, i) => (
         <Badge
           key={i}
@@ -117,7 +125,7 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
         </Badge>
       ));
     }
-    
+
     return (
       <Text size="sm" className="card-sin-puestos">
         Sin puestos
@@ -137,8 +145,9 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
   );
 
   const renderBotonRehabilitar = () => {
-    if (!esDeshabilitado || !onRehabilitar) return null;
-    
+    // Rehabilitar — solo superAdmin
+    if (!esDeshabilitado || !onRehabilitar || !esSuperAdmin) return null;
+
     return (
       <Button
         fullWidth
@@ -155,7 +164,7 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
 
   const renderPieCard = () => {
     if (esDeshabilitado) return null;
-    
+
     return (
       <Box className="card-pie">
         <div className="card-pie-linea" />

@@ -20,6 +20,7 @@ import { prepararDatosAfiliados } from '../../utils/excelTemplates';
 import BarraFiltros   from './components/BarraFiltros';
 import FiltrosActivos from './components/FiltrosActivos';
 import { useListaAfiliados } from './hooks/useListaAfiliados';
+import { useLogin } from '../../context/LoginContext';
 
 const ModalAfiliado = lazy(() => import('./components/ModalAfiliado'));
 
@@ -41,6 +42,10 @@ const AfiliadosModule = () => {
   const [searchValue,       setSearchValue]       = useState('');
 
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
+
+  // ── Control de rol ────────────────────────────────────────────
+  const { user }       = useLogin();
+  const esSuperAdmin   = user?.rol === 'superadmin';
 
   const {
     afiliados,
@@ -154,10 +159,7 @@ const AfiliadosModule = () => {
         </Alert>
       )}
 
-      {/* ── Tarea 10: Suspense condicionado a la apertura ──────
-          El chunk de ModalAfiliado solo se descarga cuando el
-          usuario abre el modal por primera vez. Visitas que no
-          interactúan con el botón no pagan el coste de red.    */}
+      {/* Modal de creación — solo se descarga cuando el usuario lo abre */}
       {modalAbierto && (
         <Suspense fallback={<CargandoModal />}>
           <ModalAfiliado
@@ -194,13 +196,18 @@ const AfiliadosModule = () => {
 
         <Group justify="space-between" align="center" mb="xl">
           <Group gap="md">
-            <Button
-              leftSection={<IconPlus size={18} />} size="md" aria-label="Añadir nuevo afiliado"
-              style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
-              onClick={() => setModalAbierto(true)}
-            >
-              Añadir Afiliado
-            </Button>
+            {/* Añadir Afiliado — solo superAdmin */}
+            {esSuperAdmin && (
+              <Button
+                leftSection={<IconPlus size={18} />} size="md" aria-label="Añadir nuevo afiliado"
+                style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
+                onClick={() => setModalAbierto(true)}
+              >
+                Añadir Afiliado
+              </Button>
+            )}
+
+            {/* Exportar — libre para todos */}
             <Button
               leftSection={<IconFileExport size={18} />} size="md" aria-label="Exportar lista a Excel"
               style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
@@ -208,6 +215,7 @@ const AfiliadosModule = () => {
             >
               Exportar lista
             </Button>
+
             {hayFiltrosActivos() && (
               <Button leftSection={<IconX size={16} />} variant="subtle" color="gray" onClick={handleLimpiarFiltros} size="md" style={{ height: '40px' }}>
                 Limpiar filtros

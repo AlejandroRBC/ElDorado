@@ -10,13 +10,14 @@ import { useTraspasoDesdeAfiliado } from '../hooks/useTraspasoDesdeAfiliado';
 import { usePDFExport } from '../hooks/usePDFExport';
 import { useHistorialAfiliado } from '../hooks/useHistorialAfiliado';
 import { getPerfilUrl } from '../../../utils/imageHelper';
+import { useLogin } from '../../../context/LoginContext';
 
 import TablaPuestos from './TablaPuestos';
 import ModalDesafiliarAfiliado from './ModalDesafiliarAfiliado';
 import { ModalTraspaso } from '../../GestionPatentesPuestos/components/ModalTraspaso';
 import ModalHistorialAfiliado from './ModalHistorialAfiliado';
 
-import '../styles/Estilos.css'; // Archivo acumulador de estilos
+import '../styles/Estilos.css';
 
 // ==============================================
 // HANDLERS DE NAVEGACIÓN Y MODALES
@@ -52,6 +53,10 @@ const CargandoModal = () => (
 const DetallesAfiliado = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // ── Control de rol ──────────────────────────────────────────
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   // ==============================================
   // ESTADOS LOCALES
@@ -219,6 +224,7 @@ const DetallesAfiliado = () => {
         {/* Botones de acción superiores */}
         <Group justify="flex-start" mb="xl">
           <Group gap="md">
+            {/* Generar PDF — libre para todos */}
             <Button
               leftSection={<IconFilePencil size={18} />}
               loading={exportando}
@@ -228,15 +234,19 @@ const DetallesAfiliado = () => {
               {exportando ? 'Generando PDF...' : 'Generar Reporte PDF'}
             </Button>
 
-            <Button
-              leftSection={<IconEdit size={18} />}
-              component="a"
-              href={`/afiliados/editar/${id}`}
-              className="boton-accion"
-            >
-              Editar Perfil de Afiliado
-            </Button>
+            {/* Editar Perfil — solo superAdmin */}
+            {esSuperAdmin && (
+              <Button
+                leftSection={<IconEdit size={18} />}
+                component="a"
+                href={`/afiliados/editar/${id}`}
+                className="boton-accion"
+              >
+                Editar Perfil de Afiliado
+              </Button>
+            )}
 
+            {/* Historial — libre para todos */}
             <Button
               leftSection={<IconHistory size={18} />}
               onClick={handleAbrirHistorialClick}
@@ -245,7 +255,8 @@ const DetallesAfiliado = () => {
               Historial del Afiliado
             </Button>
 
-            {afiliado?.es_habilitado === 1 && (
+            {/* Desafiliar — solo superAdmin */}
+            {esSuperAdmin && afiliado?.es_habilitado === 1 && (
               <Button
                 leftSection={<IconUserOff size={18} />}
                 onClick={() => setModalDesafiliarAbierto(true)}
@@ -255,7 +266,8 @@ const DetallesAfiliado = () => {
               </Button>
             )}
 
-            {afiliado?.es_habilitado === 0 && (
+            {/* Rehabilitar — solo superAdmin */}
+            {esSuperAdmin && afiliado?.es_habilitado === 0 && (
               <Button
                 leftSection={<IconUserCheck size={18} />}
                 onClick={handleRehabilitarClick}
@@ -366,13 +378,16 @@ const DetallesAfiliado = () => {
                 </Title>
 
                 <Group gap="md">
-                  <Button
-                    leftSection={<IconPlus size={18} />}
-                    onClick={() => setModalPuestoAbierto(true)}
-                    className="boton-anadir-puesto"
-                  >
-                    Añadir Puesto
-                  </Button>
+                  {/* Añadir Puesto — solo superAdmin */}
+                  {esSuperAdmin && (
+                    <Button
+                      leftSection={<IconPlus size={18} />}
+                      onClick={() => setModalPuestoAbierto(true)}
+                      className="boton-anadir-puesto"
+                    >
+                      Añadir Puesto
+                    </Button>
+                  )}
                   {modalPuestoAbierto && (
                     <Suspense fallback={<CargandoModal />}>
                       <ModalAsignarPuesto
@@ -387,39 +402,41 @@ const DetallesAfiliado = () => {
               </Group>
 
               <TablaPuestos
-                afiliadoId={afiliado.id}
-                key={refreshPuestos}
-                onTraspaso={handleTraspaso}
+                afiliadoId={id}
                 onRefresh={refrescarDatosAfiliado}
+                onTraspaso={handleTraspaso}
               />
             </Box>
-
-            <ModalDesafiliarAfiliado
-              opened={modalDesafiliarAbierto}
-              onClose={() => setModalDesafiliarAbierto(false)}
-              afiliado={afiliado}
-              onConfirmar={handleDesafiliar}
-              loading={cargandoDesafiliar}
-            />
-
-            <ModalTraspaso
-              opened={modalTraspasoAbierto}
-              close={cerrarModalTraspaso}
-              puestoSeleccionado={puestoParaTraspaso}
-              onTraspaso={ejecutarTraspaso}
-            />
-
-            <ModalHistorialAfiliado
-              opened={modalHistorialAbierto}
-              onClose={handleCerrarHistorialClick}
-              historial={historial}
-              cargando={cargandoHistorial}
-              error={errorHistorial}
-              nombreAfiliado={afiliado?.nombreCompleto || afiliado?.nombre || ''}
-            />
           </>
         )}
       </Paper>
+
+      {/* Modal Desafiliar */}
+      <ModalDesafiliarAfiliado
+        opened={modalDesafiliarAbierto}
+        onClose={() => setModalDesafiliarAbierto(false)}
+        afiliado={afiliado}
+        onConfirmar={handleDesafiliar}
+        loading={cargandoDesafiliar}
+      />
+
+      {/* Modal Traspaso */}
+      <ModalTraspaso
+        opened={modalTraspasoAbierto}
+        close={cerrarModalTraspaso}
+        puestoSeleccionado={puestoParaTraspaso}
+        onTraspaso={ejecutarTraspaso}
+      />
+
+      {/* Modal Historial */}
+      <ModalHistorialAfiliado
+        opened={modalHistorialAbierto}
+        onClose={handleCerrarHistorialClick}
+        historial={historial}
+        cargando={cargandoHistorial}
+        error={errorHistorial}
+        nombreAfiliado={afiliado?.nombreCompleto || afiliado?.nombre || ''}
+      />
     </Container>
   );
 };

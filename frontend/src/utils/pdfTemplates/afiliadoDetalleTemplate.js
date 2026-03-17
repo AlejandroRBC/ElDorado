@@ -290,7 +290,7 @@ export const exportAfiliadoDetalleToPDF = async (afiliadoId) => {
         bodyStyles:          { fillColor: [255, 255, 255] },
         alternateRowStyles:  { fillColor: [250, 250, 250] },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 12 },  // N°
+          0: { halign: 'center', cellWidth: 15 },  // N°
           1: { halign: 'center', cellWidth: 14 },  // Fila
           2: { halign: 'center', cellWidth: 24 },  // Cuadra
           3: { halign: 'left'   },                 // Rubro (ancho automático)
