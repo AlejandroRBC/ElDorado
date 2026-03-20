@@ -1,3 +1,10 @@
+// frontend/src/utils/excelTemplates/ListaAfiliadosTemplate.js
+
+// Colores ARGB para ExcelJS (richText)
+const COLOR_VERDE  = '075903'; // tiene patente
+const COLOR_ROJO   = '9c0312'; // sin patente
+const FONT_NAME    = 'Calibri';  // debe coincidir con el exportador genérico
+
 export const prepararDatosAfiliados = (lista) => {
   const datosOrdenados = [...lista].sort((a, b) =>
     (a.paterno || '').localeCompare(b.paterno || '')
@@ -19,10 +26,38 @@ export const prepararDatosAfiliados = (lista) => {
     return { nro, fila, cuadra: resto.join('-') };
   };
 
+  /** Versión plana: sin info de patente (fallback) */
   const joinCol = (puestos, key) =>
     puestos?.length
       ? puestos.map((p) => parsePuesto(p)[key]).join('\n')
       : '—';
+
+  /**
+   * Versión richText: colorea cada línea según tienePatente.
+   * Usa puestosDetalle o puestos_id si están disponibles;
+   * si no, delega a joinCol (texto plano).
+   *
+   * @param {Object} r   - fila de datos
+   * @param {string} key - 'nro' | 'fila' | 'cuadra'
+   */
+  const joinColRich = (r, key) => {
+    const lista = r.puestosDetalle ?? r.puestos_id ?? null;
+
+    // Sin info de patente → texto plano
+    if (!lista?.length) return joinCol(r.puestos, key);
+
+    const segments = lista.flatMap((p, i) => {
+      const parsed = parsePuesto(p.puestos ?? '');
+      const texto  = parsed[key] || '—';
+      const color  = p.tienePatente ? COLOR_VERDE : COLOR_ROJO;
+      const salto  = i < lista.length - 1 ? '\n' : '';
+      return [
+        { text: `${texto}${salto}`, font: { name: FONT_NAME, color: { argb: color } } },
+      ];
+    });
+
+    return { richText: segments };
+  };
   // ─────────────────────────────────────────────────────────
 
   const columnas = [
@@ -64,19 +99,19 @@ export const prepararDatosAfiliados = (lista) => {
     {
       header: 'NRO PUESTO',
       key:    'nro_puesto',
-      format: (r) => joinCol(r.puestos, 'nro'),
+      format: (r) => joinColRich(r, 'nro'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     {
       header: 'FILA',
       key:    'fila',
-      format: (r) => joinCol(r.puestos, 'fila'),
+      format: (r) => joinColRich(r, 'fila'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     {
       header: 'CUADRA',
       key:    'cuadra',
-      format: (r) => joinCol(r.puestos, 'cuadra'),
+      format: (r) => joinColRich(r, 'cuadra'),
       style:  { alignment: { vertical: 'top', wrapText: true } },
     },
     // ─────────────────────────────────────────────────────

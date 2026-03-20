@@ -7,6 +7,15 @@ import ExcelJS from 'exceljs';
 // EXPORTACIÓN A EXCEL
 // ============================================================
 
+// Extrae el texto plano de un valor de celda,
+// sea string, número u objeto richText de ExcelJS.
+const textoPlano = (valor) => {
+  if (valor == null) return '';
+  if (typeof valor === 'object' && Array.isArray(valor.richText)) {
+    return valor.richText.map((s) => s.text ?? '').join('');
+  }
+  return String(valor);
+};
 /**
  * Calcula la longitud "efectiva" de un valor de celda.
  * Si el texto tiene saltos de línea (\n) — como en las columnas
@@ -14,7 +23,7 @@ import ExcelJS from 'exceljs';
  * no la del string completo.
  */
 const longitudEfectiva = (valor) => {
-  const texto = String(valor ?? '');
+  const texto = textoPlano(valor);
   if (!texto.includes('\n')) return texto.length;
   return Math.max(...texto.split('\n').map((linea) => linea.length));
 };
@@ -24,7 +33,7 @@ const longitudEfectiva = (valor) => {
  * Usado para calcular la altura de fila cuando hay puestos múltiples.
  */
 const contarLineas = (valor) => {
-  const texto = String(valor ?? '');
+  const texto = textoPlano(valor);
   return texto ? texto.split('\n').length : 1;
 };
 
