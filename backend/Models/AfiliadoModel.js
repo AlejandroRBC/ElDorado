@@ -121,10 +121,10 @@ const Afiliado = {
               materno:             row.materno,
               ci:                  `${row.ci} ${row.extension}`,
               ocupacion:           row.ocupacion,
-              puestos:             row.puestos_patente_codes ? row.puestos_patente_codes.split(',').filter(Boolean) : [],
+              // ====================================================================================================================
               
               puestosDetalle:      parsePuestosDetalle(row.puestos_patente_codes),
-
+              // ====================================================================================================================
               total_puestos:       row.total_puestos || 0,
               puestos_con_patente: row.puestos_con_patente || 0,
               estado:              'Activo',
@@ -227,6 +227,7 @@ const Afiliado = {
               fecNac:          afiliado.fecNac,
               edad:            calcularEdad(afiliado.fecNac),
               telefono:        afiliado.telefono,
+              es_habilitado:   afiliado.es_habilitado,
               ocupacion:       afiliado.ocupacion,
               direccion:       afiliado.direccion,
               url_perfil:      afiliado.url_perfil || '/assets/perfiles/sinPerfil.png',

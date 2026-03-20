@@ -113,7 +113,7 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
 
   const renderPuestos = () => {
     // este if es para cuando se carga los puestos mediante el modulo principal
-    if (afiliado.puestos?.length > 0) {
+    if (afiliado.puestosDetalle?.length > 0) {
       const puestos = (afiliado.puestosDetalle ?? afiliado.puestos?.map(p => ({ 
         puestos: p, 
         tienePatente: false 
