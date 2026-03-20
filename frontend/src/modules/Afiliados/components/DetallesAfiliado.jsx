@@ -298,9 +298,9 @@ const DetallesAfiliado = () => {
                   <Group justify="space-between" align="flex-start">
                     <Box>
                       <Text fw={700} size="xl" className="texto-nombre">
-                        {afiliado.nombreCompleto || afiliado.nombre}
+                        { afiliado.nombre} {afiliado.paterno} {afiliado.materno}
                       </Text>
-                      <Text className="texto-ci">CI: {afiliado.ci}</Text>
+                      <Text className="texto-ci">CI: {afiliado.ci_numero}-{afiliado.extension}</Text>
                     </Box>
                   </Group>
 
@@ -310,16 +310,17 @@ const DetallesAfiliado = () => {
                         Puestos Actuales:
                       </Text>
                       <Group gap={6} wrap="wrap">
-                        {afiliado.patentes?.length > 0 ? (
-                          afiliado.patentes.map((puesto, index) => (
+                        {afiliado.puestos_id?.length > 0 ? (
+                          afiliado.puestos_id.map((puesto, index) => (
                             <Badge
                               key={index}
                               size="sm"
                               className={`badge-puesto-detalle ${puesto.tienePatente ? 'badge-puesto-patente' : 'badge-puesto-sin-patente'}`}
                             >
-                              {puesto.label}
+                              {puesto.puestos}
                             </Badge>
                           ))
+                        
                         ) : (
                           <Text size="sm" className="texto-sin-puestos">
                             Sin puestos asignados

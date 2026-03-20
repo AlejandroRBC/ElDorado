@@ -1,5 +1,5 @@
 
-const Afiliado = require('../models/Afiliado');
+const Afiliado = require('../models/AfiliadoModel');
 
 // ============================================
 // OBTENER TODOS (con filtros)
@@ -277,7 +277,7 @@ exports.obtenerEstadisticas = async (req, res) => {
 // ============================================
 exports.obtenerDatosPdf = async (req, res) => {
   try {
-    const afiliado = await Afiliado.obtenerPorId(req.params.id);
+    const afiliado = await Afiliado.DatosPdf(req.params.id);
 
     if (!afiliado) {
       return res.status(404).json({ error: 'Afiliado no encontrado' });

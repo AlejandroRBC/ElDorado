@@ -53,6 +53,8 @@ router.get('/',  ctrl.obtenerTodos);
 router.post('/',     normalizeAfiliado, ctrl.crear);
 
 router.get('/:id',              ctrl.obtenerPorId);
+router.get('/:id/pdf-data',        ctrl.obtenerDatosPdf);
+
 router.put('/:id',              normalizeAfiliado, ctrl.actualizar);
 router.put('/:id/deshabilitar', ctrl.deshabilitar);
 router.put('/:id/rehabilitar',  ctrl.rehabilitar);
@@ -60,7 +62,6 @@ router.put('/:id/rehabilitar',  ctrl.rehabilitar);
 router.get('/:id/puestos',         ctrl.obtenerPuestos);
 router.post('/:id/asignar-puesto',normalizeAfiliado,ctrl.asignarPuesto);
 
-router.get('/:id/pdf-data',        ctrl.obtenerDatosPdf);
 
 router.post('/:id/upload-perfil', upload.single('foto'), ctrl.subirFotoPerfil);
 

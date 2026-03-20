@@ -112,8 +112,12 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
   );
 
   const renderPuestos = () => {
+    // este if es para cuando se carga los puestos mediante el modulo principal
     if (afiliado.puestos?.length > 0) {
-      const puestos = (afiliado.puestosDetalle ?? afiliado.puestos?.map(p => ({ label: p, tienePatente: false })) ?? []);
+      const puestos = (afiliado.puestosDetalle ?? afiliado.puestos?.map(p => ({ 
+        puestos: p, 
+        tienePatente: false 
+      })) ?? []);
 
       return puestos.map((puesto, i) => (
         <Badge
@@ -121,11 +125,23 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
           size="sm"
           className={`badge-puesto ${puesto.tienePatente ? 'badge-puesto-patente' : 'badge-puesto-sin-patente'}`}
         >
-          {puesto.label}
+          {puesto.puestos}
+        </Badge>
+      ));
+
+    }
+    // este if es para cuando se carga los puestos mediante el modulo "Mapa" Pop up de un puesto
+    if (afiliado.puestos_id?.length > 0) {
+      return afiliado.puestos_id.map((puesto, i) => (
+        <Badge
+          key={i}
+          size="sm"
+          className={`badge-puesto ${puesto.tienePatente ? 'badge-puesto-patente' : 'badge-puesto-sin-patente'}`}
+        >
+          {puesto.puestos}
         </Badge>
       ));
     }
-
     return (
       <Text size="sm" className="card-sin-puestos">
         Sin puestos
@@ -198,11 +214,11 @@ const Card = memo(({ afiliado, esDeshabilitado = false, onRehabilitar }) => {
 
         <Stack gap={8} className={infoClasses}>
           <Text fw={700} size="sm" className="card-nombre">
-            {afiliado.nombre} {afiliado.paterno} {afiliado.materno}
+            {afiliado.nombre}  {afiliado.paterno} {afiliado.materno}
           </Text>
 
           <Text size="sm" className="card-ci">
-            CI: {afiliado.ci}
+            CI: {afiliado.ci ?? afiliado.ci_numero +" "+afiliado.extension}
           </Text>
 
           <Text fw={600} size="sm" className="card-puestos-titulo">

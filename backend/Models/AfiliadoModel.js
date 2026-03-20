@@ -38,10 +38,14 @@ const Afiliado = {
             a.*,
             COUNT(DISTINCT tp.id_tenencia)                                     AS total_puestos,
             SUM(CASE WHEN (p.tiene_patente = 1 OR p.nro_patente IS NOT NULL) THEN 1 ELSE 0 END) AS puestos_con_patente,
-            GROUP_CONCAT(DISTINCT p.nroPuesto || '-' || p.fila || '-' || p.cuadra) AS puestos_codes,
             GROUP_CONCAT(
               p.nroPuesto || '-' || p.fila || '-' || p.cuadra || ':' ||
-              CASE WHEN (p.tiene_patente = 1 OR p.nro_patente IS NOT NULL) THEN '1' ELSE '0' END
+              CASE WHEN (
+                p.tiene_patente = 1 
+                OR 
+                p.nro_patente IS NOT NULL) 
+              THEN '1' 
+              ELSE '0' END
             ) AS puestos_patente_codes,
             GROUP_CONCAT(DISTINCT p.rubro)                                     AS rubros
           FROM afiliado a
@@ -117,8 +121,10 @@ const Afiliado = {
               materno:             row.materno,
               ci:                  `${row.ci} ${row.extension}`,
               ocupacion:           row.ocupacion,
-              puestos:             row.puestos_codes ? row.puestos_codes.split(',').filter(Boolean) : [],
-              puestosDetalle: parsePuestosDetalle(row.puestos_patente_codes),
+              puestos:             row.puestos_patente_codes ? row.puestos_patente_codes.split(',').filter(Boolean) : [],
+              
+              puestosDetalle:      parsePuestosDetalle(row.puestos_patente_codes),
+
               total_puestos:       row.total_puestos || 0,
               puestos_con_patente: row.puestos_con_patente || 0,
               estado:              'Activo',
@@ -200,7 +206,7 @@ const Afiliado = {
         (err, afiliado) => {
           if (err) { reject(err); return; }
           if (!afiliado) { resolve(null); return; }
-
+          
           // Puestos activos (los que tienen fila en tenencia_puesto)
           db.all(`
             SELECT p.*, tp.fecha_ini, tp.razon, tp.id_tenencia
@@ -210,14 +216,11 @@ const Afiliado = {
             ORDER BY p.fila, p.nroPuesto
           `, [id], (err, puestos) => {
             if (err) { reject(err); return; }
-
             resolve({
               id:              afiliado.id_afiliado,
               nombre:          afiliado.nombre,
               paterno:         afiliado.paterno,
               materno:         afiliado.materno,
-              nombreCompleto:  `${afiliado.nombre} ${afiliado.paterno} ${afiliado.materno || ''}`.trim(),
-              ci:              `${afiliado.ci}-${afiliado.extension}`,
               ci_numero:       afiliado.ci,
               extension:       afiliado.extension,
               sexo:            afiliado.sexo === 'M' ? 'Masculino' : 'Femenino',
@@ -228,25 +231,9 @@ const Afiliado = {
               direccion:       afiliado.direccion,
               url_perfil:      afiliado.url_perfil || '/assets/perfiles/sinPerfil.png',
               fecha_afiliacion:afiliado.fecha_afiliacion,
-              es_habilitado:   afiliado.es_habilitado,
-              puestos:        puestos.map(p => `${p.nroPuesto}-${p.fila}-${p.cuadra}`),
-              patentes: puestos.map(p => ({
-                label:        `${p.nroPuesto}-${p.fila}-${p.cuadra}`,
+              puestos_id: puestos.map(p => ({
+                puestos:        `${p.nroPuesto}-${p.fila}-${p.cuadra}`,
                 tienePatente: p.tiene_patente === 1 || p.nro_patente != null,
-              })),
-              historial_puestos: puestos.map(p => ({
-                id_puesto:     p.id_puesto,
-                id_tenencia:   p.id_tenencia,
-                nroPuesto:     p.nroPuesto,
-                fila:          p.fila,
-                cuadra:        p.cuadra,
-                ancho:         p.ancho,
-                largo:         p.largo,
-                tiene_patente: p.tiene_patente,
-                nro_patente:   p.nro_patente,
-                rubro:         p.rubro,
-                fecha_ini:     p.fecha_ini,
-                razon:         p.razon,
               })),
             });
           });
@@ -277,6 +264,59 @@ const Afiliado = {
       });
     });
   },
+  
+// ============================================
+// datos para pdf
+// ============================================
+DatosPdf: (id) => {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT * FROM afiliado WHERE id_afiliado = ?`,
+      [id],
+      (err, afiliado) => {
+        if (err) { reject(err); return; }
+        if (!afiliado) { resolve(null); return; }
+
+        // Puestos activos (los que tienen fila en tenencia_puesto)
+        db.all(`
+          SELECT p.*, tp.fecha_ini, tp.razon, tp.id_tenencia
+          FROM puesto p
+          JOIN tenencia_puesto tp ON p.id_puesto = tp.id_puesto
+          WHERE tp.id_afiliado = ?
+          ORDER BY p.fila, p.nroPuesto
+        `, [id], (err, puestos) => {
+          if (err) { reject(err); return; }
+
+          resolve({
+            nombre:          afiliado.nombre +" "+ afiliado.paterno +" "+afiliado.materno,
+            ci_numero:       afiliado.ci,
+            extension:       afiliado.extension,
+            sexo:            afiliado.sexo === 'M' ? 'Masculino' : 'Femenino',
+            edad:            calcularEdad(afiliado.fecNac),
+            telefono:        afiliado.telefono,
+            ocupacion:       afiliado.ocupacion,
+            direccion:       afiliado.direccion,
+            url_perfil:      afiliado.url_perfil || '/assets/perfiles/sinPerfil.png',
+            fecha_afiliacion:afiliado.fecha_afiliacion,
+            historial_puestos: puestos.map(p => ({
+              nroPuesto:     p.nroPuesto,
+              fila:          p.fila,
+              cuadra:        p.cuadra,
+              ancho:         p.ancho,
+              largo:         p.largo,
+              tiene_patente: p.tiene_patente,
+              nro_patente:   p.nro_patente,
+              rubro:         p.rubro,
+              fecha_ini:     p.fecha_ini,
+              razon:         p.razon,
+            })),
+          });
+        });
+      }
+    );
+  });
+},
+
 
 
   // ============================================
@@ -637,10 +677,10 @@ function parsePuestosDetalle(codes) {
   const seen = new Set();
   return codes.split(',').filter(Boolean).reduce((acc, code) => {
     const i     = code.lastIndexOf(':');
-    const label = code.substring(0, i);
-    if (seen.has(label)) return acc;
-    seen.add(label);
-    acc.push({ label, tienePatente: code.substring(i + 1) === '1' });
+    const puestos = code.substring(0, i);
+    if (seen.has(puestos)) return acc;
+    seen.add(puestos);
+    acc.push({ puestos, tienePatente: code.substring(i + 1) === '1' });
     return acc;
   }, []);
 }
