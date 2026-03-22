@@ -1,174 +1,132 @@
-import { memo } from 'react';
-import { Text, TextInput, Select, Group, Box, Button } from '@mantine/core';
-import { IconSearch, IconX } from '@tabler/icons-react';
-
+import { memo, useState, useRef, useEffect } from 'react';
+import { IconSearch, IconX }                 from '@tabler/icons-react';
 import {
   OPCIONES_PATENTE,
   OPCIONES_ORDEN,
   OPCIONES_PUESTO_COUNT,
 } from '../constantes/opcionesFiltros';
+import '../styles/afiliados-gp.css';
 
-// ── Estilos compartidos — fuera del componente ────────────────
-const estiloInput = {
-  input: {
-    backgroundColor: '#f6f8fe',
-    border: '1px solid #f6f8fe',
-    borderRadius: '8px',
-    height: '45px',
-  },
-};
+const OPTS_PATENTE      = [{ value: '', label: 'Todas' }, ...OPCIONES_PATENTE];
+const OPTS_ORDEN        = [...OPCIONES_ORDEN];
+const OPTS_PUESTO_COUNT = [{ value: '', label: 'Todos' }, ...OPCIONES_PUESTO_COUNT];
 
-const estiloInputConPlaceholder = {
-  input: {
-    backgroundColor: '#f6f8fe',
-    border: '1px solid #f6f8fe',
-    borderRadius: '8px',
-    height: '45px',
-    '&::placeholder': { color: '#999', fontSize: '14px' },
-  },
-};
+// ─────────────────────────────────────────────────────────────
+// CustomSelect
+// ─────────────────────────────────────────────────────────────
+const CustomSelect = memo(({ value, onChange, opciones, placeholder }) => {
+  const [abierto, setAbierto] = useState(false);
+  const ref = useRef(null);
 
-/**
- * Panel de filtros del módulo de afiliados.
- * Componente puramente presentacional: recibe valores actuales
- * y callbacks; no maneja estado propio ni llama servicios.
- */
-const BarraFiltros = memo(({
-  valores = {},
-  opcionesRubros = [],
-  cargando = false,
-  alCambiarBusqueda,
-  alLimpiarBusqueda,
-  alCambiarPatente,
-  alCambiarOrden,
-  alCambiarPuestoCount,
-  alCambiarRubro,
-}) => {
-  const {
-    searchValue      = '',
-    selectPatente    = null,
-    selectOrden      = 'alfabetico',
-    selectPuestoCount = null,
-    selectRubro      = null,
-  } = valores;
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setAbierto(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Coerción a string: resuelve el bug número vs string
+  const valorStr     = value === null || value === undefined ? '' : String(value);
+  const opcionActual = opciones.find((o) => o.value === valorStr);
+  const label        = opcionActual?.label || placeholder;
 
   return (
-    <>
-      <Group gap="md" wrap="wrap" align="flex-end" mb="xl">
-
-        {/* Buscador */}
-        <Box style={{ flex: 2, minWidth: '250px' }}>
-          <label htmlFor="filtro-busqueda">
-            <Text size="sm" fw={600} mb={4} component="span">Buscar</Text>
-          </label>
-          <TextInput
-            id="filtro-busqueda"
-            placeholder="Nombre, CI, rubro, puesto... (búsqueda automática)"
-            leftSection={<IconSearch size={18} />}
-            size="md"
-            value={searchValue}
-            onChange={(e) => alCambiarBusqueda(e.target.value)}
-            aria-label="Buscar afiliados por nombre, CI, rubro o puesto"
-            rightSection={
-              searchValue && (
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  onClick={alLimpiarBusqueda}
-                  aria-label="Limpiar búsqueda"
-                  style={{ padding: 0, minWidth: 'auto' }}
-                >
-                  <IconX size={16} />
-                </Button>
-              )
-            }
-            styles={estiloInputConPlaceholder}
-          />
-        </Box>
-
-        {/* Filtro Patente */}
-        <Box style={{ flex: 1, minWidth: '160px' }}>
-          <label htmlFor="filtro-patente">
-            <Text size="sm" fw={600} mb={4} component="span">Patente</Text>
-          </label>
-          <Select
-            id="filtro-patente"
-            placeholder="Filtrar por patente"
-            data={OPCIONES_PATENTE}
-            value={selectPatente}
-            onChange={alCambiarPatente}
-            clearable
-            size="md"
-            aria-label="Filtrar por estado de patente"
-            styles={estiloInput}
-          />
-        </Box>
-
-        {/* Ordenar */}
-        <Box style={{ flex: 1, minWidth: '160px' }}>
-          <label htmlFor="filtro-orden">
-            <Text size="sm" fw={600} mb={4} component="span">Ordenar</Text>
-          </label>
-          <Select
-            id="filtro-orden"
-            placeholder="Ordenar por..."
-            data={OPCIONES_ORDEN}
-            value={selectOrden}
-            onChange={alCambiarOrden}
-            size="md"
-            aria-label="Ordenar afiliados"
-            styles={estiloInput}
-          />
-        </Box>
-
-        {/* Cantidad de Puestos */}
-        <Box style={{ flex: 1, minWidth: '160px' }}>
-          <label htmlFor="filtro-puesto-count">
-            <Text size="sm" fw={600} mb={4} component="span"># Puestos</Text>
-          </label>
-          <Select
-            id="filtro-puesto-count"
-            placeholder="Cantidad de puestos"
-            data={OPCIONES_PUESTO_COUNT}
-            value={selectPuestoCount}
-            onChange={alCambiarPuestoCount}
-            clearable
-            size="md"
-            aria-label="Filtrar por cantidad de puestos"
-            styles={estiloInput}
-          />
-        </Box>
-
-        {/* Rubro */}
-        <Box style={{ flex: 1, minWidth: '160px' }}>
-          <label htmlFor="filtro-rubro">
-            <Text size="sm" fw={600} mb={4} component="span">Rubro</Text>
-          </label>
-          <Select
-            id="filtro-rubro"
-            placeholder="Filtrar por rubro"
-            data={opcionesRubros}
-            value={selectRubro}
-            onChange={alCambiarRubro}
-            clearable
-            searchable
-            size="md"
-            aria-label="Filtrar por rubro"
-            styles={estiloInput}
-          />
-        </Box>
-
-      </Group>
-
-      {searchValue && (
-        <Text size="xs" style={{ color: '#666', marginTop: '-10px', marginBottom: '10px' }}>
-          Buscando: &ldquo;{searchValue}&rdquo; {cargando ? '(buscando...)' : ''}
-        </Text>
+    <div className="af-custom-select" ref={ref}>
+      <div className="af-custom-select-selected" onClick={() => setAbierto((v) => !v)}>
+        <span>{label}</span>
+        <span className={`af-custom-select-icon ${abierto ? 'open' : ''}`}>▾</span>
+      </div>
+      {abierto && (
+        <div className="af-custom-select-dropdown">
+          {opciones.map(({ value: v, label: l }) => (
+            <div
+              key={v}
+              className="af-custom-select-option"
+              onClick={() => { onChange(v === '' ? null : v); setAbierto(false); }}
+            >
+              {l}
+            </div>
+          ))}
+        </div>
       )}
-    </>
+    </div>
   );
 });
+CustomSelect.displayName = 'CustomSelect';
 
+// ─────────────────────────────────────────────────────────────
+// BarraFiltros
+// ─────────────────────────────────────────────────────────────
+const BarraFiltros = memo(({
+  valores = {}, opcionesRubros = [], cargando = false,
+  alCambiarBusqueda, alLimpiarBusqueda,
+  alCambiarPatente, alCambiarOrden, alCambiarPuestoCount, alCambiarRubro,
+}) => {
+  const {
+    searchValue = '', selectPatente = null, selectOrden = 'alfabetico',
+    selectPuestoCount = null, selectRubro = null,
+  } = valores;
+
+  const optsRubro = [{ value: '', label: 'Todos los rubros' }, ...opcionesRubros];
+
+  return (
+    <div className="af-filtros-paper" style={{ padding: '1rem 1.25rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+
+        {/* Buscador */}
+        <div style={{ flex: '2 1 220px' }}>
+          <span className="af-filtro-label">Buscar</span>
+          <div className="af-search-wrapper">
+            <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              className="af-search-input"
+              placeholder="Nombre, CI, rubro, puesto..."
+              value={searchValue}
+              onChange={(e) => alCambiarBusqueda(e.target.value)}
+            />
+            {searchValue && (
+              <button className="af-search-clear-btn" onClick={alLimpiarBusqueda} aria-label="Limpiar búsqueda">
+                <IconX size={13} />
+              </button>
+            )}
+          </div>
+          {searchValue && (
+            <span style={{ fontSize: '11px', color: '#aaa', marginTop: '3px', display: 'block' }}>
+              {cargando ? 'Buscando...' : `Resultados para "${searchValue}"`}
+            </span>
+          )}
+        </div>
+
+        {/* Patente */}
+        <div style={{ flex: '1 1 150px' }}>
+          <span className="af-filtro-label">Patente</span>
+          <CustomSelect value={selectPatente} onChange={alCambiarPatente} opciones={OPTS_PATENTE} placeholder="Todas" />
+        </div>
+
+        {/* Orden */}
+        <div style={{ flex: '1 1 150px' }}>
+          <span className="af-filtro-label">Ordenar</span>
+          <CustomSelect value={selectOrden} onChange={alCambiarOrden} opciones={OPTS_ORDEN} placeholder="Ordenar por..." />
+        </div>
+
+        {/* # Puestos */}
+        <div style={{ flex: '1 1 150px' }}>
+          <span className="af-filtro-label"># Puestos</span>
+          <CustomSelect value={selectPuestoCount} onChange={alCambiarPuestoCount} opciones={OPTS_PUESTO_COUNT} placeholder="Todos" />
+        </div>
+
+        {/* Rubro */}
+        <div style={{ flex: '1 1 160px' }}>
+          <span className="af-filtro-label">Rubro</span>
+          <CustomSelect value={selectRubro} onChange={alCambiarRubro} opciones={optsRubro} placeholder="Todos los rubros" />
+        </div>
+
+      </div>
+    </div>
+  );
+});
 BarraFiltros.displayName = 'BarraFiltros';
 
 export default BarraFiltros;

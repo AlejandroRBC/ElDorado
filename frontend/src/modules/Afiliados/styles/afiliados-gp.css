@@ -1,0 +1,317 @@
+/* ============================================================
+   FUENTES GOOGLE
+============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================
+   VARIABLES — iguales al sistema GPP
+============================================================ */
+:root {
+  --af-primary:   #0f0f0f;
+  --af-accent:    #EDBE3C;
+  --af-bg-input:  #F6F9FF;
+  --af-bg-option: #E2ECFF;
+  --af-white:     #ffffff;
+  --af-border:    #dde3f0;
+  --af-dimmed:    #C4C4C4;
+  --af-shadow:    rgba(0,0,0,0.08);
+  --af-font-title:'Bebas Neue', sans-serif;
+  --af-font-body: 'Poppins', sans-serif;
+  --af-radius-sm: 8px;
+  --af-radius-md: 12px;
+  --af-radius-xl: 100px;
+}
+
+/* ============================================================
+   MÓDULO PRINCIPAL
+============================================================ */
+.af-module {
+  font-family: var(--af-font-body);
+  background-color: #fdfdfd;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   PANEL DE FILTROS
+============================================================ */
+.af-filtros-paper {
+  background-color: var(--af-white);
+  border-radius:    var(--af-radius-md) !important;
+  box-shadow:       0 4px 20px var(--af-shadow) !important;
+  border:           none !important;
+  margin-bottom:    1.5rem;
+}
+
+/* ── Buscador nativo ── */
+.af-search-wrapper {
+  display:          flex;
+  align-items:      center;
+  background-color: var(--af-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--af-radius-sm);
+  padding:          6px 10px;
+  gap:              8px;
+  transition:       border-color 0.2s;
+  height:           38px;
+}
+
+.af-search-wrapper:focus-within {
+  border-color: var(--af-primary);
+}
+
+.af-search-input {
+  border:           none;
+  outline:          none;
+  flex:             1;
+  font-size:        13px;
+  color:            var(--af-primary);
+  background-color: transparent;
+  font-family:      var(--af-font-body);
+}
+
+.af-search-input::placeholder {
+  color:       var(--af-dimmed);
+  font-family: var(--af-font-body);
+}
+
+.af-search-clear-btn {
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  padding:     2px;
+  display:     flex;
+  align-items: center;
+  color:       #999;
+  transition:  color 0.15s;
+}
+
+.af-search-clear-btn:hover {
+  color: var(--af-primary);
+}
+
+/* ── Label de filtro ── */
+.af-filtro-label {
+  font-family:    var(--af-font-body);
+  font-weight:    600;
+  font-size:      11px;
+  color:          #888;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom:  5px;
+  display:        block;
+}
+
+/* ── Custom select ── */
+.af-custom-select {
+  position:    relative;
+  min-width:   160px;
+  font-family: var(--af-font-body);
+}
+
+.af-custom-select-selected {
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      center;
+  background-color: var(--af-bg-input);
+  border:           1.5px solid transparent;
+  border-radius:    var(--af-radius-sm);
+  padding:          7px 12px;
+  font-size:        13px;
+  font-family:      var(--af-font-body);
+  color:            var(--af-primary);
+  cursor:           pointer;
+  transition:       border-color 0.2s;
+  height:           38px;
+  user-select:      none;
+}
+
+.af-custom-select-selected:hover {
+  border-color: var(--af-primary);
+}
+
+.af-custom-select-icon {
+  font-size:  12px;
+  color:      #999;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.af-custom-select-icon.open {
+  transform: rotate(180deg);
+}
+
+.af-custom-select-dropdown {
+  position:      absolute;
+  top:           calc(100% + 4px);
+  left:          0;
+  width:         100%;
+  background:    var(--af-white);
+  border-radius: var(--af-radius-sm);
+  overflow:      hidden;
+  box-shadow:    0 8px 20px rgba(0,0,0,0.15);
+  z-index:       300;
+}
+
+.af-custom-select-option {
+  padding:          8px 12px;
+  font-size:        13px;
+  font-family:      var(--af-font-body);
+  cursor:           pointer;
+  background-color: var(--af-bg-option);
+  color:            var(--af-primary);
+  transition:       background 0.15s;
+}
+
+.af-custom-select-option:hover {
+  background-color: var(--af-primary);
+  color:            var(--af-white);
+}
+
+/* ============================================================
+   BOTONES
+============================================================ */
+
+/* Botón primario negro */
+.af-btn-primario {
+  background-color: var(--af-primary) !important;
+  color:            var(--af-white) !important;
+  border-radius:    var(--af-radius-xl) !important;
+  border:           none !important;
+  font-family:      var(--af-font-body) !important;
+  font-weight:      500 !important;
+  height:           40px !important;
+  padding:          0 25px !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.af-btn-primario:hover {
+  background-color: var(--af-accent) !important;
+  color:            var(--af-primary) !important;
+}
+
+/* Botón de acción dorado (exportar) */
+.af-btn-exportar {
+  background-color: var(--af-accent) !important;
+  color:            var(--af-primary) !important;
+  border-radius:    var(--af-radius-xl) !important;
+  border:           none !important;
+  font-family:      var(--af-font-body) !important;
+  font-weight:      600 !important;
+  height:           40px !important;
+  padding:          0 25px !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.af-btn-exportar:hover {
+  background-color: var(--af-primary) !important;
+  color:            var(--af-white) !important;
+}
+
+/* Botón limpiar filtros (sutil) */
+.af-btn-limpiar {
+  font-family: var(--af-font-body) !important;
+  color:       var(--af-primary) !important;
+  height:      40px !important;
+}
+
+/* FAB volver arriba */
+.af-fab {
+  background-color: var(--af-primary) !important;
+  color:            var(--af-white) !important;
+  border-radius:    var(--af-radius-xl) !important;
+  height:           50px !important;
+  padding:          0 25px !important;
+  box-shadow:       0 4px 15px var(--af-shadow) !important;
+  border:           2px solid var(--af-accent) !important;
+  font-family:      var(--af-font-body) !important;
+  font-weight:      600 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.af-fab:hover {
+  background-color: var(--af-accent) !important;
+  color:            var(--af-primary) !important;
+  border-color:     var(--af-primary) !important;
+}
+
+/* ============================================================
+   FILTROS ACTIVOS (badges)
+============================================================ */
+.af-filtros-activos {
+  display:     flex;
+  flex-wrap:   wrap;
+  gap:         8px;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.af-filtros-activos-label {
+  font-family:  var(--af-font-body);
+  font-size:    12px;
+  font-weight:  600;
+  color:        #888;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.af-filtro-badge {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              6px;
+  background-color: var(--af-bg-option);
+  color:            var(--af-primary);
+  border-radius:    var(--af-radius-xl);
+  padding:          4px 10px 4px 12px;
+  font-size:        12px;
+  font-family:      var(--af-font-body);
+  font-weight:      500;
+  border:           1.5px solid var(--af-border);
+  transition:       border-color 0.15s;
+}
+
+.af-filtro-badge:hover {
+  border-color: var(--af-primary);
+}
+
+.af-filtro-badge-x {
+  background:   none;
+  border:       none;
+  cursor:       pointer;
+  padding:      0;
+  display:      flex;
+  align-items:  center;
+  color:        #999;
+  transition:   color 0.15s;
+}
+
+.af-filtro-badge-x:hover {
+  color: var(--af-primary);
+}
+
+/* ============================================================
+   SWITCH VISTA CARDS/TABLA — contador
+============================================================ */
+.af-contador {
+  font-family: var(--af-font-body);
+  font-size:   13px;
+  color:       #888;
+  text-align:  center;
+  margin-top:  4px;
+}
+
+/* ============================================================
+   TOGGLE VISTA (texto Cards/Tabla)
+============================================================ */
+.af-vista-label-activo {
+  font-family: var(--af-font-body);
+  font-size:   14px;
+  font-weight: 600;
+  color:       var(--af-primary);
+}
+
+.af-vista-label-inactivo {
+  font-family: var(--af-font-body);
+  font-size:   14px;
+  font-weight: 400;
+  color:       var(--af-dimmed);
+}

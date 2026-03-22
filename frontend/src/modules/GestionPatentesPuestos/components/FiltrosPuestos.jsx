@@ -1,8 +1,6 @@
-// frontend/src/modules/GestionPatentesPuestos/components/FiltrosPuestos.jsx
-
-// ============================================
+// ============================================================
 // COMPONENTE FILTROS PUESTOS
-// ============================================
+// ============================================================
 
 import { useRef, useEffect, useState }                   from 'react';
 import { Group, Stack, Paper, Button }                   from '@mantine/core';
@@ -12,6 +10,9 @@ import { useMediaQuery }                                 from 'react-responsive'
 import { useLogin }                                      from '../../../context/LoginContext';
 import { exportarPuestosExcel }                          from '../exports/puestosExport';
 import '../Styles/gestionpatentespuestos.css';
+
+// Reutilizamos los estilos af- para los badges (ya creados)
+import '../../../modules/Afiliados/styles/afiliados-gp.css';
 
 const OPCIONES_PATENTE = [
   { value: 'Todo', label: 'Todo' },
@@ -34,9 +35,7 @@ const OPCIONES_CUADRA = [
   { value: 'Callejón', label: 'Callejón' },
 ];
 
-/**
- * Custom select con dropdown propio estilo mapa.
- */
+// ── Custom select ─────────────────────────────────────────────
 const CustomSelect = ({ value, onChange, opciones, placeholder }) => {
   const [abierto, setAbierto] = useState(false);
   const ref = useRef(null);
@@ -68,10 +67,46 @@ const CustomSelect = ({ value, onChange, opciones, placeholder }) => {
   );
 };
 
+// ── Helpers para etiquetas de filtros activos ─────────────────
+const esActivo = (val) => val && val !== 'Todo';
+
+const etiquetaPatente = (val) =>
+  val === 'si' ? 'Con Patente' : val === 'no' ? 'Sin Patente' : val;
+
+// ── FiltrosActivosPuestos ─────────────────────────────────────
 /**
- * Panel de filtros con buscador dropdown (apoderado, CI, N° puesto),
- * selects custom y botones de acción unificados.
- * El botón "Realizar Traspaso" solo es visible para usuarios con rol superadmin.
+ * Muestra los badges de filtros activos del módulo de puestos.
+ * Usa las clases af- de afiliados-gp.css para consistencia visual.
+ */
+const FiltrosActivosPuestos = ({ search, filtroPatente, filtroFila, filtroCuadra, setSearch, setFiltroPatente, setFiltroFila, setFiltroCuadra }) => {
+  const filtros = [
+    esActivo(search)        && { key: 'search',   label: `Búsqueda: ${search}`,       clear: () => setSearch('') },
+    esActivo(filtroPatente) && { key: 'patente',  label: etiquetaPatente(filtroPatente), clear: () => setFiltroPatente(null) },
+    esActivo(filtroFila)    && { key: 'fila',     label: `Fila ${filtroFila}`,         clear: () => setFiltroFila(null) },
+    esActivo(filtroCuadra)  && { key: 'cuadra',   label: filtroCuadra,                 clear: () => setFiltroCuadra(null) },
+  ].filter(Boolean);
+
+  if (filtros.length === 0) return null;
+
+  return (
+    <div className="af-filtros-activos" style={{ marginTop: '4px' }}>
+      <span className="af-filtros-activos-label">Filtros:</span>
+      {filtros.map(({ key, label, clear }) => (
+        <span key={key} className="af-filtro-badge">
+          {label}
+          <button className="af-filtro-badge-x" onClick={clear} aria-label={`Quitar filtro: ${label}`}>
+            <IconX size={11} />
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+};
+
+// ── FiltrosPuestos ────────────────────────────────────────────
+/**
+ * Panel de filtros con buscador dropdown, selects custom y
+ * badges de filtros activos.
  */
 export function FiltrosPuestos({
   puestos,
@@ -82,22 +117,20 @@ export function FiltrosPuestos({
   limpiarFiltros,
   onTraspaso,
 }) {
-  const isMobile    = useMediaQuery({ maxWidth: 640 });
-  const hayFiltros  = search || filtroPatente || filtroFila || filtroCuadra;
-  const wrapperRef  = useRef(null);
+  const isMobile     = useMediaQuery({ maxWidth: 640 });
+  const hayFiltros   = esActivo(search) || esActivo(filtroPatente) || esActivo(filtroFila) || esActivo(filtroCuadra);
+  const wrapperRef   = useRef(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const { user }    = useLogin();
+  const { user }     = useLogin();
   const esSuperAdmin = user?.rol === 'superadmin';
 
-  // Cerrar dropdown al click fuera
   useEffect(() => {
     const handler = (e) => { if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setShowDropdown(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Resultados para el dropdown
   const resultadosDropdown = search.trim().length >= 1
     ? puestos
         .filter(p => {
@@ -122,9 +155,10 @@ export function FiltrosPuestos({
     <Paper className="gp-filtros-paper" p="lg" mb="xl">
       <Stack gap="md">
 
+        {/* ── Fila de controles ── */}
         <Group gap="md" align="center" style={{ flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap' }}>
 
-          {/* ── Buscador con dropdown ── */}
+          {/* Buscador con dropdown */}
           <div ref={wrapperRef} style={{ position: 'relative', flex: isMobile ? '1 1 100%' : '2' }}>
             <div className="gp-search-wrapper">
               <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
@@ -143,7 +177,6 @@ export function FiltrosPuestos({
               )}
             </div>
 
-            {/* Dropdown resultados */}
             {showDropdown && resultadosDropdown.length > 0 && (
               <div className="gp-search-dropdown">
                 {resultadosDropdown.map((p) => (
@@ -168,7 +201,6 @@ export function FiltrosPuestos({
               </div>
             )}
 
-            {/* Sin resultados */}
             {showDropdown && search.trim().length >= 1 && resultadosDropdown.length === 0 && (
               <div className="buscador-sin-resultados">
                 Sin resultados para &ldquo;{search}&rdquo;
@@ -181,21 +213,17 @@ export function FiltrosPuestos({
           <CustomSelect value={filtroCuadra}  onChange={setFiltroCuadra}  opciones={OPCIONES_CUADRA}  placeholder="Cuadra" />
         </Group>
 
+        {/* ── Botones de acción ── */}
         <Group justify="space-between" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
           <Group gap="md" style={{ flexWrap: 'wrap' }}>
-
-            {/* Traspaso — solo superadmin */}
             {esSuperAdmin && (
               <Button leftSection={<IconArrowsExchange size={18} />} className="gp-btn-traspaso" onClick={onTraspaso}>
                 Realizar Traspaso
               </Button>
             )}
-
-            {/* Reporte — siempre visible */}
             <Button leftSection={<IconFileExport size={18} />} className="gp-btn-exportar" onClick={() => exportarPuestosExcel(puestos)}>
               Generar Reporte General
             </Button>
-
           </Group>
 
           {hayFiltros && (
@@ -204,6 +232,18 @@ export function FiltrosPuestos({
             </Button>
           )}
         </Group>
+
+        {/* ── Badges filtros activos ── */}
+        <FiltrosActivosPuestos
+          search={search}
+          filtroPatente={filtroPatente}
+          filtroFila={filtroFila}
+          filtroCuadra={filtroCuadra}
+          setSearch={setSearch}
+          setFiltroPatente={setFiltroPatente}
+          setFiltroFila={setFiltroFila}
+          setFiltroCuadra={setFiltroCuadra}
+        />
 
       </Stack>
     </Paper>

@@ -1,31 +1,30 @@
-// frontend/src/modules/Afiliados/AfiliadosModule.jsx
 
 import {
-  Text, Paper, Container, Button, Group, Stack,
+  Paper, Container, Button, Group, Stack,
   Title, Switch, LoadingOverlay, Alert, Loader,
-  Affix, Transition, Pagination,
+  Affix, Transition, Pagination, Text,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import ModuleHeader from '../Navegacion/components/ModuleHeader';
+import { notifications }    from '@mantine/notifications';
+import ModuleHeader          from '../Navegacion/components/ModuleHeader';
 import {
   IconSearch, IconPlus, IconFileExport,
   IconLayoutGrid, IconTable, IconAlertCircle,
-  IconX, IconArrowUp, IconCheck,
+  IconX, IconArrowUp,
 } from '@tabler/icons-react';
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import ListaCards     from './components/ListaCards';
-import TablaAfiliados from './components/TablaAfiliados';
+import ListaCards               from './components/ListaCards';
+import TablaAfiliados           from './components/TablaAfiliados';
 import ToggleViewDeshabilitados from './components/ToggleViewDeshabilitados';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue }    from '@mantine/hooks';
 import { exportToExcel }          from '../../utils/excelExport';
 import { prepararDatosAfiliados } from '../../utils/excelTemplates';
-import BarraFiltros   from './components/BarraFiltros';
-import FiltrosActivos from './components/FiltrosActivos';
+import BarraFiltros    from './components/BarraFiltros';
+import FiltrosActivos  from './components/FiltrosActivos';
 import { useListaAfiliados } from './hooks/useListaAfiliados';
-import { useLogin } from '../../context/LoginContext';
+import { useLogin }          from '../../context/LoginContext';
+import './styles/afiliados-gp.css';
 
 const ModalAfiliado = lazy(() => import('./components/ModalAfiliado'));
-
 const CargandoModal = () => (
   <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
     <Loader size="sm" />
@@ -33,8 +32,8 @@ const CargandoModal = () => (
 );
 
 const AfiliadosModule = () => {
-  const [vistaTabla,   setVistaTabla]   = useState(false);
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [vistaTabla,            setVistaTabla]            = useState(false);
+  const [modalAbierto,          setModalAbierto]          = useState(false);
   const [mostrarDeshabilitados, setMostrarDeshabilitados] = useState(false);
 
   const [selectPatente,     setSelectPatente]     = useState(null);
@@ -45,73 +44,61 @@ const AfiliadosModule = () => {
 
   const [debouncedSearch] = useDebouncedValue(searchValue, 300);
 
-  // ── Control de rol ────────────────────────────────────────────
-  const { user }       = useLogin();
-  const esSuperAdmin   = user?.rol === 'superadmin';
+  const { user }     = useLogin();
+  const esSuperAdmin = user?.rol === 'superadmin';
 
   // ── Hook activos ──────────────────────────────────────────────
   const {
-    afiliados,              // lista completa → para export
-    afiliadosPaginados,     // slice de la página actual → para la vista
-    paginaActual,
-    setPaginaActual,
-    totalPaginas,
-    cargando,
-    error,
-    conexion,
-    filtrosActivos,
-    rubrosDisponibles,
-    cargar:                   cargarAfiliados,
-    buscarPorTexto,
-    ordenarPor,
-    filtrarPorCantidadPuestos,
-    filtrarPorPatente,
-    filtrarPorRubro,
-    limpiarFiltros,
+    afiliados, afiliadosPaginados,
+    paginaActual, setPaginaActual, totalPaginas,
+    cargando, error, conexion, filtrosActivos, rubrosDisponibles,
+    cargar: cargarAfiliados, buscarPorTexto, ordenarPor,
+    filtrarPorCantidadPuestos, filtrarPorPatente, filtrarPorRubro, limpiarFiltros,
   } = useListaAfiliados({ soloDeshabilitados: false });
 
   // ── Hook deshabilitados ───────────────────────────────────────
   const {
-    afiliados:          afiliadosDeshabilitados,       // completos → export
-    afiliadosPaginados: afiliadosDeshPaginados,        // paginados → vista
-    paginaActual:       paginaActualDesh,
-    setPaginaActual:    setPaginaActualDesh,
-    totalPaginas:       totalPaginasDesh,
-    cargando:           cargandoDeshabilitados,
-    total:              totalDeshabilitados,
-    cargar:             cargarDeshabilitados,
-    rehabilitarAfiliado,
+    afiliados: afiliadosDeshabilitados, afiliadosPaginados: afiliadosDeshPaginados,
+    paginaActual: paginaActualDesh, setPaginaActual: setPaginaActualDesh,
+    totalPaginas: totalPaginasDesh,
+    cargando: cargandoDeshabilitados, total: totalDeshabilitados,
+    cargar: cargarDeshabilitados, rehabilitarAfiliado,
   } = useListaAfiliados({ soloDeshabilitados: true });
 
+  // ── Sync estado local ← filtrosActivos ───────────────────────
+  // FIX: puestoCount viene como número del hook; lo convertimos a
+  // string para que CustomSelect lo encuentre en sus opciones ('1','2'…)
   useEffect(() => {
     setSelectOrden(filtrosActivos.orden);
     setSelectPatente(filtrosActivos.conPatente);
-    setSelectPuestoCount(filtrosActivos.puestoCount);
+    setSelectPuestoCount(
+      filtrosActivos.puestoCount !== null && filtrosActivos.puestoCount !== undefined
+        ? String(filtrosActivos.puestoCount)
+        : null
+    );
     setSelectRubro(filtrosActivos.rubro);
     setSearchValue(filtrosActivos.search);
   }, [filtrosActivos]);
 
-  useEffect(() => {
-    buscarPorTexto(debouncedSearch);
-  }, [debouncedSearch]);
+  useEffect(() => { buscarPorTexto(debouncedSearch); }, [debouncedSearch]);
 
   const opcionesRubros = useMemo(
-    () => rubrosDisponibles.map((rubro) => ({ value: rubro, label: ` ${rubro}` })),
+    () => rubrosDisponibles.map((r) => ({ value: r, label: r })),
     [rubrosDisponibles]
   );
 
+  // ── Handlers ─────────────────────────────────────────────────
   const handleCambiarVistaDeshabilitados = async (checked) => {
     setMostrarDeshabilitados(checked);
     checked ? await cargarDeshabilitados() : await cargarAfiliados();
   };
 
-  const handleCambiarBusqueda = (valor) => setSearchValue(valor);
-  const handleLimpiarBusqueda = ()      => setSearchValue('');
-
-  const handleCambiarOrden = async (valor) => { setSelectOrden(valor); await ordenarPor(valor); };
-  const handleCambiarPatente = async (valor) => { setSelectPatente(valor); await filtrarPorPatente(valor); };
-  const handleCambiarPuestoCount = async (valor) => { setSelectPuestoCount(valor); await filtrarPorCantidadPuestos(valor ? parseInt(valor) : null); };
-  const handleCambiarRubro = async (valor) => { setSelectRubro(valor); await filtrarPorRubro(valor); };
+  const handleCambiarBusqueda    = (v) => setSearchValue(v);
+  const handleLimpiarBusqueda    = ()  => setSearchValue('');
+  const handleCambiarOrden       = async (v) => { setSelectOrden(v);       await ordenarPor(v || 'alfabetico'); };
+  const handleCambiarPatente     = async (v) => { setSelectPatente(v);     await filtrarPorPatente(v); };
+  const handleCambiarPuestoCount = async (v) => { setSelectPuestoCount(v); await filtrarPorCantidadPuestos(v ? parseInt(v) : null); };
+  const handleCambiarRubro       = async (v) => { setSelectRubro(v);       await filtrarPorRubro(v); };
 
   const handleLimpiarFiltros = async () => {
     setSelectPatente(null); setSelectOrden('alfabetico');
@@ -121,11 +108,11 @@ const AfiliadosModule = () => {
 
   const handleLimpiarFiltroIndividual = async (tipo) => {
     switch (tipo) {
-      case 'search':      setSearchValue(''); break;
-      case 'conPatente':  setSelectPatente(null);     await filtrarPorPatente(null); break;
-      case 'puestoCount': setSelectPuestoCount(null); await filtrarPorCantidadPuestos(null); break;
-      case 'rubro':       setSelectRubro(null);       await filtrarPorRubro(null); break;
-      case 'orden':       setSelectOrden('alfabetico'); await ordenarPor('alfabetico'); break;
+      case 'search':      setSearchValue('');                          break;
+      case 'conPatente':  setSelectPatente(null);     await filtrarPorPatente(null);           break;
+      case 'puestoCount': setSelectPuestoCount(null); await filtrarPorCantidadPuestos(null);   break;
+      case 'rubro':       setSelectRubro(null);       await filtrarPorRubro(null);             break;
+      case 'orden':       setSelectOrden('alfabetico'); await ordenarPor('alfabetico');        break;
       default: break;
     }
   };
@@ -137,42 +124,39 @@ const AfiliadosModule = () => {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // ── Export: usa la lista COMPLETA, nunca la paginada ─────────
+  // ── Export: siempre el total filtrado, nunca la página ────────
   const handleExportarExcel = async () => {
-    // Exportar siempre el total filtrado, no la página visible
     const listaAExportar = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
 
     if (!listaAExportar?.length) {
-      notifications.show({ title: 'Sin datos para exportar', message: 'La lista actual no tiene afiliados. Ajusta los filtros e intenta de nuevo.', color: 'yellow', autoClose: 4000 });
+      notifications.show({ title: 'Sin datos para exportar', message: 'Ajusta los filtros e intenta de nuevo.', color: 'yellow', autoClose: 4000 });
       return;
     }
-
-    const idNotif = notifications.show({
-      title: 'Generando Excel...', message: `Preparando ${listaAExportar.length} registro${listaAExportar.length !== 1 ? 's' : ''}`,
-      color: 'blue', loading: true, autoClose: false,
-    });
 
     try {
       const { datos, columnas } = prepararDatosAfiliados(listaAExportar);
       await exportToExcel({ data: datos, columns: columnas, sheetName: 'Afiliados', fileName: mostrarDeshabilitados ? 'afiliados_deshabilitados' : 'afiliados_activos' });
-      notifications.update({ id: idNotif, title: 'Excel generado', message: `${listaAExportar.length} afiliado${listaAExportar.length !== 1 ? 's' : ''} exportado${listaAExportar.length !== 1 ? 's' : ''} correctamente.`, color: 'green', icon: <IconCheck size={16} />, loading: false, autoClose: 3000 });
+      notifications.show({
+        title:   '¡Excel generado!',
+        message: `${listaAExportar.length} afiliado${listaAExportar.length !== 1 ? 's' : ''} exportado${listaAExportar.length !== 1 ? 's' : ''} correctamente.`,
+        color: 'green', autoClose: 3000,
+      });
     } catch (err) {
-      console.error('Error al exportar a Excel:', err);
-      notifications.update({ id: idNotif, title: 'Error al exportar', message: err.message || 'Ocurrió un error inesperado al generar el archivo.', color: 'red', loading: false, autoClose: 5000 });
+      console.error('Error al exportar:', err);
+      notifications.show({ title: 'Error al exportar', message: err.message || 'No se pudo generar el archivo.', color: 'red', autoClose: 5000 });
     }
   };
 
-  // ── Helpers de conteo ─────────────────────────────────────────
-  const listaTotalActiva  = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
-  const paginaActivaActual = mostrarDeshabilitados ? paginaActualDesh : paginaActual;
-  const totalPaginasActual = mostrarDeshabilitados ? totalPaginasDesh : totalPaginas;
+  // ── Paginación activa ─────────────────────────────────────────
+  const listaTotalActiva   = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
+  const paginaActivaActual = mostrarDeshabilitados ? paginaActualDesh  : paginaActual;
+  const totalPaginasActual = mostrarDeshabilitados ? totalPaginasDesh  : totalPaginas;
   const setPaginaActiva    = mostrarDeshabilitados ? setPaginaActualDesh : setPaginaActual;
-
-  const primerItem = (paginaActivaActual - 1) * 50 + 1;
-  const ultimoItem = Math.min(paginaActivaActual * 50, listaTotalActiva.length);
+  const primerItem         = (paginaActivaActual - 1) * 50 + 1;
+  const ultimoItem         = Math.min(paginaActivaActual * 50, listaTotalActiva.length);
 
   return (
-    <Container fluid p="md">
+    <Container fluid p="md" className="af-module">
       <ModuleHeader title="Afiliados" />
 
       {conexion?.error && (
@@ -182,18 +166,13 @@ const AfiliadosModule = () => {
         </Alert>
       )}
 
-      {/* Modal de creación — solo se descarga cuando el usuario lo abre */}
       {modalAbierto && (
         <Suspense fallback={<CargandoModal />}>
-          <ModalAfiliado
-            opened={modalAbierto}
-            onClose={() => setModalAbierto(false)}
-            onAfiliadoCreado={() => cargarAfiliados()}
-          />
+          <ModalAfiliado opened={modalAbierto} onClose={() => setModalAbierto(false)} onAfiliadoCreado={() => cargarAfiliados()} />
         </Suspense>
       )}
 
-      <Paper p="xl" radius="lg" style={{ backgroundColor: 'white', minHeight: '70vh', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', position: 'relative' }}>
+      <Paper p="xl" radius="lg" style={{ backgroundColor: 'white', minHeight: '70vh', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', position: 'relative' }}>
         <LoadingOverlay visible={cargando} zIndex={1000} overlayProps={{ blur: 2 }} />
 
         {error && !cargando && (
@@ -203,6 +182,7 @@ const AfiliadosModule = () => {
           </Alert>
         )}
 
+        {/* ── Filtros ── */}
         <BarraFiltros
           valores={{ searchValue, selectPatente, selectOrden, selectPuestoCount, selectRubro }}
           opcionesRubros={opcionesRubros}
@@ -217,30 +197,19 @@ const AfiliadosModule = () => {
 
         <FiltrosActivos filtrosActivos={filtrosActivos} alLimpiarFiltro={handleLimpiarFiltroIndividual} />
 
+        {/* ── Barra de acciones ── */}
         <Group justify="space-between" align="center" mb="xl">
-          <Group gap="md">
-            {/* Añadir Afiliado — solo superAdmin */}
+          <Group gap="sm" wrap="wrap">
             {esSuperAdmin && (
-              <Button
-                leftSection={<IconPlus size={18} />} size="md" aria-label="Añadir nuevo afiliado"
-                style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
-                onClick={() => setModalAbierto(true)}
-              >
+              <Button leftSection={<IconPlus size={18} />} className="af-btn-primario" onClick={() => setModalAbierto(true)}>
                 Añadir Afiliado
               </Button>
             )}
-
-            {/* Exportar — exporta el total filtrado, no la página visible */}
-            <Button
-              leftSection={<IconFileExport size={18} />} size="md" aria-label="Exportar lista a Excel"
-              style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
-              onClick={handleExportarExcel}
-            >
+            <Button leftSection={<IconFileExport size={18} />} className="af-btn-exportar" onClick={handleExportarExcel}>
               Exportar lista
             </Button>
-
             {hayFiltrosActivos() && (
-              <Button leftSection={<IconX size={16} />} variant="subtle" color="gray" onClick={handleLimpiarFiltros} size="md" style={{ height: '40px' }}>
+              <Button leftSection={<IconX size={16} />} className="af-btn-limpiar" variant="subtle" onClick={handleLimpiarFiltros}>
                 Limpiar filtros
               </Button>
             )}
@@ -251,48 +220,40 @@ const AfiliadosModule = () => {
             <div style={{ width: '1px', height: '30px', backgroundColor: '#eee' }} />
             <Group gap="md" align="center">
               <Group gap="xs" align="center">
-                <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#999' }} />
+                <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
                 <Switch
-                  checked={vistaTabla} onChange={(e) => setVistaTabla(e.currentTarget.checked)}
-                  size="lg" aria-label="Cambiar entre vista cards y tabla"
+                  checked={vistaTabla} onChange={(e) => setVistaTabla(e.currentTarget.checked)} size="lg"
                   styles={{
                     track: { backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', width: '50px', height: '26px' },
                     thumb: { backgroundColor: 'white', borderColor: '#0f0f0f', width: '22px', height: '22px' },
                   }}
                 />
-                <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#999' }} />
+                <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
               </Group>
               <Group gap="xs">
-                <Text size="sm" style={{ color: !vistaTabla ? '#0f0f0f' : '#999', fontWeight: !vistaTabla ? 600 : 400 }}>Cards</Text>
-                <Text size="sm" style={{ color: '#999' }}>/</Text>
-                <Text size="sm" style={{ color: vistaTabla ? '#0f0f0f' : '#999', fontWeight: vistaTabla ? 600 : 400 }}>Tabla</Text>
+                <span className={!vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Cards</span>
+                <span className="af-vista-label-inactivo">/</span>
+                <span className={vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Tabla</span>
               </Group>
             </Group>
           </Group>
         </Group>
-
-          {/* ── Paginación y contador ─────────────────────────────── */}
-          {!cargando && !error && listaTotalActiva.length > 0 && (
+        {/* ── Paginación y contador ── */}
+        {!cargando && !error && listaTotalActiva.length > 0 && (
           <Stack align="center" mt="xl" gap="xs">
             {totalPaginasActual > 1 && (
-              <Pagination
-                total={totalPaginasActual}
-                value={paginaActivaActual}
-                onChange={setPaginaActiva}
-                color="dark"
-                radius="xl"
-                size="sm"
-              />
+              <Pagination total={totalPaginasActual} value={paginaActivaActual} onChange={setPaginaActiva} color="dark" radius="xl" size="sm" />
             )}
-            <Text size="sm" style={{ color: '#666' }}>
+            <span className="af-contador">
               {listaTotalActiva.length <= 50
                 ? `${listaTotalActiva.length} afiliado${listaTotalActiva.length !== 1 ? 's' : ''}${hayFiltrosActivos() ? ' (filtrados)' : ''}`
                 : `Mostrando ${primerItem}–${ultimoItem} de ${listaTotalActiva.length} afiliado${listaTotalActiva.length !== 1 ? 's' : ''}${hayFiltrosActivos() ? ' (filtrados)' : ''}`
               }
-            </Text>
+            </span>
           </Stack>
         )}
-        {/* ── Vista: usa la lista PAGINADA ───────────────────────── */}
+
+        {/* ── Vista paginada ── */}
         {!cargando && !cargandoDeshabilitados && !error && (
           mostrarDeshabilitados ? (
             vistaTabla
@@ -305,28 +266,29 @@ const AfiliadosModule = () => {
           )
         )}
 
+        {/* Sin resultados */}
         {!cargando && !error && listaTotalActiva.length === 0 && (
           <Stack align="center" justify="center" style={{ height: '200px' }}>
-            <IconSearch size={48} style={{ color: '#ccc' }} />
-            <Title order={4} style={{ color: '#999' }}>No se encontraron afiliados</Title>
-            <Text style={{ color: '#999' }}>
+            <IconSearch size={48} style={{ color: '#C4C4C4' }} />
+            <Title order={4} style={{ color: '#999', fontFamily: 'Poppins, sans-serif' }}>No se encontraron afiliados</Title>
+            <Text style={{ color: '#999', fontFamily: 'Poppins, sans-serif' }}>
               {hayFiltrosActivos() ? 'No hay resultados para los filtros aplicados' : 'No hay afiliados registrados'}
             </Text>
             {hayFiltrosActivos() && (
-              <Button variant="subtle" onClick={handleLimpiarFiltros} style={{ color: '#0f0f0f' }}>Limpiar todos los filtros</Button>
+              <Button className="af-btn-limpiar" variant="subtle" onClick={handleLimpiarFiltros}>
+                Limpiar todos los filtros
+              </Button>
             )}
           </Stack>
         )}
+
+        
       </Paper>
 
       <Affix position={{ bottom: 30, right: 30 }}>
         <Transition transition="slide-up" mounted={true}>
           {(transitionStyles) => (
-            <Button
-              leftSection={<IconArrowUp size={18} />} aria-label="Volver al inicio de la página"
-              style={{ ...transitionStyles, backgroundColor: '#0f0f0f', color: 'white', borderRadius: '50px', height: '50px', padding: '0 25px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', border: '2px solid #edbe3c', fontWeight: 600 }}
-              onClick={scrollToTop}
-            >
+            <Button leftSection={<IconArrowUp size={18} />} className="af-fab" style={transitionStyles} onClick={scrollToTop}>
               Volver Arriba
             </Button>
           )}

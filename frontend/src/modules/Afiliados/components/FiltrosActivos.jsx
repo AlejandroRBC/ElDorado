@@ -1,5 +1,12 @@
-import { Text, Badge, Group } from '@mantine/core';
+// frontend/src/modules/Afiliados/components/FiltrosActivos.jsx
+
+// ============================================================
+// FILTROS ACTIVOS — estilo unificado con GestionPatentesPuestos
+// ============================================================
+
 import { IconX } from '@tabler/icons-react';
+import '../styles/afiliados-gp.css';
+
 // ============================================================
 // ETIQUETAS LEGIBLES POR FILTRO
 // ============================================================
@@ -30,10 +37,9 @@ const obtenerEtiqueta = (tipo, valor) => {
 // COMPONENTE FiltrosActivos
 // ============================================================
 /**
- * Muestra los badges de filtros activos con botón para
+ * Muestra las etiquetas de filtros activos con botón para
  * eliminar cada uno individualmente.
- * Componente puramente presentacional: no maneja estado,
- * no llama servicios.
+ * Componente puramente presentacional: no maneja estado.
  */
 const FiltrosActivos = ({ filtrosActivos = {}, alLimpiarFiltro }) => {
 
@@ -41,7 +47,7 @@ const FiltrosActivos = ({ filtrosActivos = {}, alLimpiarFiltro }) => {
     filtrosActivos.search      && { tipo: 'search',      valor: filtrosActivos.search },
     filtrosActivos.conPatente  !== null && filtrosActivos.conPatente  !== undefined
                                && { tipo: 'conPatente',  valor: filtrosActivos.conPatente },
-    filtrosActivos.puestoCount && { tipo: 'puestoCount', valor: filtrosActivos.puestoCount },
+    filtrosActivos.puestoCount && { tipo: 'puestoCount', valor: String(filtrosActivos.puestoCount) },
     filtrosActivos.rubro       && { tipo: 'rubro',       valor: filtrosActivos.rubro },
     filtrosActivos.orden && filtrosActivos.orden !== 'alfabetico'
                                && { tipo: 'orden',       valor: filtrosActivos.orden },
@@ -50,31 +56,26 @@ const FiltrosActivos = ({ filtrosActivos = {}, alLimpiarFiltro }) => {
   if (filtrosVisibles.length === 0) return null;
 
   return (
-    <Group mb="lg" gap="xs" align="center" role="status" aria-label="Filtros activos">
-      <Text size="sm" fw={600} style={{ color: '#666' }}>
-        Filtros activos:
-      </Text>
+    <div
+      className="af-filtros-activos"
+      role="status"
+      aria-label="Filtros activos"
+    >
+      <span className="af-filtros-activos-label">Filtros:</span>
+
       {filtrosVisibles.map(({ tipo, valor }) => (
-        <Badge
-          key={tipo}
-          size="sm"
-          variant="outline"
-          rightSection={
-            <IconX
-              size={12}
-              style={{ cursor: 'pointer' }}
-              aria-label={`Quitar filtro: ${obtenerEtiqueta(tipo, valor)}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => alLimpiarFiltro(tipo)}
-              onKeyDown={(e) => e.key === 'Enter' && alLimpiarFiltro(tipo)}
-            />
-          }
-        >
+        <span key={tipo} className="af-filtro-badge">
           {obtenerEtiqueta(tipo, valor)}
-        </Badge>
+          <button
+            className="af-filtro-badge-x"
+            aria-label={`Quitar filtro: ${obtenerEtiqueta(tipo, valor)}`}
+            onClick={() => alLimpiarFiltro(tipo)}
+          >
+            <IconX size={11} />
+          </button>
+        </span>
       ))}
-    </Group>
+    </div>
   );
 };
 
