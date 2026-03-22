@@ -1,7 +1,9 @@
+// frontend/src/modules/Afiliados/AfiliadosModule.jsx
+
 import {
   Text, Paper, Container, Button, Group, Stack,
   Title, Switch, LoadingOverlay, Alert, Loader,
-  Affix, Transition,
+  Affix, Transition, Pagination,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import ModuleHeader from '../Navegacion/components/ModuleHeader';
@@ -47,8 +49,13 @@ const AfiliadosModule = () => {
   const { user }       = useLogin();
   const esSuperAdmin   = user?.rol === 'superadmin';
 
+  // ── Hook activos ──────────────────────────────────────────────
   const {
-    afiliados,
+    afiliados,              // lista completa → para export
+    afiliadosPaginados,     // slice de la página actual → para la vista
+    paginaActual,
+    setPaginaActual,
+    totalPaginas,
     cargando,
     error,
     conexion,
@@ -63,11 +70,16 @@ const AfiliadosModule = () => {
     limpiarFiltros,
   } = useListaAfiliados({ soloDeshabilitados: false });
 
+  // ── Hook deshabilitados ───────────────────────────────────────
   const {
-    afiliados: afiliadosDeshabilitados,
-    cargando:  cargandoDeshabilitados,
-    total:     totalDeshabilitados,
-    cargar:    cargarDeshabilitados,
+    afiliados:          afiliadosDeshabilitados,       // completos → export
+    afiliadosPaginados: afiliadosDeshPaginados,        // paginados → vista
+    paginaActual:       paginaActualDesh,
+    setPaginaActual:    setPaginaActualDesh,
+    totalPaginas:       totalPaginasDesh,
+    cargando:           cargandoDeshabilitados,
+    total:              totalDeshabilitados,
+    cargar:             cargarDeshabilitados,
     rehabilitarAfiliado,
   } = useListaAfiliados({ soloDeshabilitados: true });
 
@@ -125,7 +137,9 @@ const AfiliadosModule = () => {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // ── Export: usa la lista COMPLETA, nunca la paginada ─────────
   const handleExportarExcel = async () => {
+    // Exportar siempre el total filtrado, no la página visible
     const listaAExportar = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
 
     if (!listaAExportar?.length) {
@@ -147,6 +161,15 @@ const AfiliadosModule = () => {
       notifications.update({ id: idNotif, title: 'Error al exportar', message: err.message || 'Ocurrió un error inesperado al generar el archivo.', color: 'red', loading: false, autoClose: 5000 });
     }
   };
+
+  // ── Helpers de conteo ─────────────────────────────────────────
+  const listaTotalActiva  = mostrarDeshabilitados ? afiliadosDeshabilitados : afiliados;
+  const paginaActivaActual = mostrarDeshabilitados ? paginaActualDesh : paginaActual;
+  const totalPaginasActual = mostrarDeshabilitados ? totalPaginasDesh : totalPaginas;
+  const setPaginaActiva    = mostrarDeshabilitados ? setPaginaActualDesh : setPaginaActual;
+
+  const primerItem = (paginaActivaActual - 1) * 50 + 1;
+  const ultimoItem = Math.min(paginaActivaActual * 50, listaTotalActiva.length);
 
   return (
     <Container fluid p="md">
@@ -207,7 +230,7 @@ const AfiliadosModule = () => {
               </Button>
             )}
 
-            {/* Exportar — libre para todos */}
+            {/* Exportar — exporta el total filtrado, no la página visible */}
             <Button
               leftSection={<IconFileExport size={18} />} size="md" aria-label="Exportar lista a Excel"
               style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '100px', height: '40px', fontWeight: 300, padding: '0 25px' }}
@@ -248,19 +271,41 @@ const AfiliadosModule = () => {
           </Group>
         </Group>
 
+          {/* ── Paginación y contador ─────────────────────────────── */}
+          {!cargando && !error && listaTotalActiva.length > 0 && (
+          <Stack align="center" mt="xl" gap="xs">
+            {totalPaginasActual > 1 && (
+              <Pagination
+                total={totalPaginasActual}
+                value={paginaActivaActual}
+                onChange={setPaginaActiva}
+                color="dark"
+                radius="xl"
+                size="sm"
+              />
+            )}
+            <Text size="sm" style={{ color: '#666' }}>
+              {listaTotalActiva.length <= 50
+                ? `${listaTotalActiva.length} afiliado${listaTotalActiva.length !== 1 ? 's' : ''}${hayFiltrosActivos() ? ' (filtrados)' : ''}`
+                : `Mostrando ${primerItem}–${ultimoItem} de ${listaTotalActiva.length} afiliado${listaTotalActiva.length !== 1 ? 's' : ''}${hayFiltrosActivos() ? ' (filtrados)' : ''}`
+              }
+            </Text>
+          </Stack>
+        )}
+        {/* ── Vista: usa la lista PAGINADA ───────────────────────── */}
         {!cargando && !cargandoDeshabilitados && !error && (
           mostrarDeshabilitados ? (
             vistaTabla
-              ? <TablaAfiliados afiliados={afiliadosDeshabilitados} esDeshabilitados={true} />
-              : <ListaCards     afiliados={afiliadosDeshabilitados} esDeshabilitados={true} onRehabilitar={rehabilitarAfiliado} />
+              ? <TablaAfiliados afiliados={afiliadosDeshPaginados} esDeshabilitados={true} />
+              : <ListaCards     afiliados={afiliadosDeshPaginados} esDeshabilitados={true} onRehabilitar={rehabilitarAfiliado} />
           ) : (
             vistaTabla
-              ? <TablaAfiliados afiliados={afiliados} />
-              : <ListaCards     afiliados={afiliados} />
+              ? <TablaAfiliados afiliados={afiliadosPaginados} />
+              : <ListaCards     afiliados={afiliadosPaginados} />
           )
         )}
 
-        {!cargando && !error && afiliados.length === 0 && (
+        {!cargando && !error && listaTotalActiva.length === 0 && (
           <Stack align="center" justify="center" style={{ height: '200px' }}>
             <IconSearch size={48} style={{ color: '#ccc' }} />
             <Title order={4} style={{ color: '#999' }}>No se encontraron afiliados</Title>
@@ -271,13 +316,6 @@ const AfiliadosModule = () => {
               <Button variant="subtle" onClick={handleLimpiarFiltros} style={{ color: '#0f0f0f' }}>Limpiar todos los filtros</Button>
             )}
           </Stack>
-        )}
-
-        {!cargando && !error && afiliados.length > 0 && (
-          <Text size="sm" style={{ color: '#666', marginTop: '20px', textAlign: 'center' }}>
-            Mostrando {afiliados.length} afiliado{afiliados.length !== 1 ? 's' : ''}
-            {hayFiltrosActivos() ? ' (filtrados)' : ''}
-          </Text>
         )}
       </Paper>
 

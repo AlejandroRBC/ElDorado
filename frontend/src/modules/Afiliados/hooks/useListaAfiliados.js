@@ -1,11 +1,9 @@
-// frontend/src/modules/Afiliados/hooks/useListaAfiliados.js
-
 // ============================================
 // HOOK USE LISTA AFILIADOS
 // ============================================
 
-import { useState, useEffect, useCallback } from 'react';
-import { afiliadosService }                 from '../services/afiliadosService';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { afiliadosService }                          from '../services/afiliadosService';
 
 // ── Referencias estables fuera del hook para evitar re-renders ──
 const FILTROS_ACTIVOS_INICIALES = {
@@ -20,6 +18,8 @@ const FILTROS_DESHABILITADOS_INICIALES = {
   search: '',
   orden:  'alfabetico',
 };
+
+const ITEMS_POR_PAGINA = 50;
 
 /**
  * Hook principal de listado de afiliados.
@@ -42,6 +42,32 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
   const [conexion,           setConexion]           = useState(null);
   const [rubrosDisponibles,  setRubrosDisponibles]  = useState([]);
   const [total,              setTotal]              = useState(0);
+
+  // ── Paginación ──────────────────────────────────────────────────
+  const [paginaActual, setPaginaActual] = useState(1);
+
+  /**
+   * Cuando la lista de afiliados cambia (por un nuevo fetch con filtros),
+   * volvemos automáticamente a la página 1.
+   */
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [afiliados]);
+
+  /**
+   * Slice de afiliados para la página actual.
+   * El export SIEMPRE debe usar `afiliados` (lista completa filtrada),
+   * no este array paginado.
+   */
+  const afiliadosPaginados = useMemo(() => {
+    const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+    return afiliados.slice(inicio, inicio + ITEMS_POR_PAGINA);
+  }, [afiliados, paginaActual]);
+
+  const totalPaginas = useMemo(
+    () => Math.ceil(afiliados.length / ITEMS_POR_PAGINA),
+    [afiliados]
+  );
 
   useEffect(() => {
     if (!soloDeshabilitados) {
@@ -200,7 +226,15 @@ export const useListaAfiliados = ({ soloDeshabilitados = false } = {}) => {
   };
 
   return {
+    // ── Lista completa (para export Excel, contadores) ──────────
     afiliados,
+    // ── Lista paginada (para tabla/cards en pantalla) ───────────
+    afiliadosPaginados,
+    paginaActual,
+    setPaginaActual,
+    totalPaginas,
+    itemsPorPagina: ITEMS_POR_PAGINA,
+    // ── Estado general ──────────────────────────────────────────
     cargando,
     error,
     filtrosActivos,
