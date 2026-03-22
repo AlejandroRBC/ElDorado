@@ -1,11 +1,10 @@
-// frontend/src/modules/GestionPatentesPuestos/GestionPatentesPuestosModule.jsx
-
 // ============================================
 // MÓDULO GESTIÓN DE PUESTOS Y PATENTES
 // ============================================
 
 import { useState }                                     from 'react';
-import { Button, Affix, Transition, Stack, Text, Loader } from '@mantine/core';
+import { Button, Affix, Transition, Stack, Text,
+         Loader, Pagination, Group }                    from '@mantine/core';
 import { IconArrowUp }                                  from '@tabler/icons-react';
 import { useDisclosure }                                from '@mantine/hooks';
 import { useMediaQuery }                                from 'react-responsive';
@@ -43,6 +42,8 @@ function GestionPatentesPuestosModule() {
     handleAsignacionExitosa,
   } = usePuestos(closeEditar, closeTraspaso, closeAsignar);
 
+  // filtros contiene: puestosFiltrados (completo → export),
+  // puestosPaginados (slice → tabla), paginaActual, totalPaginas, etc.
   const filtros = usePuestosFiltros(puestos);
 
   const [puestoEditar,    setPuestoEditar]    = useState(null);
@@ -61,6 +62,9 @@ function GestionPatentesPuestosModule() {
       </Stack>
     );
   }
+
+  const primerItem = (filtros.paginaActual - 1) * filtros.itemsPorPagina + 1;
+  const ultimoItem = Math.min(filtros.paginaActual * filtros.itemsPorPagina, filtros.puestosFiltrados.length);
 
   return (
     <div className="gp-module" style={{ padding: isMobile ? '0.75rem' : '1.5rem' }}>
@@ -96,16 +100,39 @@ function GestionPatentesPuestosModule() {
         onAsignado={handleAsignacionExitosa}
       />
 
-      {/* ── Panel de filtros ── */}
+      {/* ── Panel de filtros ──
+          puestos={filtros.puestosFiltrados} → el export en FiltrosPuestos
+          usa la lista filtrada completa, no la paginada              ── */}
       <FiltrosPuestos
         {...filtros}
         puestos={filtros.puestosFiltrados}
         onTraspaso={() => { setPuestoParaTraspaso(null); openTraspaso(); }}
       />
+            {/* ── Paginación y contador ────────────────────────────── */}
+            {!loading && filtros.puestosFiltrados.length > 0 && (
+        <Stack align="center" mt="xl" gap="xs">
+          {filtros.totalPaginas > 1 && (
+            <Pagination
+              total={filtros.totalPaginas}
+              value={filtros.paginaActual}
+              onChange={filtros.setPaginaActual}
+              color="dark"
+              radius="xl"
+              size="sm"
+            />
+          )}
+          <Text size="sm" style={{ color: '#666', fontFamily: 'Poppins, sans-serif' }}>
+            {filtros.puestosFiltrados.length <= filtros.itemsPorPagina
+              ? `${filtros.puestosFiltrados.length} puesto${filtros.puestosFiltrados.length !== 1 ? 's' : ''}`
+              : `Mostrando ${primerItem}–${ultimoItem} de ${filtros.puestosFiltrados.length} puestos`
+            }
+          </Text>
+        </Stack>
+      )}
 
-      {/* ── Tabla de puestos ── */}
+      {/* ── Tabla de puestos → recibe solo la página actual ── */}
       <TablaPuestos
-        puestos={filtros.puestosFiltrados}
+        puestos={filtros.puestosPaginados}
         loading={loading}
         onEditar={(p)       => { setPuestoEditar(p);    openEditar();   }}
         onVerHistorial={(p) => { setPuestoHistorial(p); openHistorial();}}
