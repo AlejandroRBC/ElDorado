@@ -62,7 +62,7 @@ export const useTraspasoDesdeAfiliado = () => {
 
       if (resultado.success) {
         notifications.show({
-          title:   '✅ Éxito',
+          title:   'Éxito',
           message: 'Puesto traspasado correctamente',
           color:   'green',
         });

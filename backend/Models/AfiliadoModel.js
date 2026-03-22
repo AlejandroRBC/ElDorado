@@ -465,7 +465,6 @@ buscar: (termino) => {
   // ============================================
   asignarPuesto: (idAfiliado, datos) => {
     return new Promise((resolve, reject) => {
-      // ✅ PARCHE: se desestructura nro_patente
       const { fila, cuadra, nroPuesto, rubro, tiene_patente, nro_patente, razon } = datos;
       
       console.log(fila, cuadra, nroPuesto);
@@ -490,8 +489,7 @@ buscar: (termino) => {
  
               db.serialize(() => {
                 db.run('BEGIN TRANSACTION');
- 
-                // ✅ PARCHE: el UPDATE ahora incluye nro_patente
+
                 // Si tiene_patente es false → nro_patente se guarda como NULL
                 db.run(
                   `UPDATE puesto

@@ -33,7 +33,7 @@ export const useDesafiliarAfiliado = () => {
       setCargando(true);
       await afiliadosService.deshabilitarAfiliado(id);
       notifications.show({
-        title:     '✅ Afiliado Desafiliado',
+        title:     'Afiliado Desafiliado',
         message:   'El afiliado ha sido deshabilitado y sus puestos han sido despojados',
         color:     'green',
         autoClose: 5000,
@@ -41,7 +41,7 @@ export const useDesafiliarAfiliado = () => {
       return { exito: true };
     } catch (err) {
       notifications.show({
-        title:   '❌ Error',
+        title:   'Error',
         message: err.message || 'No se pudo desafiliar al afiliado',
         color:   'red',
       });

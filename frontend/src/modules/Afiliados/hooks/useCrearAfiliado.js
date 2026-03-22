@@ -1,5 +1,3 @@
-// frontend/src/modules/Afiliados/hooks/useCrearAfiliado.js
-
 // ============================================
 // HOOK USE CREAR AFILIADO
 // ============================================
@@ -85,26 +83,23 @@ export const useCrearAfiliado = () => {
 
       const resultadoCompleto = {
         ...respuestaCrear,
-        id:              afiliadoId,
+        id:                afiliadoId,
         puestos_asignados: puestosAsignados.length,
-        datosCompletos:  datos,
+        datosCompletos:    datos,
       };
 
       setAfiliadoCreado(resultadoCompleto);
       setSuccess(true);
 
-      notifications.show({
-        title:   '✅ Éxito',
-        message: `Afiliado creado con ${puestosAsignados.length} puesto${puestosAsignados.length !== 1 ? 's' : ''}`,
-        color:   'green',
-      });
+      // La notificación de éxito la muestra ModalAfiliado,
+      // que ya conoce puestosSeleccionados.length y el flujo completo.
 
       return { exito: true, datos: resultadoCompleto, mensaje: 'Afiliado creado exitosamente' };
     } catch (err) {
       const mensajeError = err.message || 'Error al crear afiliado';
       console.error('Error en crearAfiliadoCompleto:', err);
       setError(mensajeError);
-      notifications.show({ title: '❌ Error', message: mensajeError, color: 'red' });
+      notifications.show({ title: 'Error al crear afiliado', message: mensajeError, color: 'red', autoClose: 5000 });
       return { exito: false, error: mensajeError, datos: null };
     } finally {
       setLoading(false);

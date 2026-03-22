@@ -135,7 +135,7 @@ export const useAsignarPuesto = (idAfiliado) => {
       const resultado = await afiliadosService.asignarPuesto(idAfiliado, dataToSend);
 
       notifications.show({
-        title:   '✅ Éxito',
+        title:   'Éxito',
         message: `Puesto ${puestoData.nroPuesto}-${puestoData.fila}-${puestoData.cuadra} asignado`,
         color:   'green',
       });
