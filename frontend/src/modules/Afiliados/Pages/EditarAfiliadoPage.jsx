@@ -1,89 +1,65 @@
+import { useEffect, useState }                                from 'react';
 import { Container, Paper, Title, Button, Group, LoadingOverlay, Alert, Box } from '@mantine/core';
-import { useParams, useNavigate } from 'react-router-dom';
-import { IconArrowLeft, IconAlertCircle } from '@tabler/icons-react';
-import { useEffect } from 'react';
-import { useEditarAfiliado } from '../hooks/useEditarAfiliado';
+import { useParams, useNavigate }                             from 'react-router-dom';
+import { IconArrowLeft, IconAlertCircle }                     from '@tabler/icons-react';
+
+import { useAfiliado }        from '../hooks/useAfiliados';
+import { useAfiliadoActions } from '../hooks/useAfiliadoActions';
 import FormularioEditarAfiliado from '../components/FormularioEditarAfiliado';
 
-const EditarAfiliadoPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  
-  const { 
-    afiliadoActual, 
-    loading, 
-    error, 
-    success, 
-    cargarAfiliado, 
-    actualizarAfiliado,
-    reset 
-  } = useEditarAfiliado(id);
+// ─────────────────────────────────────────────────────────────
 
-  // Cargar datos del afiliado al montar el componente
-  useEffect(() => {
-    cargarAfiliado();
-  }, [id]);
+const EditarAfiliadoPage = () => {
+  const { id }   = useParams();
+  const navigate = useNavigate();
+
+  const { afiliado: afiliadoActual, cargando, error, cargarAfiliado } = useAfiliado(id);
+  const { editar, loading: guardando } = useAfiliadoActions();
+
+  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
   // Redirigir después de guardar exitosamente
   useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        navigate(`/afiliados/${id}`);
-      }, 1500);
+    if (guardadoExitoso) {
+      const timer = setTimeout(() => navigate(`/afiliados/${id}`), 1500);
       return () => clearTimeout(timer);
     }
-  }, [success, navigate, id]);
+  }, [guardadoExitoso, navigate, id]);
 
   const handleSubmit = async (formData) => {
-    await actualizarAfiliado(formData);
+    const resultado = await editar(id, formData);
+    if (resultado.exito) setGuardadoExitoso(true);
   };
 
-  const handleCancel = () => {
-    navigate(`/afiliados/${id}`);
-  };
+  const handleCancel = () => navigate(`/afiliados/${id}`);
 
-  if (loading && !afiliadoActual) {
+  // ── Loading inicial ───────────────────────────────────────────
+  if (cargando && !afiliadoActual) {
     return (
       <Container fluid p="md">
-        <Paper p="xl" radius="lg" style={{ position: 'relative', minHeight: '400px' }}>
-          <LoadingOverlay visible={true} />
+        <Paper p="xl" radius="lg" style={{ position: 'relative', minHeight: 400 }}>
+          <LoadingOverlay visible />
         </Paper>
       </Container>
     );
   }
 
+  // ── Error de carga ────────────────────────────────────────────
   if (error && !afiliadoActual) {
     return (
       <Container fluid p="md">
         <Group justify="space-between" mb="xl">
-          <Title order={1} style={{ color: '#0f0f0f' }}>
-            Error
-          </Title>
-          <Button
-            leftSection={<IconArrowLeft size={18} />}
+          <Title order={1} style={{ color: '#0f0f0f' }}>Error</Title>
+          <Button leftSection={<IconArrowLeft size={18} />}
             onClick={() => navigate('/afiliados')}
-            style={{
-              backgroundColor: '#0f0f0f',
-              color: 'white',
-              borderRadius: '8px'
-            }}
-          >
+            style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '8px' }}>
             Volver a la lista
           </Button>
         </Group>
         <Paper p="xl" radius="lg" style={{ backgroundColor: 'white' }}>
-          <Alert 
-            icon={<IconAlertCircle size={16} />} 
-            title="No se pudo cargar el afiliado" 
-            color="red"
-          >
+          <Alert icon={<IconAlertCircle size={16} />} title="No se pudo cargar el afiliado" color="red">
             {error || 'El afiliado no existe o ha sido eliminado.'}
-            <Button 
-              variant="subtle" 
-              size="xs" 
-              onClick={() => cargarAfiliado()}
-              style={{ marginLeft: '10px' }}
-            >
+            <Button variant="subtle" size="xs" onClick={cargarAfiliado} style={{ marginLeft: 10 }}>
               Reintentar
             </Button>
           </Alert>
@@ -92,47 +68,29 @@ const EditarAfiliadoPage = () => {
     );
   }
 
+  // ── Render principal ──────────────────────────────────────────
   return (
     <Container fluid p="md">
-      {/* Header */}
       <Group justify="space-between" mb="xl">
         <Box>
-          <Title order={1} style={{ color: '#0f0f0f' }}>
-            Editar Afiliado
-          </Title>
-          <Title order={3} fw={400} style={{ color: '#666', marginTop: '5px' }}>
-            {afiliadoActual?.nombreCompleto || afiliadoActual?.nombre}
+          <Title order={1} style={{ color: '#0f0f0f' }}>Editar Afiliado</Title>
+          <Title order={3} fw={400} style={{ color: '#666', marginTop: 5 }}>
+            {afiliadoActual?.nombre} {afiliadoActual?.paterno} {afiliadoActual?.materno}
           </Title>
         </Box>
-        <Button
-          leftSection={<IconArrowLeft size={18} />}
-          onClick={() => navigate(`/afiliados/${id}`)}
-          style={{
-            backgroundColor: '#0f0f0f',
-            color: 'white',
-            borderRadius: '8px',
-            fontWeight: 500
-          }}
-        >
+        <Button leftSection={<IconArrowLeft size={18} />} onClick={handleCancel}
+          style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '8px', fontWeight: 500 }}>
           Volver al Detalle
         </Button>
       </Group>
 
-      {/* Formulario de edición */}
-      <Paper 
-        p="xl" 
-        radius="lg" 
-        style={{ 
-          backgroundColor: 'white',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-          position: 'relative'
-        }}
-      >
+      <Paper p="xl" radius="lg"
+        style={{ backgroundColor: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', position: 'relative' }}>
         <FormularioEditarAfiliado
           afiliado={afiliadoActual}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          loading={loading}
+          loading={guardando}
           modo="editar"
         />
       </Paper>

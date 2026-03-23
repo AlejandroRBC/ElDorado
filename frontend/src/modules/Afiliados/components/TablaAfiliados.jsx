@@ -9,60 +9,37 @@ import '../styles/Estilos.css';
 // ==============================================
 // CONSTANTES
 // ==============================================
-const COLUMNAS = ['Nombre', 'CI', 'Ocupación', 'Puestos', '# Puestos', 'Teléfono', 'Acciones'];
+const COLUMNAS = ['Nombre', 'CI', 'Ocupación', 'Puestos', 'Acciones'];
 
 // ==============================================
 // FUNCIONES AUXILIARES
 // ==============================================
 
-const getBadgeColor = (puestosConPatente) => {
-  return puestosConPatente > 0 ? 'green' : 'yellow';
-};
-
-const getNombreCompleto = (afiliado) => {
-  return `${afiliado.nombre || ''} ${afiliado.paterno || ''} ${afiliado.materno || ''}`.trim();
-};
+const getNombreCompleto = (afiliado) =>
+  `${afiliado.nombre || ''} ${afiliado.paterno || ''} ${afiliado.materno || ''}`.trim();
 
 // ==============================================
 // COMPONENTE PRINCIPAL
 // ==============================================
 
 /**
- * Tabla de afiliados.
- * El icono de edición solo se muestra a usuarios con rol superadmin.
- * El icono de ver detalles es libre para todos.
+ * Tabla compacta de afiliados — padding y márgenes reducidos
+ * para que encaje en pantalla sin scroll horizontal innecesario.
  */
 const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehabilitar }) => {
   const navigate = useNavigate();
-
-  // ── Control de rol ──────────────────────────────────────────
   const { user }     = useLogin();
   const esSuperAdmin = user?.rol === 'superadmin';
 
-  // ==============================================
-  // HANDLERS DEL COMPONENTE
-  // ==============================================
-
-  const verDetalles = useCallback((id) => {
-    navigate(`/afiliados/${id}`);
-  }, [navigate]);
-
-  const editarAfiliado = useCallback((id) => {
-    navigate(`/afiliados/editar/${id}`);
-  }, [navigate]);
+  const verDetalles    = useCallback((id) => navigate(`/afiliados/${id}`),        [navigate]);
+  const editarAfiliado = useCallback((id) => navigate(`/afiliados/editar/${id}`), [navigate]);
 
   const handleRehabilitar = useCallback((id, e) => {
     e.stopPropagation();
-    if (onRehabilitar) onRehabilitar(id);
+    onRehabilitar?.(id);
   }, [onRehabilitar]);
 
-  const handleClickFila = useCallback((id) => {
-    verDetalles(id);
-  }, [verDetalles]);
-
-  // ==============================================
-  // RENDERIZADO DE ESTADO VACÍO
-  // ==============================================
+  // ── Estado vacío ─────────────────────────────────────────────
   if (afiliados.length === 0) {
     return (
       <div className="tabla-vacia">
@@ -74,109 +51,77 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
     );
   }
 
-  // ==============================================
-  // RENDERIZADO DE FILAS
-  // ==============================================
+  // ── Filas ─────────────────────────────────────────────────────
   const rows = afiliados.map((afiliado) => {
-    const badgeColor = getBadgeColor(afiliado.puestos_con_patente);
     const nombreCompleto = getNombreCompleto(afiliado);
 
     return (
       <Table.Tr
         key={afiliado.id}
         className="tabla-fila-afiliado"
-        onClick={() => handleClickFila(afiliado.id)}
+        onClick={() => verDetalles(afiliado.id)}
       >
-        <Table.Td>
-          <Text fw={500} className="texto-nombre-tabla">
+        {/* Nombre */}
+        <Table.Td style={{ maxWidth: 220 }}>
+          <Text fw={500} size="sm" className="texto-nombre-tabla" lineClamp={1}>
             {nombreCompleto}
           </Text>
         </Table.Td>
 
-        <Table.Td>
-          <Text size="sm" className="texto-ci-tabla">
-            {afiliado.ci}
+        {/* CI */}
+        <Table.Td style={{ whiteSpace: 'nowrap' }}>
+          <Text size="sm" className="texto-ci-tabla">{afiliado.ci}</Text>
+        </Table.Td>
+
+        {/* Ocupación */}
+        <Table.Td style={{ maxWidth: 160 }}>
+          <Text size="sm" className="texto-ocupacion-tabla" lineClamp={1}>
+            {afiliado.ocupacion || '—'}
           </Text>
         </Table.Td>
 
+        {/* Puestos */}
         <Table.Td>
-          <Text size="sm" className="texto-ocupacion-tabla">
-            {afiliado.ocupacion}
-          </Text>
-        </Table.Td>
-
-        <Table.Td>
-          <Group gap={4} wrap="wrap">
-            {afiliado.puestos?.length > 0 ? (
-              afiliado.puestos.slice(0, 10).map((puesto, index) => (
+          <Group gap={3} wrap="wrap">
+            {afiliado.puestosDetalle?.length > 0 ? (
+              afiliado.puestosDetalle.map((p, i) => (
                 <Badge
-                  key={index}
+                  key={i}
                   size="xs"
-                  variant="outline"
-                  className="badge-puesto-tabla"
+                  className={`badge-puesto ${p.tienePatente ? 'badge-puesto-patente' : 'badge-puesto-sin-patente'}`}
                 >
-                  {puesto}
+                  {p.puestos}
                 </Badge>
               ))
             ) : (
-              <Text size="xs" className="texto-sin-puestos-tabla">
-                Sin puestos
-              </Text>
+              <Text size="xs" className="texto-sin-puestos-tabla">Sin puestos</Text>
             )}
           </Group>
         </Table.Td>
 
-        <Table.Td>
-          <Badge color={badgeColor} variant="dot" className="badge-total-puestos">
-            {afiliado.total_puestos || 0} puestos
-            {afiliado.puestos_con_patente > 0 && ` (${afiliado.puestos_con_patente} con patente)`}
-          </Badge>
-        </Table.Td>
-
-        <Table.Td>
-          <Text size="sm" className="texto-telefono-tabla">
-            {afiliado.telefono}
-          </Text>
-        </Table.Td>
-
-        <Table.Td>
-          <Group gap={4} className="acciones-tabla">
+        {/* Acciones */}
+        <Table.Td style={{ whiteSpace: 'nowrap' }}>
+          <Group gap={2} className="acciones-tabla" wrap="nowrap">
             {esDeshabilitados ? (
-              // Rehabilitar — solo superAdmin
               esSuperAdmin && (
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  aria-label="Rehabilitar afiliado"
+                <ActionIcon variant="subtle" size="sm" aria-label="Rehabilitar"
                   className="accion-rehabilitar"
-                  onClick={(e) => handleRehabilitar(afiliado.id, e)}
-                >
-                  <IconUserCheck size={16} />
+                  onClick={(e) => handleRehabilitar(afiliado.id, e)}>
+                  <IconUserCheck size={15} />
                 </ActionIcon>
               )
             ) : (
               <>
-                {/* Ver detalles — libre para todos */}
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
-                  aria-label="Ver detalles del afiliado"
+                <ActionIcon variant="subtle" size="sm" aria-label="Ver detalles"
                   className="accion-ver"
-                  onClick={(e) => { e.stopPropagation(); verDetalles(afiliado.id); }}
-                >
-                  <IconEye size={16} />
+                  onClick={(e) => { e.stopPropagation(); verDetalles(afiliado.id); }}>
+                  <IconEye size={15} />
                 </ActionIcon>
-
-                {/* Editar — solo superAdmin */}
                 {esSuperAdmin && (
-                  <ActionIcon
-                    variant="subtle"
-                    size="sm"
-                    aria-label="Editar afiliado"
+                  <ActionIcon variant="subtle" size="sm" aria-label="Editar"
                     className="accion-editar"
-                    onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}
-                  >
-                    <IconEdit size={16} />
+                    onClick={(e) => { e.stopPropagation(); editarAfiliado(afiliado.id); }}>
+                    <IconEdit size={15} />
                   </ActionIcon>
                 )}
               </>
@@ -187,25 +132,24 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
     );
   });
 
-  // ==============================================
-  // RENDER PRINCIPAL
-  // ==============================================
+  // ── Render ────────────────────────────────────────────────────
   return (
     <ScrollArea className="tabla-scroll">
       <Table
         striped={!esDeshabilitados}
         highlightOnHover
-        verticalSpacing="md"
-        horizontalSpacing="lg"
-        className={`tabla-afiliados ${esDeshabilitados ? 'tabla-deshabilitados' : ''}`}
+        verticalSpacing="xs"
+        horizontalSpacing="sm"
+        style={{ tableLayout: 'fixed', width: '100%' }}
+        className={`tabla-afiliados tabla-afiliados--compacta ${esDeshabilitados ? 'tabla-deshabilitados' : ''}`}
       >
         <Table.Thead className="tabla-header">
           <Table.Tr>
-            {COLUMNAS.map((col) => (
-              <Table.Th key={col} className="tabla-header-columna">
-                {col}
-              </Table.Th>
-            ))}
+            <Table.Th className="tabla-header-columna" style={{ width: '28%' }}>Nombre</Table.Th>
+            <Table.Th className="tabla-header-columna" style={{ width: '12%' }}>CI</Table.Th>
+            <Table.Th className="tabla-header-columna" style={{ width: '18%' }}>Ocupación</Table.Th>
+            <Table.Th className="tabla-header-columna" style={{ width: '34%' }}>Puestos</Table.Th>
+            <Table.Th className="tabla-header-columna" style={{ width: '8%'  }}>Acciones</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
@@ -215,5 +159,4 @@ const TablaAfiliados = memo(({ afiliados = [], esDeshabilitados = false, onRehab
 });
 
 TablaAfiliados.displayName = 'TablaAfiliados';
-
 export default TablaAfiliados;

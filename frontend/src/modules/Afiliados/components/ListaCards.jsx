@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Grid } from '@mantine/core';
-import Card from './Card';
+import Card from './ui/AfiliadoCard';
 // React.memo evita que toda la grilla de cards se re-renderice
 // cuando el módulo padre cambia de estado por razones ajenas
 // a la lista (p.ej. apertura de un modal, cambio de vista).

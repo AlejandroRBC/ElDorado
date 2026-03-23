@@ -15,7 +15,7 @@ const AfiliadosModule              = lazy(() => import('../Afiliados/AfiliadosMo
 const GestionPatentesPuestosModule = lazy(() => import('../../modules/GestionPatentesPuestos/GestionPatentesPuestosModule'));
 const MapaModule                   = lazy(() => import('../Mapa/MapaModule'));
 const UsuariosModule               = lazy(() => import('../Usuario/UsuariosModule'));
-const DetallesAfiliado             = lazy(() => import('../Afiliados/components/DetallesAfiliado'));
+const DetallesAfiliado             = lazy(() => import('../Afiliados/pages/DetalleAfiliadoPage'));
 const EditarAfiliadoPage           = lazy(() => import('../Afiliados/pages/EditarAfiliadoPage'));
 const DirectorioModule = lazy(() => import('../Directorio/DirectorioModule'));
 

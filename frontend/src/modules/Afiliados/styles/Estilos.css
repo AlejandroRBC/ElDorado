@@ -1539,6 +1539,32 @@ h1, h2, h3, h4, h5, h6,
 .tabla-vacia-subtitulo {
   margin-top: 10px;
 }
+/* ============================================================
+============================================================ */
+
+.tabla-afiliados--compacta {
+  min-width: unset !important;   /* cancela el min-width: 1300px del original */
+  width: 100% !important;
+  font-size: 13px;
+}
+
+.tabla-afiliados--compacta th,
+.tabla-afiliados--compacta td {
+  padding-top:    6px !important;
+  padding-bottom: 6px !important;
+  font-size: 13px;
+}
+
+/* Encabezado más discreto */
+.tabla-afiliados--compacta .tabla-header-columna {
+  font-size:      12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color:          #888;
+  font-weight:    600;
+  padding-top:    8px !important;
+  padding-bottom: 8px !important;
+}
 
 /* ==============================================
    ESTILOS PARA TABLA DE PUESTOS

@@ -11,7 +11,7 @@ import { useMapa } from './hooks/useMapa';
 import { useMapaData, obtenerAfiliadoCompleto } from './hooks/useMapaData';
 import { ModalMostrarHistorial } from '../GestionPatentesPuestos/components/ModalMostrarHistorial';
 import { ModalAsignarPuesto } from '../GestionPatentesPuestos/components/ModalAsignarPuesto';
-import Card from '../Afiliados/Components/Card';
+import Card from '../Afiliados/components/ui/AfiliadoCard';
 import './Styles/mapa.css';
 
 // ============================================

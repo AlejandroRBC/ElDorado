@@ -222,7 +222,7 @@
   height:           50px !important;
   padding:          0 25px !important;
   box-shadow:       0 4px 15px var(--af-shadow) !important;
-  border:           2px solid var(--af-accent) !important;
+  
   font-family:      var(--af-font-body) !important;
   font-weight:      600 !important;
   transition:       background-color 0.2s ease, color 0.2s ease !important;
