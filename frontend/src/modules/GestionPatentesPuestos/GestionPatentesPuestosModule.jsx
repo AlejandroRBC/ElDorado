@@ -4,7 +4,7 @@
 
 import { useState }                                     from 'react';
 import { Button, Affix, Transition, Stack, Text,
-         Loader, Pagination, Group }                    from '@mantine/core';
+         Loader, Pagination }                           from '@mantine/core';
 import { IconArrowUp }                                  from '@tabler/icons-react';
 import { useDisclosure }                                from '@mantine/hooks';
 import { useMediaQuery }                                from 'react-responsive';
@@ -19,18 +19,13 @@ import { ModalEditarPuesto }                            from './components/Modal
 import { ModalAsignarPuesto }                           from './components/ModalAsignarPuesto';
 import './Styles/gestionpatentespuestos.css';
 
-/**
- * Módulo principal de gestión de puestos y patentes.
- * Orquesta los filtros, la tabla y los modales de edición,
- * traspaso, historial y asignación de afiliados.
- */
 function GestionPatentesPuestosModule() {
   const isMobile = useMediaQuery({ maxWidth: 640 });
 
-  const [editarOpened,   { open: openEditar,   close: closeEditar   }] = useDisclosure(false);
-  const [traspasoOpened, { open: openTraspaso, close: closeTraspaso }] = useDisclosure(false);
-  const [historialOpened,{ open: openHistorial,close: closeHistorial}] = useDisclosure(false);
-  const [asignarOpened,  { open: openAsignar,  close: closeAsignar  }] = useDisclosure(false);
+  const [editarOpened,    { open: openEditar,    close: closeEditar    }] = useDisclosure(false);
+  const [traspasoOpened,  { open: openTraspaso,  close: closeTraspaso  }] = useDisclosure(false);
+  const [historialOpened, { open: openHistorial, close: closeHistorial }] = useDisclosure(false);
+  const [asignarOpened,   { open: openAsignar,   close: closeAsignar   }] = useDisclosure(false);
 
   const {
     puestos, loading, error,
@@ -42,16 +37,14 @@ function GestionPatentesPuestosModule() {
     handleAsignacionExitosa,
   } = usePuestos(closeEditar, closeTraspaso, closeAsignar);
 
-  // filtros contiene: puestosFiltrados (completo → export),
-  // puestosPaginados (slice → tabla), paginaActual, totalPaginas, etc.
+  // ── Desestructurar filtros para acceder a search directamente ──
   const filtros = usePuestosFiltros(puestos);
+  const { search, puestosFiltrados, puestosPaginados, paginaActual,
+          totalPaginas, itemsPorPagina, setPaginaActual } = filtros;
 
   const [puestoEditar,    setPuestoEditar]    = useState(null);
   const [puestoHistorial, setPuestoHistorial] = useState(null);
 
-  /**
-   * Navega suavemente al inicio de la página.
-   */
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (loading && puestos.length === 0) {
@@ -63,36 +56,31 @@ function GestionPatentesPuestosModule() {
     );
   }
 
-  const primerItem = (filtros.paginaActual - 1) * filtros.itemsPorPagina + 1;
-  const ultimoItem = Math.min(filtros.paginaActual * filtros.itemsPorPagina, filtros.puestosFiltrados.length);
+  const primerItem = (paginaActual - 1) * itemsPorPagina + 1;
+  const ultimoItem = Math.min(paginaActual * itemsPorPagina, puestosFiltrados.length);
 
   return (
     <div className="gp-module" style={{ padding: isMobile ? '0.75rem' : '1.5rem' }}>
 
-      {/* ── Título del módulo ── */}
       <ModuleHeader title="Gestión de Puestos" />
 
-      {/* ── Modales ── */}
       <ModalMostrarHistorial
         opened={historialOpened}
         close={closeHistorial}
         puesto={puestoHistorial}
       />
-
       <ModalTraspaso
         opened={traspasoOpened}
         close={closeTraspaso}
         puestoSeleccionado={puestoParaTraspaso}
         onTraspaso={handleEjecutarTraspaso}
       />
-
       <ModalEditarPuesto
         opened={editarOpened}
         close={closeEditar}
         puesto={puestoEditar}
         onGuardar={handleGuardarEdicion}
       />
-
       <ModalAsignarPuesto
         opened={asignarOpened}
         close={closeAsignar}
@@ -100,47 +88,55 @@ function GestionPatentesPuestosModule() {
         onAsignado={handleAsignacionExitosa}
       />
 
-      {/* ── Panel de filtros ──
-          puestos={filtros.puestosFiltrados} → el export en FiltrosPuestos
-          usa la lista filtrada completa, no la paginada              ── */}
+      {/*
+        ── FiltrosPuestos recibe:
+           puestos          → lista COMPLETA (para el dropdown de búsqueda)
+           puestosFiltrados → lista filtrada  (para el export Excel)
+      */}
       <FiltrosPuestos
         {...filtros}
-        puestos={filtros.puestosFiltrados}
+        puestos={puestos}
+        puestosFiltrados={puestosFiltrados}
         onTraspaso={() => { setPuestoParaTraspaso(null); openTraspaso(); }}
       />
-            {/* ── Paginación y contador ────────────────────────────── */}
-            {!loading && filtros.puestosFiltrados.length > 0 && (
+
+      {/* ── Paginación y contador ── */}
+      {!loading && puestosFiltrados.length > 0 && (
         <Stack align="center" mt="xl" gap="xs">
-          {filtros.totalPaginas > 1 && (
+          {totalPaginas > 1 && (
             <Pagination
-              total={filtros.totalPaginas}
-              value={filtros.paginaActual}
-              onChange={filtros.setPaginaActual}
+              total={totalPaginas}
+              value={paginaActual}
+              onChange={setPaginaActual}
               color="dark"
               radius="xl"
               size="sm"
             />
           )}
           <Text size="sm" style={{ color: '#666', fontFamily: 'Poppins, sans-serif' }}>
-            {filtros.puestosFiltrados.length <= filtros.itemsPorPagina
-              ? `${filtros.puestosFiltrados.length} puesto${filtros.puestosFiltrados.length !== 1 ? 's' : ''}`
-              : `Mostrando ${primerItem}–${ultimoItem} de ${filtros.puestosFiltrados.length} puestos`
+            {puestosFiltrados.length <= itemsPorPagina
+              ? `${puestosFiltrados.length} puesto${puestosFiltrados.length !== 1 ? 's' : ''}`
+              : `Mostrando ${primerItem}–${ultimoItem} de ${puestosFiltrados.length} puestos`
             }
           </Text>
         </Stack>
       )}
 
-      {/* ── Tabla de puestos → recibe solo la página actual ── */}
+      {/*
+        ── TablaPuestos recibe:
+           puestos      → solo la página actual (paginados)
+           ocultarPasos → true cuando hay texto en el buscador
+      */}
       <TablaPuestos
-        puestos={filtros.puestosPaginados}
+        puestos={puestosPaginados}
         loading={loading}
-        onEditar={(p)       => { setPuestoEditar(p);    openEditar();   }}
-        onVerHistorial={(p) => { setPuestoHistorial(p); openHistorial();}}
-        onTraspaso={(p)     => { setPuestoParaTraspaso(p); openTraspaso(); }}
-        onAsignar={(p)      => { setPuestoParaAsignar(p);  openAsignar();  }}
+        ocultarPasos={search.trim().length > 0}
+        onEditar={(p)       => { setPuestoEditar(p);       openEditar();    }}
+        onVerHistorial={(p) => { setPuestoHistorial(p);    openHistorial(); }}
+        onTraspaso={(p)     => { setPuestoParaTraspaso(p); openTraspaso();  }}
+        onAsignar={(p)      => { setPuestoParaAsignar(p);  openAsignar();   }}
       />
 
-      {/* ── FAB volver arriba ── */}
       <Affix position={{ bottom: 30, right: 30 }}>
         <Transition transition="slide-up" mounted={true}>
           {(transitionStyles) => (

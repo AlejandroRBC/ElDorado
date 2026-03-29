@@ -1,8 +1,5 @@
 import ExcelJS from 'exceljs';
 
-// Para exportar datos específicos importa el template correspondiente:
-//   import { prepararDatosAfiliados } from './excelTemplates';
-
 // ============================================================
 // EXPORTACIÓN A EXCEL
 // ============================================================
@@ -122,7 +119,7 @@ export const exportToExcel = async ({
 
       // ── Colorear fila ──────────────────────────────────
       if (esMayorA10000) {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF6F9FF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB0B0B0' } };
       } else if (item.tiene_patente === 0) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF59D' } };
       }

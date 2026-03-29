@@ -110,6 +110,7 @@ const FiltrosActivosPuestos = ({ search, filtroPatente, filtroFila, filtroCuadra
  */
 export function FiltrosPuestos({
   puestos,
+  puestosFiltrados,
   search,        setSearch,
   filtroPatente, setFiltroPatente,
   filtroFila,    setFiltroFila,
@@ -183,7 +184,20 @@ export function FiltrosPuestos({
                   <div
                     key={p.id_puesto}
                     className="gp-search-dropdown-item"
-                    onMouseDown={(e) => { e.preventDefault(); setSearch(String(p.nroPuesto)); setShowDropdown(false); }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      const t = search.toLowerCase().trim();
+                      let valorSeleccionado;
+                      if (p.ci && p.ci.includes(t)) {
+                        valorSeleccionado = p.ci;
+                      } else if (p.apoderado && p.apoderado.toLowerCase().includes(t)) {
+                        valorSeleccionado = p.apoderado;
+                      } else {
+                        valorSeleccionado = String(p.nroPuesto);
+                      }
+                      setSearch(valorSeleccionado);
+                      setShowDropdown(false);
+                    }}
                   >
                     <div className="gp-search-dropdown-icono">
                       <IconMapPin size={14} color="#0f0f0f" />
@@ -221,7 +235,11 @@ export function FiltrosPuestos({
                 Realizar Traspaso
               </Button>
             )}
-            <Button leftSection={<IconFileExport size={18} />} className="gp-btn-exportar" onClick={() => exportarPuestosExcel(puestos)}>
+            <Button
+              leftSection={<IconFileExport size={18} />}
+              className="gp-btn-exportar"
+              onClick={() => exportarPuestosExcel(puestosFiltrados)} 
+            >
               Generar Reporte General
             </Button>
           </Group>

@@ -28,6 +28,7 @@ export function TablaPuestos({
   loading,
   onVerHistorial,
   onEditar,
+  ocultarPasos,
   onTraspaso,
   onAsignar,
 }) {
@@ -63,6 +64,7 @@ export function TablaPuestos({
             const esPaso = Number(puesto.nroPuesto) > 10000;
 
             if (esPaso) {
+              if (ocultarPasos) return null; 
               return (
                 <tr key={puesto.id_puesto} className="gp-tabla-paso">
                   <td colSpan={10} />
