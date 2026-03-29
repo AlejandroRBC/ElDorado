@@ -23,6 +23,8 @@ import { getPerfilUrl }                     from '../../../utils/imageHelper';
 import { exportarDetallePDF }               from '../handlers/export.handlers';
 import { renderFallbackPerfil }             from '../handlers/afiliados.handlers';
 import { useLogin }                         from '../../../context/LoginContext';
+import ModuleHeader from '../../Navegacion/components/ModuleHeader';
+
 
 import TablaPuestos from '../components/TablaPuestos';
 import AfiliadoModal from '../components/modals/AfiliadoModal';
@@ -270,7 +272,7 @@ const DetalleAfiliadoPage = () => {
                   <Group gap="md">
                     <Button leftSection={<IconPlus size={18} />}
                       onClick={() => abrirModalAsignarPuesto({ idAfiliado: id })}
-                      className="boton-anadir-puesto">
+                      className="boton-accion">
                       Añadir Puesto
                     </Button>
                   </Group>

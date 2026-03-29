@@ -75,18 +75,28 @@
 }
 
 .af-search-clear-btn {
-  background:  none;
-  border:      none;
-  cursor:      pointer;
-  padding:     2px;
-  display:     flex;
+  background: none !important;
+  border: none !important;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
   align-items: center;
-  color:       #999;
-  transition:  color 0.15s;
+  justify-content: center;
+  color: #999 !important;
+  transition: color 0.15s;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
 }
 
 .af-search-clear-btn:hover {
-  color: var(--af-primary);
+  color: #0f0f0f !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.af-search-clear-btn svg {
+  width: 13px;
+  height: 13px;
 }
 
 /* ── Label de filtro ── */
@@ -173,38 +183,53 @@
 
 /* Botón primario negro */
 .af-btn-primario {
-  background-color: var(--af-primary) !important;
-  color:            var(--af-white) !important;
-  border-radius:    var(--af-radius-xl) !important;
-  border:           none !important;
-  font-family:      var(--af-font-body) !important;
-  font-weight:      500 !important;
-  height:           40px !important;
-  padding:          0 25px !important;
-  transition:       background-color 0.2s ease, color 0.2s ease !important;
+  background-color: #0f0f0f !important;
+  color: #ffffff !important;
+  border-radius: 100px !important;
+  border: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  height: 40px !important;
+  padding: 0 25px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
 }
 
 .af-btn-primario:hover {
-  background-color: var(--af-accent) !important;
-  color:            var(--af-primary) !important;
+  background-color: #EDBE3C !important;
+  color: #0f0f0f !important;
 }
 
 /* Botón de acción dorado (exportar) */
 .af-btn-exportar {
-  background-color: var(--af-accent) !important;
-  color:            var(--af-primary) !important;
-  border-radius:    var(--af-radius-xl) !important;
-  border:           none !important;
-  font-family:      var(--af-font-body) !important;
-  font-weight:      600 !important;
-  height:           40px !important;
-  padding:          0 25px !important;
-  transition:       background-color 0.2s ease, color 0.2s ease !important;
+  background-color: #EDBE3C !important;
+  color: #0f0f0f !important;
+  border-radius: 100px !important;
+  border: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 600 !important;
+  height: 40px !important;
+  padding: 0 25px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
 }
 
 .af-btn-exportar:hover {
-  background-color: var(--af-primary) !important;
-  color:            var(--af-white) !important;
+  background-color: #0f0f0f !important;
+  color: #ffffff !important;
+}
+
+.af-btn-accion {
+  background-color: #0f0f0f !important;
+  color: #ffffff !important;
+  border-radius: 100px !important;
+  border: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.af-btn-accion:hover {
+  background-color: #EDBE3C !important;
+  color: #0f0f0f !important;
 }
 
 /* Botón limpiar filtros (sutil) */
@@ -215,23 +240,23 @@
 }
 
 /* FAB volver arriba */
+
 .af-fab {
-  background-color: var(--af-primary) !important;
-  color:            var(--af-white) !important;
-  border-radius:    var(--af-radius-xl) !important;
-  height:           50px !important;
-  padding:          0 25px !important;
-  box-shadow:       0 4px 15px var(--af-shadow) !important;
-  
-  font-family:      var(--af-font-body) !important;
-  font-weight:      600 !important;
-  transition:       background-color 0.2s ease, color 0.2s ease !important;
+  background-color: #0f0f0f !important;
+  color: #ffffff !important;
+  border-radius: 100px !important;
+  height: 50px !important;
+  padding: 0 25px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-weight: 600 !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+  border: none !important;
 }
 
 .af-fab:hover {
-  background-color: var(--af-accent) !important;
-  color:            var(--af-primary) !important;
-  border-color:     var(--af-primary) !important;
+  background-color: #EDBE3C !important;
+  color: #0f0f0f !important;
 }
 
 /* ============================================================

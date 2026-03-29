@@ -188,32 +188,32 @@ const AfiliadosPage = () => {
         />
 
         {/* Barra de vista: toggle deshabilitados + switch cards/tabla */}
-        <Group justify="flex-end" align="center" mb="md">
-          <ToggleDeshabilitados
-            mostrarDeshabilitados={mostrarDeshabilitados}
-            onChange={handleCambiarVistaDeshabilitados}
-            totalDeshabilitados={deshabilitados.totalDeshabilitados}
-          />
-          <div style={{ width: '1px', height: 30, backgroundColor: '#eee', margin: '0 4px' }} />
-          <Group gap="xs" align="center">
-            <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
-            <Switch
-              checked={vistaTabla}
-              onChange={(e) => setVistaTabla(e.currentTarget.checked)}
-              size="lg"
-              styles={{
-                track: { backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', width: '50px', height: '26px' },
-                thumb: { backgroundColor: 'white', borderColor: '#0f0f0f', width: '22px', height: '22px' },
-              }}
-            />
-            <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
-          </Group>
-          <Group gap="xs">
-            <span className={!vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Cards</span>
-            <span className="af-vista-label-inactivo">/</span>
-            <span className={vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Tabla</span>
-          </Group>
-        </Group>
+        <Group justify="flex-end" mb="md">
+  <ToggleDeshabilitados
+    mostrarDeshabilitados={mostrarDeshabilitados}
+    onChange={handleCambiarVistaDeshabilitados}
+    totalDeshabilitados={deshabilitados.totalDeshabilitados}
+  />
+  <div style={{ width: '1px', height: 30, backgroundColor: '#eee', margin: '0 4px' }} />
+  <Group gap="xs" align="center">
+    <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
+    <Switch
+      checked={vistaTabla}
+      onChange={(e) => setVistaTabla(e.currentTarget.checked)}
+      size="lg"
+      styles={{
+        track: { backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', width: '50px', height: '26px' },
+        thumb: { backgroundColor: 'white', borderColor: '#0f0f0f', width: '22px', height: '22px' },
+      }}
+    />
+    <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
+  </Group>
+  <Group gap="xs">
+    <span className={!vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Cards</span>
+    <span className="af-vista-label-inactivo">/</span>
+    <span className={vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Tabla</span>
+  </Group>
+</Group>
 
         {/* Stats / Paginación */}
         <AfiliadoStats

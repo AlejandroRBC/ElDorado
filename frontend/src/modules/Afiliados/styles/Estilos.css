@@ -304,12 +304,24 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .boton-desafiliar {
-  background-color: var(--color-danger);
-  color: white;
-  border-radius: var(--radius-xl);
-  font-weight: 500;
-  padding: 10px 20px;
-  border: 2px solid var(--color-danger);
+  background-color: #F44336 !important;
+  color: white !important;
+  border-radius: var(--radius-xl) !important;
+  font-weight: 500 !important;
+  padding: 10px 20px !important;
+  border: 2px solid #F44336 !important;
+  transition: all 0.2s ease !important;
+}
+
+.boton-desafiliar:hover {
+  background-color: #8a1c1c !important;
+  border-color: #8a1c1c !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+}
+
+.boton-desafiliar:active {
+  transform: translateY(0) !important;
 }
 
 .boton-rehabilitar-detalle {
@@ -1780,4 +1792,43 @@ h1, h2, h3, h4, h5, h6,
   .modal-desafiliar-badge {
     align-self: flex-start;
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.gp-btn-cerrar {
+  background-color: var(--color-accent) !important;
+  color:            var(--color-primary) !important;
+  border-radius:    var(--radius-xl) !important;
+  font-family:      var(--font-body) !important;
+  font-weight:      600 !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-cerrar:hover {
+  background-color: var(--color-primary) !important;
+  color:            var(--color-white) !important;
+}
+.gp-btn-reporte {
+  background-color: var(--color-primary) !important;
+  color:            var(--color-white) !important;
+  border-radius:    var(--radius-xl) !important;
+  font-family:      var(--font-body) !important;
+  transition:       background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.gp-btn-reporte:hover {
+  background-color: var(--color-accent) !important;
+  color:            var(--color-primary) !important;
 }

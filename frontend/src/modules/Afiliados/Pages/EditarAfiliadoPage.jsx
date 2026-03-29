@@ -3,6 +3,8 @@ import { Container, Paper, Title, Button, Group, LoadingOverlay, Alert, Box } fr
 import { useParams, useNavigate }                             from 'react-router-dom';
 import { IconArrowLeft, IconAlertCircle }                     from '@tabler/icons-react';
 
+import ModuleHeader from '../../Navegacion/components/ModuleHeader';
+
 import { useAfiliado }        from '../hooks/useAfiliados';
 import { useAfiliadoActions } from '../hooks/useAfiliadoActions';
 import FormularioEditarAfiliado from '../components/FormularioEditarAfiliado';
@@ -73,13 +75,19 @@ const EditarAfiliadoPage = () => {
     <Container fluid p="md">
       <Group justify="space-between" mb="xl">
         <Box>
-          <Title order={1} style={{ color: '#0f0f0f' }}>Editar Afiliado</Title>
+          
+          <ModuleHeader 
+          title="Editar Afiliado"
+          
+          showBackButton
+          onBack={() => navigate(`/afiliados/${id}`)}
+        />
           <Title order={3} fw={400} style={{ color: '#666', marginTop: 5 }}>
             {afiliadoActual?.nombre} {afiliadoActual?.paterno} {afiliadoActual?.materno}
           </Title>
         </Box>
         <Button leftSection={<IconArrowLeft size={18} />} onClick={handleCancel}
-          style={{ backgroundColor: '#0f0f0f', color: 'white', borderRadius: '8px', fontWeight: 500 }}>
+          className="boton-volver-lista">
           Volver al Detalle
         </Button>
       </Group>

@@ -136,25 +136,30 @@ export const PanelFiltros = memo(({
       {/* ── Fila 1: inputs de filtro ── */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
 
-        <div style={{ flex: '2 1 220px' }}>
-          <span className="af-filtro-label">Buscar</span>
-          <div className="af-search-wrapper">
-            <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
-            <input
-              type="text"
-              className="af-search-input"
-              placeholder="Nombre, CI, apellido…"
-              value={searchValue}
-              onChange={(e) => alCambiarBusqueda(e.target.value)}
-              disabled={cargando}
-            />
-            {searchValue && (
-              <button className="af-search-clear" onClick={alLimpiarBusqueda} title="Limpiar búsqueda">
-                <IconX size={13} />
-              </button>
-            )}
-          </div>
-        </div>
+      <div style={{ flex: '2 1 220px' }}>
+  <span className="af-filtro-label">Buscar</span>
+  <div className="af-search-wrapper">
+    <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
+    <input
+      type="text"
+      className="af-search-input"
+      placeholder="Nombre, CI, apellido…"
+      value={searchValue}
+      onChange={(e) => alCambiarBusqueda(e.target.value)}
+      disabled={cargando}
+    />
+    {searchValue && (
+      <button 
+        className="af-search-clear-btn" 
+        onClick={alLimpiarBusqueda} 
+        title="Limpiar búsqueda"
+        type="button"
+      >
+        <IconX size={13} />
+      </button>
+    )}
+  </div>
+</div>
 
         <div style={{ flex: '1 1 130px' }}>
           <span className="af-filtro-label">Patente</span>

@@ -6,6 +6,7 @@ import { notifications } from '@mantine/notifications';
 import { useVistaPreviewImagen } from '../hooks/useVistaPreviewImagen';
 import { getImageUrl } from '../../../utils/imageHelper';
 import '../styles/Estilos.css'; // Archivo acumulador de estilos
+import '../styles/Estilos.css'; // Archivo acumulador de estilos
 
 // ==============================================
 // CONSTANTES Y OPCIONES ESTÁTICAS
@@ -310,14 +311,14 @@ const FormularioEditarAfiliado = ({
   const renderBotonesAccion = () => (
     <Group justify="flex-end" gap="md">
       <Button
-        variant="outline" onClick={onCancel} disabled={loading} size="md"
-        className="boton-cancelar"
+        onClick={onCancel} disabled={loading}
+        className="gp-btn-cerrar"
       >
         Cancelar
       </Button>
       <Button
-        type="submit" loading={loading} size="md"
-        className="boton-guardar"
+        type="submit" loading={loading}
+        className="gp-btn-reporte"
       >
         {loading ? 'Guardando...' : modo === 'editar' ? 'Guardar Cambios' : 'Crear Afiliado'}
       </Button>
