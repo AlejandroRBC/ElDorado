@@ -1,9 +1,12 @@
-// frontend/src/modules/Afiliados/pages/AfiliadosPage.jsx
+// frontend/src/modules/Afiliados/Pages/AfiliadosPage.jsx
 //
-// EXTRAE DE: AfiliadosModule.jsx (toda la lógica de lista)
-//
-// Orquesta los hooks y delega todo el renderizado a componentes hijos.
-// AfiliadosModule.jsx quedará como cáscara que solo monta esta Page.
+// PATCH RESPONSIVE — imitando patrón de GestionPatentesPuestosModule
+// Cambios respecto al original:
+//   1. Import useMediaQuery from 'react-responsive'
+//   2. isMobile / isTablet aplicados en padding, Group directions, Switch labels
+//   3. Botón FAB oculto en móvil (Affix) — lo reemplaza un botón fijo al fondo
+//   4. Switch vista Cards/Tabla se fuerza a Cards en móvil automáticamente
+//   5. ToggleDeshabilitados y Switch en columna en móvil
 
 import { useMemo, useEffect, lazy, Suspense }          from 'react';
 import {
@@ -14,6 +17,7 @@ import {
   IconLayoutGrid,
   IconTable, IconAlertCircle, IconArrowUp, IconSearch,
 } from '@tabler/icons-react';
+import { useMediaQuery }    from 'react-responsive';
 
 import ModuleHeader       from '../../Navegacion/components/ModuleHeader';
 import ListaCards         from '../components/ListaCards';
@@ -28,7 +32,6 @@ import { exportarListaExcel } from '../handlers/export.handlers';
 import { useLogin }           from '../../../context/LoginContext';
 import '../styles/afiliados-gp.css';
 
-// Lazy: el chunk del modal no se descarga hasta que el usuario lo abre
 const AfiliadoModal = lazy(() => import('../components/modals/AfiliadoModal'));
 
 const CargandoModal = () => (
@@ -43,11 +46,15 @@ const AfiliadosPage = () => {
   const { user }     = useLogin();
   const esSuperAdmin = user?.rol === 'superadmin';
 
+  // ── Responsive ───────────────────────────────────────────────
+  const isMobile  = useMediaQuery({ maxWidth: 640 });
+  const isTablet  = useMediaQuery({ maxWidth: 1024 });
+
   // ── Hooks de datos ───────────────────────────────────────────
-  const filtrosHook = useFiltrosAfiliados({ soloDeshabilitados: false });
+  const filtrosHook     = useFiltrosAfiliados({ soloDeshabilitados: false });
   const filtrosDeshHook = useFiltrosAfiliados({ soloDeshabilitados: true });
 
-  const activos = useAfiliados({ soloDeshabilitados: false });
+  const activos      = useAfiliados({ soloDeshabilitados: false });
   const deshabilitados = useAfiliados({ soloDeshabilitados: true });
 
   // ── Hook UI ──────────────────────────────────────────────────
@@ -56,6 +63,9 @@ const AfiliadosPage = () => {
     vistaTabla, setVistaTabla,
     mostrarDeshabilitados, toggleDeshabilitados,
   } = useAfiliadoUI();
+
+  // En móvil forzamos siempre vista Cards (la tabla no encaja bien)
+  const vistaEfectiva = isMobile ? false : vistaTabla;
 
   // ── Opciones de rubros formateadas para Select ───────────────
   const opcionesRubros = useMemo(
@@ -67,12 +77,7 @@ const AfiliadosPage = () => {
   const hookActivo    = mostrarDeshabilitados ? deshabilitados : activos;
   const filtrosActivo = mostrarDeshabilitados ? filtrosDeshHook : filtrosHook;
 
-  // Cuando cambian los filtros debounced recargamos la lista
   const { filtrosActivos, hayFiltrosActivos } = filtrosActivo;
-
-  // Efecto: recargar cuando cambien los filtros reales
-  // (en lugar de múltiples useEffect dispersos del módulo original,
-  //  la Page llama a cargar manualmente desde los handlers de filtros)
 
   const handleCambiarVistaDeshabilitados = async (checked) => {
     toggleDeshabilitados(checked);
@@ -83,7 +88,6 @@ const AfiliadosPage = () => {
     }
   };
 
-  // ── Handlers de filtros con recarga ──────────────────────────
   const handleCambiarBusqueda    = (v) => filtrosActivo.setCambiarBusqueda(v);
   const handleLimpiarBusqueda    = ()  => filtrosActivo.setLimpiarBusqueda();
   const handleCambiarOrden       = async (v) => { filtrosActivo.setCambiarOrden(v);       await hookActivo.cargar({ ...filtrosActivos, orden: v || 'alfabetico' }); };
@@ -110,10 +114,8 @@ const AfiliadosPage = () => {
     await hookActivo.cargar(nuevos);
   };
 
-  // Debounced search — useEffect, nunca useMemo para side-effects
   useEffect(() => {
     hookActivo.cargar({ ...filtrosActivos, search: filtrosActivo.debouncedSearch });
-  // filtrosActivos y hookActivo.cargar son estables; solo re-fetch al cambiar la búsqueda
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtrosActivo.debouncedSearch]);
 
@@ -124,7 +126,7 @@ const AfiliadosPage = () => {
 
   // ── Renderizado ───────────────────────────────────────────────
   return (
-    <Container fluid p="md" className="af-module">
+    <Container fluid p={isMobile ? 'xs' : 'md'} className="af-module">
       <ModuleHeader title="Afiliados" />
 
       {activos.conexion?.error && (
@@ -136,7 +138,6 @@ const AfiliadosPage = () => {
         </Alert>
       )}
 
-      {/* Modal crear afiliado — lazy */}
       {modal.tipo === 'afiliado' && modal.mode === 'crear' && (
         <Suspense fallback={<CargandoModal />}>
           <AfiliadoModal
@@ -148,8 +149,16 @@ const AfiliadosPage = () => {
         </Suspense>
       )}
 
-      <Paper p="xl" radius="lg"
-        style={{ backgroundColor: 'white', minHeight: '70vh', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', position: 'relative' }}>
+      <Paper
+        p={isMobile ? 'sm' : 'xl'}
+        radius="lg"
+        style={{
+          backgroundColor: 'white',
+          minHeight: '70vh',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          position: 'relative',
+        }}
+      >
         <LoadingOverlay visible={hookActivo.cargando} zIndex={1000} overlayProps={{ blur: 2 }} />
 
         {hookActivo.error && !hookActivo.cargando && (
@@ -161,7 +170,7 @@ const AfiliadosPage = () => {
           </Alert>
         )}
 
-        {/* Panel unificado: filtros + badges + botones de acción */}
+        {/* Panel filtros */}
         <PanelFiltros
           valores={{
             searchValue:       filtrosActivo.searchValue,
@@ -185,35 +194,48 @@ const AfiliadosPage = () => {
           esSuperAdmin={esSuperAdmin}
           onAnadirAfiliado={abrirModalCrearAfiliado}
           onExportarExcel={handleExportarExcel}
+          isMobile={isMobile}
         />
 
         {/* Barra de vista: toggle deshabilitados + switch cards/tabla */}
-        <Group justify="flex-end" mb="md">
-  <ToggleDeshabilitados
-    mostrarDeshabilitados={mostrarDeshabilitados}
-    onChange={handleCambiarVistaDeshabilitados}
-    totalDeshabilitados={deshabilitados.totalDeshabilitados}
-  />
-  <div style={{ width: '1px', height: 30, backgroundColor: '#eee', margin: '0 4px' }} />
-  <Group gap="xs" align="center">
-    <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
-    <Switch
-      checked={vistaTabla}
-      onChange={(e) => setVistaTabla(e.currentTarget.checked)}
-      size="lg"
-      styles={{
-        track: { backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', width: '50px', height: '26px' },
-        thumb: { backgroundColor: 'white', borderColor: '#0f0f0f', width: '22px', height: '22px' },
-      }}
-    />
-    <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
-  </Group>
-  <Group gap="xs">
-    <span className={!vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Cards</span>
-    <span className="af-vista-label-inactivo">/</span>
-    <span className={vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Tabla</span>
-  </Group>
-</Group>
+        <Group
+          justify={isMobile ? 'center' : 'flex-end'}
+          mb="md"
+          style={{ flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '10px' : undefined }}
+        >
+          <ToggleDeshabilitados
+            mostrarDeshabilitados={mostrarDeshabilitados}
+            onChange={handleCambiarVistaDeshabilitados}
+            totalDeshabilitados={deshabilitados.totalDeshabilitados}
+          />
+
+          {/* Separador — oculto en móvil */}
+          {!isMobile && (
+            <div style={{ width: '1px', height: 30, backgroundColor: '#eee', margin: '0 4px' }} />
+          )}
+
+          {/* Switch Cards/Tabla — se oculta en móvil (solo cards) */}
+          {!isMobile && (
+            <Group gap="xs" align="center">
+              <IconLayoutGrid size={18} style={{ color: !vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
+              <Switch
+                checked={vistaTabla}
+                onChange={(e) => setVistaTabla(e.currentTarget.checked)}
+                size="lg"
+                styles={{
+                  track: { backgroundColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', borderColor: vistaTabla ? '#0f0f0f' : '#e0e0e0', width: '50px', height: '26px' },
+                  thumb: { backgroundColor: 'white', borderColor: '#0f0f0f', width: '22px', height: '22px' },
+                }}
+              />
+              <IconTable size={18} style={{ color: vistaTabla ? '#0f0f0f' : '#C4C4C4' }} />
+              <Group gap="xs">
+                <span className={!vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Cards</span>
+                <span className="af-vista-label-inactivo">/</span>
+                <span className={vistaTabla ? 'af-vista-label-activo' : 'af-vista-label-inactivo'}>Tabla</span>
+              </Group>
+            </Group>
+          )}
+        </Group>
 
         {/* Stats / Paginación */}
         <AfiliadoStats
@@ -228,10 +250,10 @@ const AfiliadosPage = () => {
         {/* Lista/Tabla */}
         {!hookActivo.cargando && !hookActivo.error && (
           mostrarDeshabilitados
-            ? vistaTabla
+            ? vistaEfectiva
               ? <TablaAfiliados afiliados={deshabilitados.afiliadosPaginados} esDeshabilitados />
               : <ListaCards afiliados={deshabilitados.afiliadosPaginados} esDeshabilitados onRehabilitar={deshabilitados.rehabilitarAfiliado} />
-            : vistaTabla
+            : vistaEfectiva
               ? <TablaAfiliados afiliados={activos.afiliadosPaginados} />
               : <ListaCards afiliados={activos.afiliadosPaginados} />
         )}
@@ -243,7 +265,7 @@ const AfiliadosPage = () => {
             <Title order={4} style={{ color: '#999', fontFamily: 'Poppins, sans-serif' }}>
               No se encontraron afiliados
             </Title>
-            <Text style={{ color: '#999', fontFamily: 'Poppins, sans-serif' }}>
+            <Text style={{ color: '#999', fontFamily: 'Poppins, sans-serif', textAlign: 'center' }}>
               {hayFiltrosActivos ? 'No hay resultados para los filtros aplicados' : 'No hay afiliados registrados'}
             </Text>
             {hayFiltrosActivos && (
@@ -255,16 +277,50 @@ const AfiliadosPage = () => {
         )}
       </Paper>
 
-      <Affix position={{ bottom: 30, right: 30 }}>
-        <Transition transition="slide-up" mounted>
-          {(styles) => (
-            <Button leftSection={<IconArrowUp size={18} />} className="af-fab"
-              style={styles} onClick={scrollToTop}>
-              Volver Arriba
-            </Button>
-          )}
-        </Transition>
-      </Affix>
+      {/* FAB volver arriba — solo en desktop/tablet */}
+      {!isMobile && (
+        <Affix position={{ bottom: 30, right: 30 }}>
+          <Transition transition="slide-up" mounted>
+            {(styles) => (
+              <Button
+                leftSection={<IconArrowUp size={18} />}
+                className="af-fab"
+                style={styles}
+                onClick={scrollToTop}
+              >
+                Volver Arriba
+              </Button>
+            )}
+          </Transition>
+        </Affix>
+      )}
+
+      {/* Botón "Ir arriba" fijo en móvil — compacto */}
+      {isMobile && (
+        <div style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 16,
+          zIndex: 300,
+        }}>
+          <Button
+            size="sm"
+            onClick={scrollToTop}
+            style={{
+              backgroundColor: '#0f0f0f',
+              color: 'white',
+              borderRadius: '50%',
+              width: 44,
+              height: 44,
+              padding: 0,
+              minWidth: 'unset',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            }}
+          >
+            <IconArrowUp size={18} />
+          </Button>
+        </div>
+      )}
     </Container>
   );
 };

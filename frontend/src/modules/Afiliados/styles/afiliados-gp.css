@@ -340,3 +340,195 @@
   font-weight: 400;
   color:       var(--af-dimmed);
 }
+
+
+/* ============================================================
+   AFILIADOS — RESPONSIVE PATCH
+   Agregar al final de: afiliados-gp.css
+   Breakpoints iguales a GestionPatentesPuestos (640px / 1024px)
+   ============================================================ */
+
+/* ── Panel filtros responsive ── */
+@media (max-width: 640px) {
+  .af-filtros-paper {
+    padding: 12px !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Buscador ocupa todo el ancho */
+  .af-search-wrapper {
+    width: 100%;
+  }
+
+  /* Custom selects ocupan todo el ancho en móvil */
+  .af-custom-select {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .af-custom-select-selected {
+    width: 100%;
+  }
+
+  /* Botones de acción en columna */
+  .af-btn-primario,
+  .af-btn-exportar,
+  .af-btn-accion {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  /* FAB oculto en móvil (reemplazado por botón circular fijo) */
+  .af-fab {
+    display: none !important;
+  }
+
+  /* Stats y paginación centrados */
+  .af-contador {
+    text-align: center;
+  }
+}
+
+/* ── Tabla afiliados responsive ── */
+@media (max-width: 640px) {
+  /* Ocultar columna Ocupación en pantallas pequeñas */
+  .tabla-afiliados th:nth-child(3),
+  .tabla-afiliados td:nth-child(3) {
+    display: none;
+  }
+
+  /* Reducir padding de celdas */
+  .tabla-afiliados td,
+  .tabla-afiliados th {
+    padding: 8px 6px !important;
+  }
+
+  /* Ajustar anchos de columna en móvil */
+  .tabla-afiliados th:nth-child(1) { width: 40% !important; }
+  .tabla-afiliados th:nth-child(2) { width: 20% !important; }
+  .tabla-afiliados th:nth-child(4) { width: 28% !important; }
+  .tabla-afiliados th:nth-child(5) { width: 12% !important; }
+}
+
+/* ── Cards responsive ── */
+@media (max-width: 640px) {
+  /* Cards en una sola columna */
+  .mantine-Grid-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ── Detalle afiliado responsive ── */
+@media (max-width: 640px) {
+  .paper-info-afiliado {
+    padding: 12px !important;
+  }
+
+  .foto-perfil-imagen-grande {
+    width: 100px !important;
+    height: 100px !important;
+    object-fit: cover;
+  }
+
+  .foto-perfil-contenedor-grande {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .texto-nombre {
+    font-size: 16px !important;
+    text-align: center;
+  }
+
+  .texto-ci {
+    text-align: center;
+  }
+
+  /* Botones de acción en detalle — ancho completo */
+  .boton-accion,
+  .boton-desafiliar,
+  .boton-rehabilitar-detalle {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .boton-volver-lista {
+    width: 100% !important;
+    justify-content: center;
+  }
+}
+
+/* ── Tabla de puestos (dentro de DetalleAfiliado) responsive ── */
+@media (max-width: 640px) {
+  /* Ocultar columnas menos importantes en móvil */
+  .tabla-puestos-fila td:nth-child(3),  /* Cuadra */
+  .tabla-puestos-fila td:nth-child(5),  /* Fecha Obtención */
+  .tabla-puestos-fila td:nth-child(6) { /* Rubro */
+    display: none;
+  }
+
+  .tabla-puestos th:nth-child(3),
+  .tabla-puestos th:nth-child(5),
+  .tabla-puestos th:nth-child(6) {
+    display: none;
+  }
+}
+
+/* ── Toggle deshabilitados responsive ── */
+@media (max-width: 640px) {
+  .toggle-container {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* ── Formulario editar afiliado responsive ── */
+@media (max-width: 640px) {
+  .formulario-paper {
+    padding: 12px !important;
+  }
+
+  /* La dirección no necesita span en móvil */
+  .input-span-2 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ── Modales — ajustar tamaño en móvil ── */
+@media (max-width: 640px) {
+  .modal-desafiliar-botones,
+  .modal-confirmar-botones {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-desafiliar-boton-cancelar,
+  .modal-desafiliar-boton-confirmar,
+  .modal-confirmar-boton-cancelar,
+  .modal-confirmar-boton-confirmar {
+    width: 100% !important;
+  }
+
+  .modal-desafiliar-paper .mantine-Group-root {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .modal-desafiliar-badge {
+    align-self: flex-start;
+  }
+}
+
+/* ── Tablet adjustments (640–1024px) ── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .af-custom-select {
+    min-width: 130px;
+  }
+
+  .boton-accion {
+    padding: 0 14px !important;
+    font-size: 13px !important;
+  }
+}

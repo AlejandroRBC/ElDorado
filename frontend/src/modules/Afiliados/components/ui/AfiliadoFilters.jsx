@@ -7,6 +7,9 @@
 //   PanelFiltros         ← componente principal unificado
 //   ToggleDeshabilitados
 //   CustomSelect
+//
+// PATCH RESPONSIVE: useMediaQuery({ maxWidth: 640 }) — patrón idéntico a FiltrosPuestos.jsx
+// Solo se ajusta el layout (flexDirection, width) en móvil. Lógica intacta.
 
 import { memo, useState, useRef, useEffect } from 'react';
 import { Switch, Button }                     from '@mantine/core';
@@ -14,6 +17,7 @@ import {
   IconSearch, IconX, IconTrash,
   IconPlus, IconFileExport,
 } from '@tabler/icons-react';
+import { useMediaQuery } from 'react-responsive';
 import {
   OPCIONES_PATENTE,
   OPCIONES_ORDEN,
@@ -85,25 +89,6 @@ const obtenerEtiqueta = (tipo, valor) => {
 // PanelFiltros — todo dentro del af-filtros-paper
 // ─────────────────────────────────────────────────────────────
 
-/**
- * Props filtros:
- *   valores             — { searchValue, selectPatente, selectOrden, selectPuestoCount, selectRubro }
- *   opcionesRubros      — [{ value, label }]
- *   cargando
- *   alCambiarBusqueda / alLimpiarBusqueda
- *   alCambiarPatente / alCambiarOrden / alCambiarPuestoCount / alCambiarRubro
- *
- * Props badges:
- *   filtrosActivos      — objeto del hook
- *   hayFiltrosActivos   — boolean
- *   alLimpiarFiltro     — (tipo) => void
- *   alLimpiarTodos      — () => void
- *
- * Props acciones:
- *   esSuperAdmin
- *   onAnadirAfiliado
- *   onExportarExcel
- */
 export const PanelFiltros = memo(({
   valores = {}, opcionesRubros = [], cargando = false,
   alCambiarBusqueda, alLimpiarBusqueda,
@@ -114,6 +99,8 @@ export const PanelFiltros = memo(({
   onAnadirAfiliado,
   onExportarExcel,
 }) => {
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+
   const {
     searchValue = '', selectPatente = null, selectOrden = 'alfabetico',
     selectPuestoCount = null, selectRubro = null,
@@ -131,55 +118,61 @@ export const PanelFiltros = memo(({
   ].filter(Boolean);
 
   return (
-    <div className="af-filtros-paper" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+    <div className="af-filtros-paper" style={{ padding: isMobile ? '0.75rem' : '1rem 1.25rem', marginBottom: '1.5rem' }}>
 
       {/* ── Fila 1: inputs de filtro ── */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+      <div style={{
+        display:       'flex',
+        flexWrap:      'wrap',
+        gap:           '12px',
+        alignItems:    'flex-end',
+        flexDirection: isMobile ? 'column' : 'row',
+      }}>
 
-      <div style={{ flex: '2 1 220px' }}>
-  <span className="af-filtro-label">Buscar</span>
-  <div className="af-search-wrapper">
-    <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
-    <input
-      type="text"
-      className="af-search-input"
-      placeholder="Nombre, CI, apellido…"
-      value={searchValue}
-      onChange={(e) => alCambiarBusqueda(e.target.value)}
-      disabled={cargando}
-    />
-    {searchValue && (
-      <button 
-        className="af-search-clear-btn" 
-        onClick={alLimpiarBusqueda} 
-        title="Limpiar búsqueda"
-        type="button"
-      >
-        <IconX size={13} />
-      </button>
-    )}
-  </div>
-</div>
+        <div style={{ flex: isMobile ? '1 1 100%' : '2 1 220px', width: isMobile ? '100%' : undefined }}>
+          <span className="af-filtro-label">Buscar</span>
+          <div className="af-search-wrapper">
+            <IconSearch size={15} color="#999" style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              className="af-search-input"
+              placeholder="Nombre, CI, apellido…"
+              value={searchValue}
+              onChange={(e) => alCambiarBusqueda(e.target.value)}
+              disabled={cargando}
+            />
+            {searchValue && (
+              <button
+                className="af-search-clear-btn"
+                onClick={alLimpiarBusqueda}
+                title="Limpiar búsqueda"
+                type="button"
+              >
+                <IconX size={13} />
+              </button>
+            )}
+          </div>
+        </div>
 
-        <div style={{ flex: '1 1 130px' }}>
+        <div style={{ flex: isMobile ? '1 1 100%' : '1 1 130px', width: isMobile ? '100%' : undefined }}>
           <span className="af-filtro-label">Patente</span>
           <CustomSelect value={selectPatente} onChange={alCambiarPatente}
             opciones={OPTS_PATENTE} placeholder="Todas" />
         </div>
 
-        <div style={{ flex: '1 1 150px' }}>
+        <div style={{ flex: isMobile ? '1 1 100%' : '1 1 150px', width: isMobile ? '100%' : undefined }}>
           <span className="af-filtro-label">Ordenar por</span>
           <CustomSelect value={selectOrden} onChange={alCambiarOrden}
             opciones={OPTS_ORDEN} placeholder="Orden Alfabético" />
         </div>
 
-        <div style={{ flex: '1 1 130px' }}>
+        <div style={{ flex: isMobile ? '1 1 100%' : '1 1 130px', width: isMobile ? '100%' : undefined }}>
           <span className="af-filtro-label">Puestos</span>
           <CustomSelect value={selectPuestoCount} onChange={alCambiarPuestoCount}
             opciones={OPTS_PUESTO_COUNT} placeholder="Todos" />
         </div>
 
-        <div style={{ flex: '1 1 160px' }}>
+        <div style={{ flex: isMobile ? '1 1 100%' : '1 1 160px', width: isMobile ? '100%' : undefined }}>
           <span className="af-filtro-label">Rubro</span>
           <CustomSelect value={selectRubro} onChange={alCambiarRubro}
             opciones={optsRubro} placeholder="Todos los rubros" />
@@ -190,15 +183,31 @@ export const PanelFiltros = memo(({
       <div style={{ height: '1px', backgroundColor: '#eee', margin: '12px 0' }} />
 
       {/* ── Fila 2: botones de acción ── */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{
+        display:       'flex',
+        gap:           '8px',
+        flexWrap:      'wrap',
+        alignItems:    'center',
+        flexDirection: isMobile ? 'column' : 'row',
+      }}>
         {esSuperAdmin && (
-          <Button size="sm" leftSection={<IconPlus size={16} />}
-            className="af-btn-primario" onClick={onAnadirAfiliado}>
+          <Button
+            size="sm"
+            leftSection={<IconPlus size={16} />}
+            className="af-btn-primario"
+            onClick={onAnadirAfiliado}
+            style={isMobile ? { width: '100%' } : undefined}
+          >
             Añadir Afiliado
           </Button>
         )}
-        <Button size="sm" leftSection={<IconFileExport size={16} />}
-          className="af-btn-exportar" onClick={onExportarExcel}>
+        <Button
+          size="sm"
+          leftSection={<IconFileExport size={16} />}
+          className="af-btn-exportar"
+          onClick={onExportarExcel}
+          style={isMobile ? { width: '100%' } : undefined}
+        >
           Exportar lista
         </Button>
       </div>

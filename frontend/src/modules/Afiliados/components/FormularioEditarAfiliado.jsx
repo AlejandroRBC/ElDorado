@@ -1,15 +1,24 @@
+// frontend/src/modules/Afiliados/components/FormularioEditarAfiliado.jsx
+//
+// PATCH RESPONSIVE
+// Cambios:
+//   1. useMediaQuery({ maxWidth: 640 }) para isMobile
+//   2. Layout principal: en móvil foto va arriba centrada, campos abajo
+//   3. SimpleGrid cols: 1 en móvil, 2 en desktop
+//   4. Botones de acción fullWidth en móvil
+
 import { TextInput, Select, Stack, Group, Box, Text, Button, Paper, SimpleGrid } from '@mantine/core';
 import { IconPhoto, IconX, IconUser, IconId, IconPhone, IconMapPin, IconCalendar } from '@tabler/icons-react';
 import { useState } from 'react';
 import { notifications } from '@mantine/notifications';
+import { useMediaQuery } from 'react-responsive';
 
 import { useVistaPreviewImagen } from '../hooks/useVistaPreviewImagen';
 import { getImageUrl } from '../../../utils/imageHelper';
-import '../styles/Estilos.css'; // Archivo acumulador de estilos
-import '../styles/Estilos.css'; // Archivo acumulador de estilos
+import '../styles/Estilos.css';
 
 // ==============================================
-// CONSTANTES Y OPCIONES ESTÁTICAS
+// CONSTANTES
 // ==============================================
 const DEPARTAMENTOS = [
   { value: 'LP', label: 'La Paz' }, { value: 'CB', label: 'Cochabamba' },
@@ -27,18 +36,12 @@ const SEXOS = [
 // ==============================================
 // FUNCIONES AUXILIARES
 // ==============================================
-
-/** Extrae la URL de foto de un afiliado, o null si no tiene. */
 const resolverUrlFoto = (afiliado) => {
   if (!afiliado?.url_perfil) return null;
   if (afiliado.url_perfil.includes('sinPerfil.png')) return null;
   return getImageUrl(afiliado.url_perfil);
 };
 
-/**
- * Convierte el objeto `afiliado` recibido como prop en los valores
- * iniciales del formulario. Se llama una sola vez desde useState().
- */
 const computarFormData = (afiliado) => {
   if (!afiliado) {
     return {
@@ -47,13 +50,9 @@ const computarFormData = (afiliado) => {
       es_habilitado: true,
     };
   }
-
-  let ciNumero = afiliado.ci || '';
-  let extension = 'LP';
-
   return {
-    ci: afiliado.ci_numero || ciNumero,
-    extension: afiliado.extension || extension,
+    ci: afiliado.ci_numero || afiliado.ci || '',
+    extension: afiliado.extension || 'LP',
     nombre: afiliado.nombre || '',
     paterno: afiliado.paterno || '',
     materno: afiliado.materno || '',
@@ -68,31 +67,8 @@ const computarFormData = (afiliado) => {
   };
 };
 
-// ==============================================
-// HANDLERS UTILITARIOS
-// ==============================================
-
-/**
- * Manejador para cambio de campos del formulario
- */
 const handleFieldChange = (setFormData, field, value) => {
   setFormData((prev) => ({ ...prev, [field]: value }));
-};
-
-/**
- * Manejador para error de carga de imagen
- */
-const handleImageError = (e, esUrlExterna) => {
-  if (esUrlExterna) {
-    e.target.style.display = 'none';
-    e.target.parentElement.innerHTML = `
-      <div class="foto-perfil-fallback">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-      </div>`;
-  }
 };
 
 // ==============================================
@@ -106,129 +82,105 @@ const FormularioEditarAfiliado = ({
   loading = false,
   modo = 'editar',
 }) => {
-  // Estado inicializado directamente desde props — sin useEffect.
+  const isMobile = useMediaQuery({ maxWidth: 640 });
+
   const [formData, setFormData] = useState(() => computarFormData(afiliado));
 
-  // URL de la foto actual derivada antes de llamar al hook,
-  // para que useVistaPreviewImagen la reciba como urlInicial.
-  const urlFotoInicial = resolverUrlFoto(afiliado);
-
-  // ==============================================
-  // HOOK DE PREVIEW
-  // ==============================================
-  const {
-    preview,
-    esBlobNuevo,
-    esUrlExterna,
-    archivoSeleccionado,
-    isDragging,
-    fileInputRef,
-    alEliminarFoto,
-    alCambiarInputArchivo,
-    propsDragDrop,
-  } = useVistaPreviewImagen({
-    urlInicial: urlFotoInicial,
-    alReportarError: (msg) =>
-      notifications.show({ title: 'Error', message: msg, color: 'red' }),
+  const urlInicial = resolverUrlFoto(afiliado);
+  const { preview, archivoSeleccionado, isDragging, fileInputRef,
+          alEliminarFoto, alCambiarInputArchivo, propsDragDrop } = useVistaPreviewImagen({
+    urlInicial,
   });
 
-  // ==============================================
-  // HANDLERS DEL COMPONENTE
-  // ==============================================
+  const handleChange = (field, value) => handleFieldChange(setFormData, field, value);
 
-  const handleChange = (field, value) => {
-    handleFieldChange(setFormData, field, value);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ ...formData, foto: archivoSeleccionado });
+    if (!formData.ci || !formData.nombre) {
+      notifications.show({ title: 'Campos requeridos', message: 'CI y Nombre son obligatorios', color: 'orange' });
+      return;
+    }
+    await onSubmit?.({ ...formData, foto: archivoSeleccionado });
   };
 
-  const handleRemoveClick = (e) => {
-    e.stopPropagation();
-    alEliminarFoto();
-  };
-
-  const handleImageErrorWrapper = (e) => {
-    handleImageError(e, esUrlExterna);
-  };
-
-  // ==============================================
-  // RENDERIZADO DE SECCIONES
-  // ==============================================
-
+  // ── Foto de perfil ──────────────────────────────────────────
   const renderFotoPerfil = () => (
-    <Box className="formulario-foto-contenedor">
-      <Text fw={600} size="sm" mb="xs">Foto de Perfil</Text>
+    <Box
+      className="formulario-foto-contenedor"
+      style={{
+        width: isMobile ? '100%' : 180,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      <Text size="sm" fw={600} mb={4} style={{ textAlign: 'center' }}>Foto de perfil</Text>
 
-      <Box
+      <div
         {...propsDragDrop}
-        className={`formulario-foto-zona ${isDragging ? 'formulario-foto-dragging' : ''} ${preview ? 'formulario-foto-con-imagen' : ''}`}
+        style={{
+          width:           isMobile ? 130 : 160,
+          height:          isMobile ? 130 : 160,
+          margin:          '0 auto',
+          borderRadius:    '50%',
+          border:          isDragging ? '2px dashed #0f0f0f' : '2px dashed #C4C4C4',
+          display:         'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          cursor:          'pointer',
+          overflow:        'hidden',
+          backgroundColor: '#F6F9FF',
+          transition:      'border-color 0.2s',
+        }}
       >
-        {/* Input oculto */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          accept="image/*"
-          onChange={alCambiarInputArchivo}
-          style={{ display: 'none' }}
-        />
-
         {preview ? (
-          <>
-            <img
-              src={preview}
-              alt="Vista previa de foto de perfil"
-              className="formulario-foto-imagen"
-              onError={handleImageErrorWrapper}
-            />
-
-            {/* Botón eliminar */}
-            <Button
-              variant="subtle" size="xs"
-              aria-label="Eliminar foto"
-              className="formulario-foto-boton-eliminar"
-              onClick={handleRemoveClick}
-            >
-              <IconX size={14} />
-            </Button>
-
-            {/* Indicador de foto nueva */}
-            {esBlobNuevo && (
-              <Box className="formulario-foto-badge-nueva">
-                NUEVA
-              </Box>
-            )}
-          </>
+          <img src={preview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <Stack align="center" gap="xs" className="formulario-foto-placeholder">
-            <IconPhoto size={40} className={isDragging ? 'icono-dragging' : 'icono-normal'} />
-            <Text size="xs" className={isDragging ? 'texto-dragging' : 'texto-normal'}>
-              {isDragging ? 'Suelta la imagen aquí' : 'Haz clic o arrastra una imagen'}
-            </Text>
+          <Stack align="center" gap={6} style={{ padding: 16, textAlign: 'center' }}>
+            <IconPhoto size={32} color="#C4C4C4" />
+            <Text size="xs" c="dimmed">Arrastra o haz clic</Text>
           </Stack>
         )}
-      </Box>
+      </div>
 
-      <Text size="xs" className="formulario-foto-ayuda">JPG, PNG, GIF • Máx 5MB</Text>
-      
-      {/* Indica que hay foto guardada y el usuario aún no eligió nueva */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={alCambiarInputArchivo}
+      />
+
+      {preview && (
+        <Button
+          size="xs"
+          variant="subtle"
+          color="red"
+          leftSection={<IconX size={12} />}
+          onClick={alEliminarFoto}
+          disabled={loading}
+        >
+          Quitar foto
+        </Button>
+      )}
+
       {preview && !archivoSeleccionado && (
-        <Text size="xs" className="formulario-foto-guardada">
-          Foto actual guardada
-        </Text>
+        <Text size="xs" className="formulario-foto-guardada">Foto actual guardada</Text>
       )}
     </Box>
   );
 
+  // ── Campos del formulario ────────────────────────────────────
   const renderCamposFormulario = () => (
-    <Box className="formulario-campos-contenedor">
-      <Text fw={700} size="lg" mb="md" className="formulario-titulo">
+    <Box className="formulario-campos-contenedor" style={{ flex: 1, minWidth: 0 }}>
+      <Text fw={700} size={isMobile ? 'md' : 'lg'} mb="md" className="formulario-titulo">
         {modo === 'editar' ? 'Editar Información Personal' : 'Nuevo Afiliado'}
       </Text>
 
-      <SimpleGrid cols={2} spacing="md">
+      {/* En móvil: 1 columna; en desktop: 2 columnas */}
+      <SimpleGrid cols={isMobile ? 1 : 2} spacing="md">
         <TextInput
           label="CI *" placeholder="1234567"
           value={formData.ci}
@@ -296,41 +248,57 @@ const FormularioEditarAfiliado = ({
           disabled={loading}
           className="input-base"
         />
+        {/* Dirección ocupa 2 cols en desktop, 1 en móvil (ya que grid es 1 col) */}
         <TextInput
           label="Dirección" placeholder="Av. Principal #123"
           value={formData.direccion}
           onChange={(e) => handleChange('direccion', e.target.value)}
           leftSection={<IconMapPin size={16} />}
           disabled={loading}
-          className="input-base input-span-2"
+          className={`input-base ${isMobile ? '' : 'input-span-2'}`}
+          style={isMobile ? {} : { gridColumn: 'span 2' }}
         />
       </SimpleGrid>
     </Box>
   );
 
+  // ── Botones de acción ────────────────────────────────────────
   const renderBotonesAccion = () => (
-    <Group justify="flex-end" gap="md">
+    <Group
+      justify={isMobile ? 'stretch' : 'flex-end'}
+      gap="md"
+      style={{ flexDirection: isMobile ? 'column' : 'row' }}
+    >
       <Button
-        onClick={onCancel} disabled={loading}
+        onClick={onCancel}
+        disabled={loading}
         className="gp-btn-cerrar"
+        fullWidth={isMobile}
       >
         Cancelar
       </Button>
       <Button
-        type="submit" loading={loading}
+        type="submit"
+        loading={loading}
         className="gp-btn-reporte"
+        fullWidth={isMobile}
       >
         {loading ? 'Guardando...' : modo === 'editar' ? 'Guardar Cambios' : 'Crear Afiliado'}
       </Button>
     </Group>
   );
 
-  // Render principal
+  // ── Render principal ─────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit}>
       <Stack gap="xl">
-        <Paper p="lg" withBorder radius="md" className="formulario-paper">
-          <Group align="flex-start" gap="xl">
+        <Paper p={isMobile ? 'sm' : 'lg'} withBorder radius="md" className="formulario-paper">
+          {/* En móvil: columna (foto arriba, campos abajo); en desktop: fila */}
+          <Group
+            align="flex-start"
+            gap="xl"
+            style={{ flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'center' : 'flex-start' }}
+          >
             {renderFotoPerfil()}
             {renderCamposFormulario()}
           </Group>

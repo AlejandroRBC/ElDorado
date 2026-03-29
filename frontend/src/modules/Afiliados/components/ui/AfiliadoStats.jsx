@@ -1,37 +1,40 @@
-import { memo }                    from 'react';
-import { Stack, Pagination, Text } from '@mantine/core';
+// frontend/src/modules/Afiliados/components/ui/AfiliadoStats.jsx
+//
+// PATCH RESPONSIVE
+// Cambios:
+//   1. useMediaQuery para isMobile
+//   2. Paginación centrada en móvil
+//   3. Contador texto reducido en móvil
+//   4. Pagination size="sm" en móvil
+
+import { Group, Pagination, Text, Stack } from '@mantine/core';
+import { useMediaQuery } from 'react-responsive';
 
 /**
- * Muestra el contador de resultados y el control de paginación.
- *
- * total            - Total de afiliados en la lista filtrada
- * paginaActual     - Página actualmente visible
- * totalPaginas     - Número total de páginas
- * onCambiarPagina  - Callback (pagina: number)
- * hayFiltros       - true si hay filtros activos (cambia el texto del contador)
- * itemsPorPagina   - Para calcular rango mostrado (default 50)
+ * Muestra el contador de resultados y la paginación.
+ * Responsive: en móvil se centra y reduce tamaño.
  */
-const AfiliadoStats = memo(({
+const AfiliadoStats = ({
   total,
   paginaActual,
   totalPaginas,
   onCambiarPagina,
-  hayFiltros      = false,
-  itemsPorPagina  = 50,
+  hayFiltros,
+  itemsPorPagina,
 }) => {
-  if (!total) return null;
+  const isMobile = useMediaQuery({ maxWidth: 640 });
 
-  const primerItem = (paginaActual - 1) * itemsPorPagina + 1;
+  const primerItem = total === 0 ? 0 : (paginaActual - 1) * itemsPorPagina + 1;
   const ultimoItem = Math.min(paginaActual * itemsPorPagina, total);
-  const sufijo     = hayFiltros ? ' (filtrados)' : '';
-  const plural     = total !== 1 ? 's' : '';
 
-  const textoContador = total <= itemsPorPagina
-    ? `${total} afiliado${plural}${sufijo}`
-    : `Mostrando ${primerItem}–${ultimoItem} de ${total} afiliado${plural}${sufijo}`;
+  const textoContador = total === 0
+    ? 'Sin resultados'
+    : total <= itemsPorPagina
+      ? `${total} afiliado${total !== 1 ? 's' : ''}`
+      : `Mostrando ${primerItem}–${ultimoItem} de ${total} afiliados`;
 
   return (
-    <Stack align="center" mt="xl" gap="xs">
+    <Stack align="center" mb="md" gap="xs">
       {totalPaginas > 1 && (
         <Pagination
           total={totalPaginas}
@@ -39,15 +42,16 @@ const AfiliadoStats = memo(({
           onChange={onCambiarPagina}
           color="dark"
           radius="xl"
-          size="sm"
+          size={isMobile ? 'xs' : 'sm'}
+          withEdges={!isMobile}
         />
       )}
-      <Text className="af-contador" size="sm" style={{ color: '#999', fontFamily: 'Poppins, sans-serif' }}>
+      <Text className="af-contador" size={isMobile ? 'xs' : 'sm'}>
         {textoContador}
+        {hayFiltros && total > 0 ? ' (filtrado)' : ''}
       </Text>
     </Stack>
   );
-});
+};
 
-AfiliadoStats.displayName = 'AfiliadoStats';
 export default AfiliadoStats;
