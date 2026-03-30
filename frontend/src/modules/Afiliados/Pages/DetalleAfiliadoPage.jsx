@@ -32,7 +32,7 @@ import ModuleHeader from '../../Navegacion/components/ModuleHeader';
 import TablaPuestos   from '../components/TablaPuestos';
 import AfiliadoModal  from '../components/modals/AfiliadoModal';
 import { ModalTraspaso } from '../../GestionPatentesPuestos/components/ModalTraspaso';
-import '../styles/Estilos.css';
+import '../styles/afiliados-gp.css';
 
 const ModalAsignarPuesto = lazy(() => import('../components/ModalAsignarPuesto'));
 

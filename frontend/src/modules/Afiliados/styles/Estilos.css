@@ -305,6 +305,10 @@ h1, h2, h3, h4, h5, h6,
   padding: 10px 20px;
   font-family: var(--font-body);
 }
+.boton-accion :hover{
+  color: black;
+
+}
 
 .boton-desafiliar {
   background-color: #F44336 !important;
